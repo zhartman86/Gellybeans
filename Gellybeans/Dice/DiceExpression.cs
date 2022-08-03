@@ -13,6 +13,12 @@ namespace Gellybeans.Dice
         public DiceModifier? Mod    { get; set; }
 
         public RollResult Results   { get; set; } = new RollResult();
+        
+        public int TotalResult
+        {
+            get { return Results.DiceTotal + (Mod != null ? Mod.Value : 0); }
+        }
+
 
         public DiceExpression(List<DieSet> sets, DiceModifier? mod)
         {
@@ -39,7 +45,7 @@ namespace Gellybeans.Dice
             
             else
             {
-                throw new System.Exception("Malformed Expression.");
+                Results = null;
             }
         }       
 
