@@ -1,6 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using Gellybeans.ECS;
 
-namespace EsoLib.Pathfinder
+namespace Gellybeans.RPG
 {
     public class StatBlock : Component
     {                                      

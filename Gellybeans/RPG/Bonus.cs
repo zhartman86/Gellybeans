@@ -1,6 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using Gellybeans.Pathfinder;
 
-namespace EsoLib.Pathfinder
+namespace Gellybeans.RPG
 {
     public class Bonus : IComparer<Bonus>
     {

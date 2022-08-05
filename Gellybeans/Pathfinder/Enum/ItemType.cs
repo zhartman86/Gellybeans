@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace EsoLib.Pathfinder.Enum
+﻿namespace Gellybeans.Pathfinder
 {
     [Flags]
     public enum ItemType

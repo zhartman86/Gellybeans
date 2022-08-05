@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace EsoLib.Pathfinder
+﻿namespace Gellybeans.RPG
 {
     public class Modifier
     {
@@ -11,7 +9,5 @@ namespace EsoLib.Pathfinder
     {
         public string StatName  { get; set; }
         public Bonus Bonus      { get; set; }
-    }
-
-    
+    }    
 }

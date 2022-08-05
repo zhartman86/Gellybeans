@@ -1,4 +1,4 @@
-﻿namespace EsoLib.Pathfinder
+﻿namespace Gellybeans.RPG
 {
     public class Stat
     {

@@ -1,4 +1,4 @@
-﻿namespace EsoLib.Pathfinder
+﻿namespace Gellybeans.Pathfinder
 {
     public enum BonusType
     {

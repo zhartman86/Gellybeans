@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace EsoLib.Pathfinder
+﻿namespace Gellybeans.Pathfinder
 {
     public enum SizeType
     {

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace EsoLib
+namespace Gellybeans.ECS
 {
     public abstract class Component
     {

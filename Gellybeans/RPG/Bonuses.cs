@@ -1,7 +1,6 @@
-﻿using System.Linq;
-using System.Collections.Generic;
+﻿using Gellybeans.Pathfinder;
 
-namespace EsoLib.Pathfinder
+namespace Gellybeans.RPG
 {
     /// <summary>
     /// Provides a way to keep track of all buffs applied to a particular stat, while accounting for the various rules that apply to identical effects and non-stacking bonus types.

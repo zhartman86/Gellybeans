@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace EsoLib.Pathfinder
+﻿namespace Gellybeans.RPG
 {
     public class Item
     {        
@@ -14,9 +10,7 @@ namespace EsoLib.Pathfinder
         public string   Description     { get; set; } = "";
         public float    Weight          { get; set; } = 0.1f;
 
-        public Dictionary<string, Stat> Properties = null;      
-
-        
+        public Dictionary<string, Stat> Properties = null;           
         
         public Item()
         {
@@ -36,12 +30,11 @@ namespace EsoLib.Pathfinder
         {
             var item = new Item()
             {
-                Name = name,
-                Weight = weight,
+                Name        = name,
+                Weight      = weight,
                 Description = description,
 
-                Properties = new Dictionary<string, Stat>()
-                
+                Properties = new Dictionary<string, Stat>()                
             };
             return item;
         }

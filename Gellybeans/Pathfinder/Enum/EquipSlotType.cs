@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace EsoLib.Pathfinder
+﻿namespace Gellybeans.Pathfinder
 {
     [Flags]
     public enum EquipSlotType
