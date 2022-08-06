@@ -2,7 +2,7 @@
 {
     public class Utility
     {
-        private Dictionary<string, string> IncreaseSizeByOne = new Dictionary<string, string>()
+        public Dictionary<string, string> IncreaseSizeByOne = new Dictionary<string, string>()
         {
             {   "1d1",      "1d2"   },
             {   "1d2",      "1d3"   },
@@ -29,7 +29,7 @@
             {   "12d8",     "16d6"  },
         };
 
-        private Dictionary<string, string> DecreaseSizeByOne = new Dictionary<string, string>()
+        public Dictionary<string, string> DecreaseSizeByOne = new Dictionary<string, string>()
         {
             {   "1d2",      "1d1"   },
             {   "1d3",      "1d2"   },
@@ -56,7 +56,7 @@
             {   "16d6",     "12d8"  },
         };
 
-        private Dictionary<int, int> CritDoubler = new Dictionary<int, int>()
+        public Dictionary<int, int> CritRangeDoubler = new Dictionary<int, int>()
         {
             {   20,     19  },
             {   19,     17  },

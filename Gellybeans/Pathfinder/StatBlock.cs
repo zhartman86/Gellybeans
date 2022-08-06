@@ -10,6 +10,8 @@ namespace Gellybeans.Pathfinder
         public List<Item>                   Inventory   { get; set; } = new List<Item>();
         public List<StatModifier>           StatMods    { get; set; } = new List<StatModifier>();
 
+        public List<Attack>                 Attacks     { get; set; } = new List<Attack>();
+
         public int this[string statName]
         {
             get { return Stats.ContainsKey(statName) ? Stats[statName].Value : 0; }
@@ -30,9 +32,15 @@ namespace Gellybeans.Pathfinder
 
         public void EquipItem(Item item)
         {
-
+            item.IsEquipped = true;
+            for(int i = 0; i < item.Modifiers.Count; i++) AddModifier(item.Modifiers[i]);
         }
 
+        public void UnEquipItem(Item item)
+        {
+            item.IsEquipped = false;
+            for(int i = 0; i < item.Modifiers.Count; i++) RemoveModifier(item.Modifiers[i]);
+        }
 
         public static StatBlock DefaultPathfinder()
         {
