@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Linq;
 
 namespace Gellybeans.ECS
 {
@@ -31,7 +30,7 @@ namespace Gellybeans.ECS
         }
         
         public Component AddComponent<T>() where T : Component, new()
-        {
+        {            
             var c = new T();
             return AddComponent(c);
         }

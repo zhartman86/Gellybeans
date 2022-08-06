@@ -2,7 +2,6 @@
 {
     public enum RaceType
     {
-        //core
         Dwarf,
         Elf,
         Gnome,

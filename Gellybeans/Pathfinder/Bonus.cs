@@ -2,7 +2,7 @@
 {
     public class Bonus : IComparer<Bonus>
     {
-        public string       Name    { get; set; }        
+        public string       Name    { get; set; } = "";     
         public int          Value   { get; set; }
         public BonusType    Type    { get; set; }
 

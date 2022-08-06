@@ -3,20 +3,36 @@
 namespace Gellybeans.Pathfinder
 {
     public class StatBlock : Component
-    {
-
-        public List<Modifier> Modifiers { get; set; } = new List<Modifier>();
-        public List<Item> Inventory { get; set; } = new List<Item>();
-        public Dictionary<string, Item> Equip { get; private set; } = new Dictionary<string, Item>();
-        public Dictionary<string, Stat> Stats { get; private set; } = new Dictionary<string, Stat>();
-        public Dictionary<string, string> Info { get; private set; } = new Dictionary<string, string>();
-
+    {      
+        public Dictionary<string, Stat>     Stats       { get; private set; } = new Dictionary<string, Stat>();
+        public Dictionary<string, string>   Info        { get; private set; } = new Dictionary<string, string>();
+        
+        public List<Item>                   Inventory   { get; set; } = new List<Item>();
+        public List<StatModifier>           StatMods    { get; set; } = new List<StatModifier>();
 
         public int this[string statName]
         {
             get { return Stats.ContainsKey(statName) ? Stats[statName].Value : 0; }
             set { Stats[statName] = value; }
         }
+
+
+        public void AddModifier(StatModifier statMod)
+        {
+            if(!StatMods.Contains(statMod)) { this[statMod.StatName] = 0; }
+            Stats[statMod.StatName].Bonuses.Add(statMod.Bonus);
+        }
+
+        public bool RemoveModifier(StatModifier statMod)
+        {
+            return Stats[statMod.StatName].Bonuses.Remove(statMod.Bonus);
+        }
+
+        public void EquipItem(Item item)
+        {
+
+        }
+
 
         public static StatBlock DefaultPathfinder()
         {
@@ -73,8 +89,9 @@ namespace Gellybeans.Pathfinder
                     ["AC"] = 10,
                     ["AC_TOUCH"] = 10,
                     ["AC_FLAT"] = 10,
-
-                    ["ARMOR_PENALTY"] = 0,
+                    
+                    ["AC_MAXDEX"] = 99,
+                    ["CHECK_PENALTY"] = 0,
 
                     ["DR_TYPE"] = 0,  //bitmask                  
                     ["DR_VALUE"] = 0,
@@ -86,44 +103,44 @@ namespace Gellybeans.Pathfinder
                     ["SAVE_WILL"] = 0,
 
                     ["BAB"] = 0,
-
+                    
                     ["CMD"] = 10,
                     ["CMB"] = 0,
 
-                    ["SPELL_FAIL"] = 0,
-                    ["CONCENTRATION"] = 0,
+                    ["ARCANE_FAIL"] = 0,                    
 
-                    ["SKILL_ACROBATICS"] = 0,
-                    ["SKILL_APPRAISE"] = 0,
-                    ["SKILL_BLUFF"] = 0,
-                    ["SKILL_CLIMB"] = 0,
-                    ["SKILL_DIPLOMACY"] = 0,
-                    ["SKILL_DISABLEDEVICE"] = 0,
-                    ["SKILL_DISGUISE"] = 0,
-                    ["SKILL_ESCAPE"] = 0,
-                    ["SKILL_FLY"] = 0,
-                    ["SKILL_HANDLEANIMAL"] = 0,
-                    ["SKILL_HEAL"] = 0,
-                    ["SKILL_INTIMIDATE"] = 0,
-                    ["SKILL_ARCANA"] = 0,
-                    ["SKILL_DUNGEONEERING"] = 0,
-                    ["SKILL_GEOGRAPHY"] = 0,
-                    ["SKILL_HISTORY"] = 0,
-                    ["SKILL_LOCAL"] = 0,
-                    ["SKILL_NATURE"] = 0,
-                    ["SKILL_NOBILITY"] = 0,
-                    ["SKILL_PLANES"] = 0,
-                    ["SKILL_RELIGION"] = 0,
-                    ["SKILL_LINGUISTICS"] = 0,
-                    ["SKILL_PERCEPTION"] = 0,
-                    ["SKILL_RIDE"] = 0,
-                    ["SKILL_SENSEMOTIVE"] = 0,
-                    ["SKILL_SLEIGHTOFHAND"] = 0,
-                    ["SKILL_SPELLCRAFT"] = 0,
-                    ["SKILL_STEALTH"] = 0,
-                    ["SKILL_SURVIVAL"] = 0,
-                    ["SKILL_SWIM"] = 0,
-                    ["SKILL_USEMAGICDEVICE"] = 0,
+                    //skills
+                    ["ACROBATICS"] = 0,
+                    ["APPRAISE"] = 0,
+                    ["BLUFF"] = 0,
+                    ["CLIMB"] = 0,
+                    ["DIPLOMACY"] = 0,
+                    ["DISABLEDEVICE"] = 0,
+                    ["DISGUISE"] = 0,
+                    ["ESCAPE"] = 0,
+                    ["FLY"] = 0,
+                    ["HANDLEANIMAL"] = 0,
+                    ["HEAL"] = 0,
+                    ["INTIMIDATE"] = 0,
+                    ["ARCANA"] = 0,
+                    ["DUNGEONEERING"] = 0,
+                    ["GEOGRAPHY"] = 0,
+                    ["HISTORY"] = 0,
+                    ["LOCAL"] = 0,
+                    ["NATURE"] = 0,
+                    ["NOBILITY"] = 0,
+                    ["PLANES"] = 0,
+                    ["RELIGION"] = 0,
+                    ["LINGUISTICS"] = 0,
+                    ["PERCEPTION"] = 0,
+                    ["RIDE"] = 0,
+                    ["SENSEMOTIVE"] = 0,
+                    ["SLEIGHTOFHAND"] = 0,
+                    ["SPELLCRAFT"] = 0,
+                    ["STEALTH"] = 0,
+                    ["SURVIVAL"] = 0,
+                    ["SWIM"] = 0,
+                    ["USEMAGICDEVICE"] = 0,
                 }
             };
             return statBlock;
