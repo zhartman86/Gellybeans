@@ -2,7 +2,31 @@
 {
     public enum RaceType
     {
+        //core
+        Dwarf,
+        Elf,
+        Gnome,
+        HalfElf,
+        Halfling,
+        HalfOrc,
+        Human,
 
+        Aasimar,
+        Adaro,
+        Android,
+        Aphorite,
+        AquaticElf,
+        Astomoi,
+        BeingOfIb,
+        Boggard,
+        Caligni,
+        Catfolk,
+        Cacaelia,
+        DeepOneHybrid,
+        Changeling,
+        Dhampir,
+        Drow,
+        DrowNoble,
         Duergar,
         Duskwalker,
         Fetchling,
@@ -59,4 +83,3 @@
         Yaddithian
     }
 }
-

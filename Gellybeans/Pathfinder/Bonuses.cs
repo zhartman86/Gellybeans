@@ -1,6 +1,4 @@
-﻿using Gellybeans.Pathfinder;
-
-namespace Gellybeans.RPG
+﻿namespace Gellybeans.Pathfinder
 {
     /// <summary>
     /// Provides a way to keep track of all buffs applied to a particular stat, while accounting for the various rules that apply to identical effects and non-stacking bonus types.
@@ -9,16 +7,16 @@ namespace Gellybeans.RPG
     /// </summary>
     public class Bonuses
     {
-        public Dictionary<BonusType, List<Bonus>> bonuses = new Dictionary<BonusType, List<Bonus>>();        
+        public Dictionary<BonusType, List<Bonus>> bonuses = new Dictionary<BonusType, List<Bonus>>();
         public int Total { get { return GetTotal(); } }
 
         private int GetTotal()
-        {         
+        {
             int total = 0;
             foreach(List<Bonus> bonusList in bonuses.Values)
             {
-                if(bonusList[0].Type.HasFlag(BonusType.Typeless)  || bonusList[0].Type.HasFlag(BonusType.Circumstance) || bonusList[0].Type.HasFlag(BonusType.Dodge))
-                {                                      
+                if(bonusList[0].Type.HasFlag(BonusType.Typeless) || bonusList[0].Type.HasFlag(BonusType.Circumstance) || bonusList[0].Type.HasFlag(BonusType.Dodge))
+                {
                     for(int i = 0; i < bonusList.Count; i++)
                     {
                         //ignore effects with identical names, else stack.                                             
@@ -31,34 +29,36 @@ namespace Gellybeans.RPG
                     total += bonusList[0].Value;
                 }
             }
-            return total;    
-        }      
-        
+            return total;
+        }
+
         public Bonus Add(Bonus b)
         {
-            if(!bonuses.ContainsKey(b.Type)) bonuses[b.Type] = new List<Bonus>();          
-            
+            if(!bonuses.ContainsKey(b.Type)) bonuses[b.Type] = new List<Bonus>();
+
             bonuses[b.Type].Add(b);
             bonuses[b.Type].Sort((x, y) => x.Value.CompareTo(y.Value));
             return b;
         }
-    
+
         public bool Remove(Bonus b)
         {
             if(!bonuses.ContainsKey(b.Type) || !bonuses[b.Type].Remove(b))
             {
                 //msg
                 return false;
-            }                              
-            
+            }
+
             if(bonuses[b.Type].Count == 0)
             {
-                bonuses.Remove(b.Type); 
+                bonuses.Remove(b.Type);
             }
-            
+
             return true;
         }
-    
-        
+
+
     }
 }
+    
+

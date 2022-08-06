@@ -1,4 +1,4 @@
-﻿namespace Gellybeans.RPG
+﻿namespace Gellybeans.Pathfinder
 {
     public class Stat
     {

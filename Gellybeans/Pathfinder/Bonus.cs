@@ -1,6 +1,4 @@
-﻿using Gellybeans.Pathfinder;
-
-namespace Gellybeans.RPG
+﻿namespace Gellybeans.Pathfinder
 {
     public class Bonus : IComparer<Bonus>
     {
