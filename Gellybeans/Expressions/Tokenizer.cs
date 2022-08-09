@@ -80,7 +80,7 @@ namespace Gellybeans.Expressions
             if(char.IsDigit(currentChar))
             {
                 var builder = new StringBuilder();
-                while(char.IsDigit((char)currentChar))
+                while(char.IsDigit(currentChar))
                 {
                     builder.Append(currentChar);
                     NextChar();

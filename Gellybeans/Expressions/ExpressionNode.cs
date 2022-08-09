@@ -5,11 +5,14 @@
 
     public class NumberNode : ExpressionNode
     {
-        public int Number { get; init; }
-                
-        public NumberNode(int number) => Number = number; 
+        int number;
+
+        public NumberNode(int number)
+        {
+            this.number = number;
+        }
         
-        public override int Eval(IContext ctx) { return Number; }
+        public override int Eval(IContext ctx) { return number; }
     }
 
     public class UnaryNode : ExpressionNode
@@ -25,8 +28,9 @@
     
         public override int Eval(IContext ctx) 
         {
-            var value = rhs.Eval(ctx);
-            return op(value);
+            var rhValue = rhs.Eval(ctx);
+            var result = op(rhValue);
+            return result;
         }
     }
     
@@ -49,7 +53,8 @@
             var lhValue = lhs.Eval(ctx);
             var rhValue = rhs.Eval(ctx);
 
-            return op(lhValue, rhValue);
+            var result = op(lhValue, rhValue);
+            return result;
         }
     }
 
@@ -57,7 +62,10 @@
     {
         string varName;
 
-        public VarNode(string varName) => this.varName = varName;
+        public VarNode(string varName)
+        {
+            this.varName = varName;
+        }
 
         public override int Eval(IContext ctx) { return ctx.Resolve(varName); }
     }

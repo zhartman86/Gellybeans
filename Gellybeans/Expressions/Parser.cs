@@ -4,9 +4,12 @@
     {
         Tokenizer tokenizer;
 
-        public Parser(Tokenizer tokenizer) => this.tokenizer = tokenizer;
+        public Parser(Tokenizer tokenizer)
+        {
+            this.tokenizer = tokenizer;
+        }
 
-        public ExpressionNode Parse()
+        public ExpressionNode ParseExpr()
         {
             var expr = ParseAddSub();
             if(tokenizer.Token != TokenType.EOF) throw new Exception("Unexpected character at end of expression.");
@@ -72,9 +75,11 @@
                     var rhs = ParseUnary();                  
                     return new UnaryNode(rhs, (a) => -a);
                 }
+
+                return ParseLeaf();
             }
             
-            return ParseLeaf();
+            
         }
         
         ExpressionNode ParseLeaf()
@@ -136,6 +141,17 @@
             }
 
             throw new Exception($"Unexpected symbol: {tokenizer.Token}");
+        }
+    
+        public static ExpressionNode Parse(string expr)
+        {
+            return Parse(new Tokenizer(new StringReader(expr)));
+        }
+    
+        public static ExpressionNode Parse(Tokenizer tokenizer)
+        {
+            var parser = new Parser(tokenizer);
+            return parser.ParseExpr();
         }
     }
 }
