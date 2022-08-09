@@ -15,6 +15,8 @@ namespace Gellybeans.Expressions
         Number, //integer
         OpenPar,
         ClosePar,
+        Comma,
+        Var,
         EOF,
         
     }

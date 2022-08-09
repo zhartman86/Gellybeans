@@ -7,17 +7,22 @@ namespace Gellybeans.Expressions
     {
         private TextReader reader;
 
-        char currentChar;
-        TokenType currentToken;
-        int number;
+        char        currentChar;
+        TokenType   currentToken;
+        
+        int     number;
+        string  identifier;
 
 
-        public TokenType Token { get { return currentToken; } }
-        public int Number { get { return number; } }
-
+        public TokenType    Token       { get { return currentToken; } }       
+        public int          Number      { get { return number; } }
+        public string       Identifier  { get { return identifier; } }
+        
         public Tokenizer(TextReader textReader)
         {
             reader = textReader;
+            NextChar();
+            NextToken();
         }
 
         void NextChar()
@@ -55,6 +60,21 @@ namespace Gellybeans.Expressions
                     NextChar();
                     currentToken = TokenType.Div;
                     return;
+
+                case '(':
+                    NextChar();
+                    currentToken = TokenType.OpenPar;
+                    return;
+
+                case ')':
+                    NextChar();
+                    currentToken = TokenType.ClosePar;
+                    return;
+
+                case ',':
+                    NextChar();
+                    currentToken = TokenType.Comma;
+                    return;
             }
         
             if(char.IsDigit(currentChar))
@@ -71,10 +91,22 @@ namespace Gellybeans.Expressions
                 return;
             }
 
+            if(char.IsLetter(currentChar) || currentChar == '_')
+            {
+                var builder = new StringBuilder();
+
+                while(char.IsLetterOrDigit(currentChar) || currentChar == '_')
+                {
+                    builder.Append(currentChar);
+                    NextChar();
+                }
+
+                identifier = builder.ToString();
+                currentToken = TokenType.Var;
+                return;
+            }
+
             throw new Exception($"Invalid data: {currentChar}");
         }
-
-      
-
     }
 }

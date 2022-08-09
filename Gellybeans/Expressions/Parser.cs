@@ -9,11 +9,9 @@
         public ExpressionNode Parse()
         {
             var expr = ParseAddSub();
-            if(tokenizer.Token != TokenType.EOF) throw new Exception("Unexpected character at end of expression");
+            if(tokenizer.Token != TokenType.EOF) throw new Exception("Unexpected character at end of expression.");
             return expr;
-        }   
-    
-             
+        }               
         
         ExpressionNode ParseAddSub()
         {
@@ -59,42 +57,84 @@
 
         ExpressionNode ParseUnary()
         {
-            if(tokenizer.Token == TokenType.Add)
+            while(true)
             {
-                tokenizer.NextToken();
-                return ParseUnary();
-            }
-        
-            else if(tokenizer.Token == TokenType.Sub)
-            {
-                tokenizer.NextToken();
-                var rhs = ParseUnary();
-                return new UnaryNode(rhs, (a) => -a);
-            }
+                if(tokenizer.Token == TokenType.Add)
+                {
+                    tokenizer.NextToken();
+                    continue;
+                }
 
+                if(tokenizer.Token == TokenType.Sub)
+                {
+                    tokenizer.NextToken();
+                    
+                    var rhs = ParseUnary();                  
+                    return new UnaryNode(rhs, (a) => -a);
+                }
+            }
+            
             return ParseLeaf();
         }
         
         ExpressionNode ParseLeaf()
         {
+            if(tokenizer.Token == TokenType.Number)
+            {
+                var node = new NumberNode(tokenizer.Number);
+                tokenizer.NextToken();
+                return node;
+            }
+
             if(tokenizer.Token == TokenType.OpenPar)
             {
+                tokenizer.NextToken();
                 var node = ParseAddSub();
-
-                if(tokenizer.Token != TokenType.ClosePar) throw new Exception("Missing closed parens.");
-
+                
+                if(tokenizer.Token != TokenType.ClosePar) 
+                    throw new Exception("Missing closed parens.");
+                
                 tokenizer.NextToken();
                 return node;
             }
             
-            
-            if(tokenizer.Token == TokenType.Number)
+            if(tokenizer.Token == TokenType.Var)
             {
-                var numberNode = new NumberNode(tokenizer.Number);
+                var name = tokenizer.Identifier;
                 tokenizer.NextToken();
-                return numberNode;
+                
+                if(tokenizer.Token != TokenType.OpenPar)
+                {
+                    return new VarNode(name);
+                }
+            
+                else
+                {
+                    tokenizer.NextToken();
+
+                    var args = new List<ExpressionNode>();
+                    while(true)
+                    {
+                        args.Add(ParseAddSub());
+
+                        if(tokenizer.Token == TokenType.Comma)
+                        {
+                            tokenizer.NextToken();
+                            continue;
+                        }
+
+                        break;
+                    }
+
+                    if(tokenizer.Token != TokenType.ClosePar)
+                        throw new Exception("Missing close parens.");
+                    
+                    tokenizer.NextToken();
+
+                    return new FunctionNode(name, args.ToArray());
+                }
             }
-        
+
             throw new Exception($"Unexpected symbol: {tokenizer.Token}");
         }
     }
