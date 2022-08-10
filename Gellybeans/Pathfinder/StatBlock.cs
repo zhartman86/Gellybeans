@@ -22,7 +22,7 @@ namespace Gellybeans.Pathfinder
             get 
             {
                 if(Stats.ContainsKey(varName))              return Stats[varName].ToString();
-                else if(Expressions.ContainsKey(varName))   return Expressions[varName].ToString();
+                else if(Expressions.ContainsKey(varName))   return Parser.Parse(Expressions[varName]).Eval(this).ToString();
                 return "0";
             }
         }
