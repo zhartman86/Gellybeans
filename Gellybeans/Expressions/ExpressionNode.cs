@@ -92,6 +92,34 @@
             return ctx.Call(functionName, argValues);
         }
     }
+
+    public class DiceNode : ExpressionNode
+    {
+        int count;
+        int sides;
+        List<int> results;
+
+        public DiceNode(int count, int sides)
+        {
+            this.count = count;
+            this.sides = sides;
+        }
+
+        public override int Eval(IContext ctx)
+        {
+            var random = new Random();
+            results = new List<int>();
+            int total = 0;
+            for(int i = 0; i < count; i++)
+            {
+                var r = random.Next(1, sides + 1);
+                total += r;
+                results.Add(r);             
+            }
+
+            return total;
+        }
+    }
 }
 
 

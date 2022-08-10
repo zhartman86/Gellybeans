@@ -76,7 +76,7 @@ namespace Gellybeans.Expressions
                     currentToken = TokenType.Comma;
                     return;
             }
-        
+            
             if(char.IsDigit(currentChar))
             {
                 var builder = new StringBuilder();
@@ -85,10 +85,11 @@ namespace Gellybeans.Expressions
                     builder.Append(currentChar);
                     NextChar();
                 }
-
-                number = int.Parse(builder.ToString(), CultureInfo.InvariantCulture);
+              
+                number = int.Parse(builder.ToString(), CultureInfo.InvariantCulture);                
                 currentToken = TokenType.Number;
                 return;
+                     
             }
 
             if(char.IsLetter(currentChar) || currentChar == '_')

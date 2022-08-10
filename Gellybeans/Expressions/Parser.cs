@@ -84,6 +84,14 @@
         
         ExpressionNode ParseLeaf()
         {
+            if(tokenizer.Token == TokenType.Dice)
+            {
+                var split = tokenizer.Identifier.Split('d');
+                Console.WriteLine(split[0], split[1]);
+                var node = new DiceNode(int.Parse(split[0]), int.Parse(split[1]));
+                return node;
+            }
+            
             if(tokenizer.Token == TokenType.Number)
             {
                 var node = new NumberNode(tokenizer.Number);
