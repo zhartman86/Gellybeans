@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Gellybeans.Dice
+﻿namespace Gellybeans.Expressions.Dice
 {
     public class RollResult
     {

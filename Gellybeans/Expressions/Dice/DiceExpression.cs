@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
-namespace Gellybeans.Dice
+namespace Gellybeans.Expressions.Dice
 { 
     public class DiceExpression
     {
