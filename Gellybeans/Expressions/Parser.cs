@@ -77,28 +77,18 @@
                 }
 
                 return ParseLeaf();
-            }
-            
-            
+            }                      
         }
         
         ExpressionNode ParseLeaf()
-        {
-            if(tokenizer.Token == TokenType.Dice)
-            {
-                var split = tokenizer.Identifier.Split('d');
-                Console.WriteLine(split[0], split[1]);
-                var node = new DiceNode(int.Parse(split[0]), int.Parse(split[1]));
-                return node;
-            }
-            
+        {                     
             if(tokenizer.Token == TokenType.Number)
             {
                 var node = new NumberNode(tokenizer.Number);
                 tokenizer.NextToken();
                 return node;
             }
-
+         
             if(tokenizer.Token == TokenType.OpenPar)
             {
                 tokenizer.NextToken();
@@ -110,7 +100,18 @@
                 tokenizer.NextToken();
                 return node;
             }
-            
+
+            if(tokenizer.Token == TokenType.Dice)
+            {
+                var split = tokenizer.Identifier.Split('d', StringSplitOptions.RemoveEmptyEntries);
+                DiceNode node;
+                if(split.Length == 1) node = new DiceNode(1, int.Parse(split[1]));
+                else node = new DiceNode(int.Parse(split[0]), int.Parse(split[1]));
+                tokenizer.NextToken();
+                return node;
+            }
+
+
             if(tokenizer.Token == TokenType.Var)
             {
                 var name = tokenizer.Identifier;

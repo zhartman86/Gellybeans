@@ -77,19 +77,31 @@ namespace Gellybeans.Expressions
                     return;
             }
             
-            if(char.IsDigit(currentChar))
-            {
+            if(char.IsDigit(currentChar) || currentChar == 'd')
+            {              
                 var builder = new StringBuilder();
-                while(char.IsDigit(currentChar))
+
+                bool hasD = false;
+                
+                while(char.IsDigit(currentChar) || (!hasD && currentChar == 'd'))
                 {
                     builder.Append(currentChar);
+                    hasD = currentChar == 'd';
                     NextChar();
                 }
-              
-                number = int.Parse(builder.ToString(), CultureInfo.InvariantCulture);                
-                currentToken = TokenType.Number;
-                return;
-                     
+
+                if(builder.ToString().Contains('d'))
+                {
+                    currentToken = TokenType.Dice;
+                    identifier = builder.ToString();
+                    return;
+                }
+                else
+                {
+                    number = int.Parse(builder.ToString(), CultureInfo.InvariantCulture);
+                    currentToken = TokenType.Number;
+                    return;
+                }                    
             }
 
             if(char.IsLetter(currentChar) || currentChar == '_')

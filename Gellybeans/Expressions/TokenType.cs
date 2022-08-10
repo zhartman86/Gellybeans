@@ -17,6 +17,7 @@ namespace Gellybeans.Expressions
         ClosePar,
         Comma,
         Var,
+        Dice,
         EOF,       
     }
 }
