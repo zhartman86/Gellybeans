@@ -45,8 +45,8 @@
             {
                 Func<int, int, int> op = null;
 
-                if(tokenizer.Token == TokenType.Mul) { op = (a, b) => a * b; }
-                else if(tokenizer.Token == TokenType.Div) { op = (a, b) => a / b; }
+                if(tokenizer.Token == TokenType.Mul)        { op = (a, b) => a * b; }
+                else if(tokenizer.Token == TokenType.Div)   { op = (a, b) => a / b; }
 
                 if(op == null) return lhs;
 
@@ -105,8 +105,13 @@
             {
                 var split = tokenizer.Identifier.Split('d', StringSplitOptions.RemoveEmptyEntries);
                 DiceNode node;
-                if(split.Length == 1) node = new DiceNode(1, int.Parse(split[1]));
-                else node = new DiceNode(int.Parse(split[0]), int.Parse(split[1]));
+                
+                if(split.Length == 1) 
+                    node = new DiceNode(1, int.Parse(split[1]));
+                
+                else 
+                    node = new DiceNode(int.Parse(split[0]), int.Parse(split[1]));
+                
                 tokenizer.NextToken();
                 return node;
             }

@@ -6,6 +6,8 @@ namespace Gellybeans.Pathfinder
     {
 
         public Dictionary<string, Stat>     Stats       { get; private set; } = new Dictionary<string, Stat>();
+        public Dictionary<string, string>   Expressions { get; private set; } = new Dictionary<string, string>();
+
         public Dictionary<string, string>   Info        { get; private set; } = new Dictionary<string, string>();
         
         public List<Item>                   Inventory   { get; set; } = new List<Item>();
@@ -15,16 +17,40 @@ namespace Gellybeans.Pathfinder
 
         
         
-        public int this[string statName]
+        public string this[string varName]
         {
-            get { return Stats[statName].Value; }
-            set { Stats[statName].Base = value; }
+            get 
+            {
+                if(Stats.ContainsKey(varName))              return Stats[varName].ToString();
+                else if(Expressions.ContainsKey(varName))   return Expressions[varName].ToString();
+                return "0";
+            }
         }
 
-        public int Call(string methodName, int[] args)
+        public bool AddStat(string name, int baseValue)
         {
-            return 0;
+            if(Stats.ContainsKey(name) || Expressions.ContainsKey(name)) return false;
+
+            Stats[name] = baseValue;
+            return true;
         }
+        
+        public bool AddExpression(string name, string expr)
+        {
+            if(Stats.ContainsKey(name) || Expressions.ContainsKey(name)) return false;
+            
+            Expressions[name] = expr;
+            return true;
+        }
+
+
+
+        public int Call(string methodName, int[] args) => methodName switch
+        {
+            "mod"   => (args[0] - 10) / 2,
+            _       => 0
+
+        };
 
         public int Resolve(string statName)
         {
