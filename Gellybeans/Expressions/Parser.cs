@@ -1,4 +1,6 @@
-﻿namespace Gellybeans.Expressions
+﻿using System.Text;
+
+namespace Gellybeans.Expressions
 {
     public class Parser
     {
@@ -10,7 +12,7 @@
         }
 
         public ExpressionNode ParseExpr()
-        {
+        {                     
             var expr = ParseAddSub();
             if(tokenizer.Token != TokenType.EOF) throw new Exception("Unexpected character at end of expression.");
             return expr;

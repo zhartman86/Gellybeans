@@ -13,14 +13,14 @@
         private int GetTotal()
         {
             int total = 0;
-            foreach(List<Bonus> bonusList in bonuses.Values)
+            foreach(var bonusList in bonuses.Values)
             {
-                if(bonusList[0].Type.HasFlag(BonusType.Typeless) || bonusList[0].Type.HasFlag(BonusType.Circumstance) || bonusList[0].Type.HasFlag(BonusType.Dodge))
+                if(bonusList[0].Type == BonusType.Typeless || bonusList[0].Type == BonusType.Circumstance || bonusList[0].Type == BonusType.Dodge)
                 {
                     for(int i = 0; i < bonusList.Count; i++)
                     {
                         //ignore effects with identical names, else stack.                                             
-                        if(bonuses[bonusList[i].Type].FirstOrDefault(x => x.Name == bonusList[i].Name) != null) continue;
+                        if(bonuses[bonusList[i].Type].Any(x => x.Name == bonusList[i].Name)) continue;
                         total += bonusList[i].Value;
                     }
                 }
