@@ -1,10 +1,12 @@
 ﻿using Gellybeans.Expressions;
+using System.Text.RegularExpressions;
 
 namespace Gellybeans.Pathfinder
 {
     public class StatBlock : IContext
     {
 
+        
         public Dictionary<string, Stat>     Stats       { get; private set; } = new Dictionary<string, Stat>();
         public Dictionary<string, string>   Expressions { get; private set; } = new Dictionary<string, string>();
 
@@ -15,35 +17,17 @@ namespace Gellybeans.Pathfinder
 
         public List<Attack>                 Attacks     { get; set; } = new List<Attack>();
 
+        private static Regex ValidVar = new Regex("^[A-Z_]{1,17}$");
         
         
-        public string this[string varName]
+        public int this[string statName]
         {
             get 
             {
-                if(Stats.ContainsKey(varName))              return Stats[varName].ToString();
-                else if(Expressions.ContainsKey(varName))   return Parser.Parse(Expressions[varName]).Eval(this).ToString();
-                return "0";
+                if(Stats.ContainsKey(statName)) return Stats[statName];
+                return 0;
             }
         }
-
-        public bool AddStat(string name, int baseValue)
-        {
-            if(Stats.ContainsKey(name) || Expressions.ContainsKey(name)) return false;
-
-            Stats[name] = baseValue;
-            return true;
-        }
-        
-        public bool AddExpression(string name, string expr)
-        {
-            if(Stats.ContainsKey(name) || Expressions.ContainsKey(name)) return false;
-            
-            Expressions[name] = expr;
-            return true;
-        }
-
-
 
         public int Call(string methodName, int[] args) => methodName switch
         {
@@ -52,9 +36,13 @@ namespace Gellybeans.Pathfinder
 
         };
 
-        public int Resolve(string statName)
+        public int Resolve(string varName)
         {
-            return Stats[statName];
+            if(Stats.ContainsKey(varName))
+                return this[varName];
+            else if(Expressions.ContainsKey(varName))
+                return Parser.Parse(Expressions[varName]).Eval(this);
+            return 0;
         }
 
         public static StatBlock DefaultPathfinder()
@@ -87,12 +75,12 @@ namespace Gellybeans.Pathfinder
                     ["HP_DAMAGE"] = 0,
                     ["HP_NONLETHAL"] = 0,
 
-                    ["STR"] = 10,
-                    ["DEX"] = 10,
-                    ["CON"] = 10,
-                    ["INT"] = 10,
-                    ["WIS"] = 10,
-                    ["CHA"] = 10,
+                    ["STR"] = 12,
+                    ["DEX"] = 14,
+                    ["CON"] = 16,
+                    ["INT"] = 18,
+                    ["WIS"] = 8,
+                    ["CHA"] = 6,
 
                     //since damage and temporary bonuses apply symmetrical effects, the same field can be used for both. neat. :)
                     ["STR_TEMP"] = 0,
@@ -161,8 +149,18 @@ namespace Gellybeans.Pathfinder
                     ["SURVIVAL"] = 0,
                     ["SWIM"] = 0,
                     ["USEMAGICDEVICE"] = 0,
+                },
+
+                Expressions = new Dictionary<string, string>()
+                {
+                    ["STR_MOD"] = "(STR - 10) / 2",
+                    ["DEX_MOD"] = "(DEX - 10) / 2",
+                    ["CON_MOD"] = "(CON - 10) / 2",
+                    ["INT_MOD"] = "(INT - 10) / 2",
+                    ["WIS_MOD"] = "(WIS - 10) / 2",
+                    ["CHA_MOD"] = "(CHA - 10) / 2",
                 }
-            
+                
             };
 
             return statBlock;
