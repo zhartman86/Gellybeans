@@ -7,7 +7,12 @@ namespace Gellybeans.Pathfinder
     public class StatBlock : IContext
     {
 
-        
+        public Guid Id { get; set; }
+        public ulong Owner { get; set; }
+
+
+        public string CharacterName { get; set; } = "Name me"; 
+
         public Dictionary<string, Stat>     Stats       { get; private set; } = new Dictionary<string, Stat>();
         public Dictionary<string, string>   Expressions { get; private set; } = new Dictionary<string, string>();
 
@@ -17,16 +22,18 @@ namespace Gellybeans.Pathfinder
         public Dictionary<string, Buff>     Buffs       { get; set; } = new Dictionary<string, Buff>();
 
         public List<Attack>                 Attacks     { get; set; } = new List<Attack>();
-
-        private static Regex ValidVar = new Regex("^[A-Z_]{1,17}$");
-        
-        
+    
+     
         public int this[string statName]
         {
-            get 
+            get
             {
                 if(Stats.ContainsKey(statName)) return Stats[statName].Value;
                 return 0;
+            }
+            set
+            {
+                if(Stats.ContainsKey(statName)) Stats[statName].Base = value;
             }
         }
 
@@ -38,7 +45,7 @@ namespace Gellybeans.Pathfinder
 
             foreach(var mod in buff.Mods)
             {
-                Stats[mod.StatName].Bonuses.Add(mod.Bonus);
+                Stats[mod.StatName].AddBonus(mod.Bonus);
             }
         }
 
@@ -48,7 +55,7 @@ namespace Gellybeans.Pathfinder
 
             foreach(var mod in buff.Mods)
             {
-                Stats[mod.StatName].Bonuses.Remove(mod.Bonus);
+                Stats[mod.StatName].RemoveBonus(mod.Bonus);
             }
 
             Buffs.Remove(buff.Name);
@@ -86,10 +93,12 @@ namespace Gellybeans.Pathfinder
 
 
 
-        public static StatBlock DefaultPathfinder()
+        public static StatBlock DefaultPathfinder(string name)
         {
+            
             var statBlock = new StatBlock()
             {
+                CharacterName = name,
 
                 Info = new Dictionary<string, string>()
                 {
