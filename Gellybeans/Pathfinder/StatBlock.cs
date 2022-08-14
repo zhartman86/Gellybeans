@@ -15,11 +15,9 @@ namespace Gellybeans.Pathfinder
 
         public Dictionary<string, Stat>     Stats       { get; private set; } = new Dictionary<string, Stat>();
         public Dictionary<string, string>   Expressions { get; private set; } = new Dictionary<string, string>();
-
         public Dictionary<string, string>   Info        { get; private set; } = new Dictionary<string, string>();
         
         public List<Item>                   Inventory   { get; set; } = new List<Item>();
-        public Dictionary<string, Buff>     Buffs       { get; set; } = new Dictionary<string, Buff>();
 
         public List<Attack>                 Attacks     { get; set; } = new List<Attack>();
     
@@ -37,37 +35,26 @@ namespace Gellybeans.Pathfinder
             }
         }
 
-        public void AddBuff(Buff buff)
+        public void AddBonuses(List<StatModifier> bonuses)
         {
-            if(Buffs.ContainsKey(buff.Name)) return;
-
-            Buffs[buff.Name] = buff;
-
-            foreach(var mod in buff.Mods)
+            for(int i = 0; i < bonuses.Count; i++)
             {
-                Stats[mod.StatName].AddBonus(mod.Bonus);
+                Stats[bonuses[i].StatName].AddBonus(bonuses[i].Bonus);
             }
         }
 
-        public void RemoveBuff(Buff buff)
+        public void ClearBonus(string bonusName)
         {
-            if(!Buffs.ContainsKey(buff.Name)) return;
-
-            foreach(var mod in buff.Mods)
+            foreach(var stat in Stats.Values)
             {
-                Stats[mod.StatName].RemoveBonus(mod.Bonus);
+                for(int i = 0; i < stat.Bonuses.Count; i++)
+                {
+                    if(stat.Bonuses[i].Name == bonusName)
+                    {
+                        stat.RemoveBonus(stat.Bonuses[i]);
+                    }
+                }
             }
-
-            Buffs.Remove(buff.Name);
-        }
-
-        public void ClearBuffs()
-        {
-            foreach(var buff in Buffs.Values)
-            {
-                RemoveBuff(buff);              
-            }
-            Buffs.Clear();
         }
 
         public int Call(string methodName, int[] args) => methodName switch
@@ -76,9 +63,9 @@ namespace Gellybeans.Pathfinder
             "modulo"        => args[0] % args[1],
             "min"           => Math.Min(args[0], args[1]),
             "max"           => Math.Max(args[0], args[1]),
+            "clamp"         => Math.Clamp(args[0], args[1], args[2]),
             "abs"           => Math.Abs(args[0]),
             _               => 0
-
         };
 
         public int Resolve(string varName, StringBuilder sb)
@@ -95,7 +82,7 @@ namespace Gellybeans.Pathfinder
 
         public static StatBlock DefaultPathfinder(string name)
         {
-            
+
             var statBlock = new StatBlock()
             {
                 CharacterName = name,
@@ -120,16 +107,13 @@ namespace Gellybeans.Pathfinder
                     ["SIZE_MOD_STEALTH"] = 0,
 
                     ["HP_BASE"] = 0,
-                    ["HP_TEMP"] = 0,
-                    ["DAMAGE"] = 0,
-                    ["NONLETHAL"] = 0,
 
-                    ["STR"] = 12,
-                    ["DEX"] = 15,
-                    ["CON"] = 16,
-                    ["INT"] = 18,
-                    ["WIS"] = 8,
-                    ["CHA"] = 6,
+                    ["STR_SCORE"] = 12,
+                    ["DEX_SCORE"] = 15,
+                    ["CON_SCORE"] = 16,
+                    ["INT_SCORE"] = 18,
+                    ["WIS_SCORE"] = 8,
+                    ["CHA_SCORE"] = 6,
 
                     //since damage and temporary bonuses apply symmetrical effects, the same field can be used for both. neat. :)
                     ["STR_TEMP"] = 0,
@@ -143,12 +127,9 @@ namespace Gellybeans.Pathfinder
 
                     ["INIT"] = 0,
 
-                    ["AC"] = 10,
-                    ["AC_TOUCH"] = 10,
-                    ["AC_FLAT"] = 10,
-
+                    ["AC_BASE"] = 10,
                     ["AC_MAXDEX"] = 99,
-                    ["CHECK_PENALTY"] = 0,
+                    ["AC_PENALTY"] = 0,
 
                     ["FORT_BASE"] = 0,
                     ["REFLEX_BASE"] = 0,
@@ -156,6 +137,8 @@ namespace Gellybeans.Pathfinder
 
                     ["BAB"] = 0,
 
+                    ["ATK_BONUS"] = 0,
+                    ["DMG_BONUS"] = 0,
 
                     //skills
                     ["SK_ACR"] = 0,
@@ -194,54 +177,59 @@ namespace Gellybeans.Pathfinder
 
                 Expressions = new Dictionary<string, string>()
                 {
-                    ["ATK_M"]           = "1d20 + BAB + STR_MOD + SIZE_MOD + mod(STR_TEMP)",
-                    ["ATK_R"]           = "1d20 + BAB + DEX_MOD + SIZE_MOD + mod(DEX_TEMP)",
+                    ["ATK_M"]           = "1d20 + BAB + STR + SIZE_MOD + mod(STR_TEMP) + ATK_BONUS",
+                    ["ATK_R"]           = "1d20 + BAB + DEX + SIZE_MOD + mod(DEX_TEMP) + ATK_BONUS",
+
+                    ["LEVEL"]           = "0",
+                    ["HP"]              = "HP_BASE + (CON * LEVEL)",
+
+                    ["STR"]             = "mod(STR_SCORE)",
+                    ["DEX"]             = "mod(DEX_SCORE)",
+                    ["CON"]             = "mod(CON_SCORE)",
+                    ["INT"]             = "mod(INT_SCORE)",
+                    ["WIS"]             = "mod(WIS_SCORE)",
+                    ["CHA"]             = "mod(CHA_SCORE)",
+
+                    ["FORT"]            = "FORT_BASE + CON",
+                    ["REF"]             = "REFLEX_BASE + DEX",
+                    ["WILL"]            = "WILL_BASE + WIS",
+
+                    ["AC"]              = "AC_BASE + min(DEX, AC_MAXDEX)",
                     
-                    ["STR_MOD"]         = "mod(STR)",
-                    ["DEX_MOD"]         = "mod(DEX)",
-                    ["CON_MOD"]         = "mod(CON)",
-                    ["INT_MOD"]         = "mod(INT)",
-                    ["WIS_MOD"]         = "mod(WIS)",
-                    ["CHA_MOD"]         = "mod(CHA)",
+                    ["CMB"]             = "BAB + STR + SIZE_MOD",
+                    ["CMD"]             = "10 + BAB + STR + DEX + SIZE_MOD",
 
-                    ["FORT"]            = "FORT_BASE    + CON_MOD",
-                    ["REF"]             = "REFLEX_BASE  + DEX_MOD",
-                    ["WILL"]            = "WILL_BASE    + WIS_MOD",
-
-                    ["CMB"]             = "     BAB + STR_MOD +           SIZE_MOD",
-                    ["CMD"]             = "10 + BAB + STR_MOD + DEX_MOD + SIZE_MOD",
-
-                    ["ACROBATICS"]      = "DEX_MOD + SK_ACR + CHECK_PENALTY",
-                    ["APPRAISE"]        = "INT_MOD + SK_APR",
-                    ["BLUFF"]           = "CHA_MOD + SK_BLF",
-                    ["CLIMB"]           = "STR_MOD + SK_CLM + CHECK_PENALTY",
-                    ["DIPLOMACY"]       = "CHA_MOD + SK_DPL",
-                    ["DISABLEDEVICE"]   = "DEX_MOD + SK_DEV",
-                    ["DISGUISE"]        = "CHA_MOD + SK_DSG",
-                    ["ESCAPE"]          = "DEX_MOD + SK_ESC + CHECK_PENALTY",
-                    ["FLY"]             = "DEX_MOD + SK_FLY + CHECK_PENALTY" + "SIZE_MOD_FLY",
-                    ["HANDLEANIMAL"]    = "DEX_MOD + SK_HAN",
-                    ["HEAL"]            = "WIS_MOD + SK_HEA",
-                    ["INTIMIDATE"]      = "CHA_MOD + SK_INT",
-                    ["ARCANA"]          = "INT_MOD + SK_ARC",
-                    ["DUNGEONEERING"]   = "INT_MOD + SK_DUN",
-                    ["GEOGRAPHY"]       = "INT_MOD + SK_GEO",
-                    ["HISTORY"]         = "INT_MOD + SK_HIS",
-                    ["LOCAL"]           = "INT_MOD + SK_LOC",
-                    ["NATURE"]          = "INT_MOD + SK_NAT",
-                    ["NOBILITY"]        = "INT_MOD + SK_NOB",
-                    ["PLANES"]          = "INT_MOD + SK_PLA",
-                    ["RELIGION"]        = "INT_MOD + SK_REL",
-                    ["LINGUISTICS"]     = "INT_MOD + SK_LNG",
-                    ["PERCEPTION"]      = "WIS_MOD + SK_PER",
-                    ["RIDE"]            = "DEX_MOD + SK_RDE + CHECK_PENALTY",
-                    ["SENSEMOTIVE"]     = "WIS_MOD + SK_SMO",
-                    ["SLEIGHTOFHAND"]   = "DEX_MOD + SK_SLE + CHECK_PENALTY",
-                    ["SPELLCRAFT"]      = "INT_MOD + SK_SPL",
-                    ["STEALTH"]         = "DEX_MOD + SK_STL + CHECK_PENALTY" + "SIZE_MOD_STEALTH",
-                    ["SURVIVAL"]        = "WIS_MOD + SK_SUR",
-                    ["SWIM"]            = "STR_MOD + SK_SWM + CHECK_PENALTY",
-                    ["USEMAGICDEVICE"]  = "CHA_MOD + SK_UMD",
+                    ["ACROBATICS"]      = "DEX + SK_ACR + AC_PENALTY",
+                    ["APPRAISE"]        = "INT + SK_APR",
+                    ["BLUFF"]           = "CHA + SK_BLF",
+                    ["CLIMB"]           = "STR + SK_CLM + AC_PENALTY",
+                    ["DIPLOMACY"]       = "CHA + SK_DPL",
+                    ["DISABLEDEVICE"]   = "DEX + SK_DEV",
+                    ["DISGUISE"]        = "CHA + SK_DSG",
+                    ["ESCAPE"]          = "DEX + SK_ESC + AC_PENALTY",
+                    ["FLY"]             = "DEX + SK_FLY + AC_PENALTY" + "SIZE_MOD_FLY",
+                    ["HANDLEANIMAL"]    = "DEX + SK_HAN",
+                    ["HEAL"]            = "WIS + SK_HEA",
+                    ["INTIMIDATE"]      = "CHA + SK_INT",
+                    ["ARCANA"]          = "INT + SK_ARC",
+                    ["DUNGEONEERING"]   = "INT + SK_DUN",
+                    ["GEOGRAPHY"]       = "INT + SK_GEO",
+                    ["HISTORY"]         = "INT + SK_HIS",
+                    ["LOCAL"]           = "INT + SK_LOC",
+                    ["NATURE"]          = "INT + SK_NAT",
+                    ["NOBILITY"]        = "INT + SK_NOB",
+                    ["PLANES"]          = "INT + SK_PLA",
+                    ["RELIGION"]        = "INT + SK_REL",
+                    ["LINGUISTICS"]     = "INT + SK_LNG",
+                    ["PERCEPTION"]      = "WIS + SK_PER",
+                    ["RIDE"]            = "DEX + SK_RDE + AC_PENALTY",
+                    ["SENSEMOTIVE"]     = "WIS + SK_SMO",
+                    ["SLEIGHTOFHAND"]   = "DEX + SK_SLE + AC_PENALTY",
+                    ["SPELLCRAFT"]      = "INT + SK_SPL",
+                    ["STEALTH"]         = "DEX + SK_STL + AC_PENALTY" + "SIZE_MOD_STEALTH",
+                    ["SURVIVAL"]        = "WIS + SK_SUR",
+                    ["SWIM"]            = "STR + SK_SWM + AC_PENALTY",
+                    ["UMD"]             = "CHA + SK_UMD",
                 }
                 
             };

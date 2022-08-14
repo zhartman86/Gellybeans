@@ -41,6 +41,45 @@ namespace Gellybeans.Expressions
                     currentToken = TokenType.EOF;
                     return;
 
+                case '=':
+                    NextChar();
+                    if(currentChar == '=')
+                    {
+                        NextChar();
+                        currentToken = TokenType.Equals;
+                    }                    
+                    return;
+
+                case '!':
+                    NextChar();
+                    if(currentChar == '=')
+                    {
+                        NextChar();
+                        currentToken = TokenType.NotEquals;
+                    }
+                    return;
+                             
+                case '>':
+                    NextChar();
+                    if(currentChar == '=')
+                    {
+                        NextChar();
+                        currentToken = TokenType.GreaterEquals;
+                    }                       
+                    else currentToken = TokenType.Greater;
+                    return;
+                                
+                case '<':
+                    NextChar();
+                    if(currentChar == '=')
+                    {
+                        NextChar();
+                        currentToken = TokenType.LessEquals;
+                    }                  
+                    else currentToken = TokenType.Less;
+                    return;
+                
+                
                 case '+':
                     NextChar();
                     currentToken = TokenType.Add;
@@ -59,6 +98,11 @@ namespace Gellybeans.Expressions
                 case '/':
                     NextChar();
                     currentToken = TokenType.Div;
+                    return;
+
+                case '%':
+                    NextChar();
+                    currentToken = TokenType.Modulo;
                     return;
 
                 case '(':

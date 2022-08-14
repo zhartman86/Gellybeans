@@ -13,14 +13,58 @@ namespace Gellybeans.Expressions
 
         public ExpressionNode ParseExpr()
         {                     
-            var expr = ParseAddSub();
+            var expr = ParseEquals();
             if(tokenizer.Token != TokenType.EOF) throw new Exception("Unexpected character at end of expression.");
             return expr;
         }               
         
+        ExpressionNode ParseEquals()
+        {
+            var lhs = ParseGreaterLess();
+
+            while(true)
+            {
+                Func<int, int, int> op = null;
+
+                if(tokenizer.Token == TokenType.Equals)         { op = (a, b) => a == b ? 1 : 0; }
+                else if(tokenizer.Token == TokenType.NotEquals) { op = (a, b) => a != b ? 1 : 0; }
+
+                if(op == null) return lhs;
+
+                tokenizer.NextToken();
+
+                var rhs = ParseGreaterLess();
+
+                lhs = new BinaryNode(lhs, rhs, op);
+            }
+        }
+        
+        ExpressionNode ParseGreaterLess()
+        {
+            var lhs = ParseAddSub();
+
+            while(true)
+            {
+                Func<int, int, int> op = null;
+
+                if(tokenizer.Token == TokenType.Greater)            { op = (a, b) => a > b ? 1 : 0; }
+                else if(tokenizer.Token == TokenType.GreaterEquals) { op = (a, b) => a >= b ? 1 : 0; }
+                else if(tokenizer.Token == TokenType.Less)          { op = (a, b) => a < b ? 1 : 0; }
+                else if(tokenizer.Token == TokenType.LessEquals)    { op = (a, b) => a <= b ? 1 : 0; }
+
+                if(op == null) return lhs;
+
+                tokenizer.NextToken();
+
+                var rhs = ParseAddSub();
+
+                lhs = new BinaryNode(lhs, rhs, op);
+            }
+        }
+        
         ExpressionNode ParseAddSub()
         {
-            var lhs = ParseMulDiv();
+            var lhs = ParseMulDivMod();
 
             while(true)
             {
@@ -33,13 +77,13 @@ namespace Gellybeans.Expressions
 
                 tokenizer.NextToken();
 
-                var rhs = ParseMulDiv();
+                var rhs = ParseMulDivMod();
                 
                 lhs = new BinaryNode(lhs, rhs, op);
             }
         }
 
-        ExpressionNode ParseMulDiv()
+        ExpressionNode ParseMulDivMod()
         {
             var lhs = ParseUnary();
 
@@ -47,8 +91,9 @@ namespace Gellybeans.Expressions
             {
                 Func<int, int, int> op = null;
 
-                if(tokenizer.Token == TokenType.Mul)        { op = (a, b) => a * b; }
-                else if(tokenizer.Token == TokenType.Div)   { op = (a, b) => a / b; }
+                if(tokenizer.Token == TokenType.Mul)            { op = (a, b) => a * b; }
+                else if(tokenizer.Token == TokenType.Div)       { op = (a, b) => a / b; }
+                else if(tokenizer.Token == TokenType.Modulo)    { op = (a, b) => a % b; }
 
                 if(op == null) return lhs;
 

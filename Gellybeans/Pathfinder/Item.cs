@@ -6,9 +6,6 @@
         public string   Description { get; set; } = "";
         public float    Value       { get; set; } = 0;
         public float    Weight      { get; set; } = 0;
-        public bool     IsEquipped  { get; set; } = false;
-
-        public List<StatModifier> Modifiers     { get; set; } = null!;
 
         public static bool operator ==(Item a, Item b) { return a.Name == b.Name; }
         public static bool operator !=(Item a, Item b) { return !(a == b); }
