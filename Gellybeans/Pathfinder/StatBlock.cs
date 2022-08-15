@@ -69,10 +69,11 @@ namespace Gellybeans.Pathfinder
 
         public int Resolve(string varName, StringBuilder sb)
         {
-            if(Stats.ContainsKey(varName))
-                return this[varName];
-            else if(Expressions.ContainsKey(varName))
-                return Parser.Parse(Expressions[varName]).Eval(this, sb);
+            var toUpper = varName.ToUpper();
+            if(Stats.ContainsKey(toUpper))
+                return this[toUpper];
+            else if(Expressions.ContainsKey(toUpper))
+                return Parser.Parse(Expressions[toUpper]).Eval(this, sb);
             return 0;
         }
 
@@ -176,59 +177,59 @@ namespace Gellybeans.Pathfinder
 
                 Expressions = new Dictionary<string, string>()
                 {
-                    ["ATK_M"]           = "1d20 + BAB + STR + SIZE_MOD + mod(STR_TEMP) + ATK_BONUS",
-                    ["ATK_R"]           = "1d20 + BAB + DEX + SIZE_MOD + mod(DEX_TEMP) + ATK_BONUS",
+                    ["ATTACK_M"]            = "1d20 + BAB + STR + SIZE_MOD + mod(STR_TEMP) + ATK_BONUS",
+                    ["ATTACK_R"]            = "1d20 + BAB + DEX + SIZE_MOD + mod(DEX_TEMP) + ATK_BONUS",
 
-                    ["LEVEL"]           = "0",
-                    ["HP"]              = "HP_BASE + (CON * LEVEL)",
+                    ["LEVEL"]               = "0",
+                    ["HP"]                  = "HP_BASE + (CON * LEVEL)",
 
-                    ["STR"]             = "mod(STR_SCORE)",
-                    ["DEX"]             = "mod(DEX_SCORE)",
-                    ["CON"]             = "mod(CON_SCORE)",
-                    ["INT"]             = "mod(INT_SCORE)",
-                    ["WIS"]             = "mod(WIS_SCORE)",
-                    ["CHA"]             = "mod(CHA_SCORE)",
+                    ["STR"]                 = "mod(STR_SCORE)",
+                    ["DEX"]                 = "mod(DEX_SCORE)",
+                    ["CON"]                 = "mod(CON_SCORE)",
+                    ["INT"]                 = "mod(INT_SCORE)",
+                    ["WIS"]                 = "mod(WIS_SCORE)",
+                    ["CHA"]                 = "mod(CHA_SCORE)",
 
-                    ["FORT"]            = "FORT_BASE + CON",
-                    ["REF"]             = "REFLEX_BASE + DEX",
-                    ["WILL"]            = "WILL_BASE + WIS",
+                    ["FORT"]                = "1d20 + FORT_BASE + CON",
+                    ["REFLEX"]              = "1d20 + REFLEX_BASE + DEX",
+                    ["WILL"]                = "1d20 + WILL_BASE + WIS",
 
-                    ["AC"]              = "AC_BASE + min(DEX, AC_MAXDEX)",
+                    ["AC"]                  = "AC_BASE + min(DEX, AC_MAXDEX)",
                     
-                    ["CMB"]             = "BAB + STR + SIZE_MOD",
-                    ["CMD"]             = "10 + BAB + STR + DEX + SIZE_MOD",
+                    ["CMB"]                 = "1d20 + BAB + STR + SIZE_MOD",
+                    ["CMD"]                 = "10 + BAB + STR + DEX + SIZE_MOD",
 
-                    ["ACROBATICS"]      = "DEX + SK_ACR + AC_PENALTY",
-                    ["APPRAISE"]        = "INT + SK_APR",
-                    ["BLUFF"]           = "CHA + SK_BLF",
-                    ["CLIMB"]           = "STR + SK_CLM + AC_PENALTY",
-                    ["DIPLOMACY"]       = "CHA + SK_DPL",
-                    ["DISABLEDEVICE"]   = "DEX + SK_DEV",
-                    ["DISGUISE"]        = "CHA + SK_DSG",
-                    ["ESCAPE"]          = "DEX + SK_ESC + AC_PENALTY",
-                    ["FLY"]             = "DEX + SK_FLY + AC_PENALTY" + "SIZE_MOD_FLY",
-                    ["HANDLEANIMAL"]    = "DEX + SK_HAN",
-                    ["HEAL"]            = "WIS + SK_HEA",
-                    ["INTIMIDATE"]      = "CHA + SK_INT",
-                    ["ARCANA"]          = "INT + SK_ARC",
-                    ["DUNGEONEERING"]   = "INT + SK_DUN",
-                    ["GEOGRAPHY"]       = "INT + SK_GEO",
-                    ["HISTORY"]         = "INT + SK_HIS",
-                    ["LOCAL"]           = "INT + SK_LOC",
-                    ["NATURE"]          = "INT + SK_NAT",
-                    ["NOBILITY"]        = "INT + SK_NOB",
-                    ["PLANES"]          = "INT + SK_PLA",
-                    ["RELIGION"]        = "INT + SK_REL",
-                    ["LINGUISTICS"]     = "INT + SK_LNG",
-                    ["PERCEPTION"]      = "WIS + SK_PER",
-                    ["RIDE"]            = "DEX + SK_RDE + AC_PENALTY",
-                    ["SENSEMOTIVE"]     = "WIS + SK_SMO",
-                    ["SLEIGHTOFHAND"]   = "DEX + SK_SLE + AC_PENALTY",
-                    ["SPELLCRAFT"]      = "INT + SK_SPL",
-                    ["STEALTH"]         = "DEX + SK_STL + AC_PENALTY" + "SIZE_MOD_STEALTH",
-                    ["SURVIVAL"]        = "WIS + SK_SUR",
-                    ["SWIM"]            = "STR + SK_SWM + AC_PENALTY",
-                    ["UMD"]             = "CHA + SK_UMD",
+                    ["ACROBATICS"]          = "1d20 + DEX + SK_ACR + AC_PENALTY",
+                    ["APPRAISE"]            = "1d20 + INT + SK_APR",
+                    ["BLUFF"]               = "1d20 + CHA + SK_BLF",
+                    ["CLIMB"]               = "1d20 + STR + SK_CLM + AC_PENALTY",
+                    ["DIPLOMACY"]           = "1d20 + CHA + SK_DPL",
+                    ["DISABLE_DEVICE"]      = "1d20 + DEX + SK_DEV",
+                    ["DISGUISE"]            = "1d20 + CHA + SK_DSG",
+                    ["ESCAPE"]              = "1d20 + DEX + SK_ESC + AC_PENALTY",
+                    ["FLY"]                 = "1d20 + DEX + SK_FLY + AC_PENALTY" + "SIZE_MOD_FLY",
+                    ["HANDLE_ANIMAL"]       = "1d20 + DEX + SK_HAN",
+                    ["HEAL"]                = "1d20 + WIS + SK_HEA",
+                    ["INTIMIDATE"]          = "1d20 + CHA + SK_INT",
+                    ["ARCANA"]              = "1d20 + INT + SK_ARC",
+                    ["DUNGEONEERING"]       = "1d20 + INT + SK_DUN",
+                    ["GEOGRAPHY"]           = "1d20 + INT + SK_GEO",
+                    ["HISTORY"]             = "1d20 + INT + SK_HIS",
+                    ["LOCAL"]               = "1d20 + INT + SK_LOC",
+                    ["NATURE"]              = "1d20 + INT + SK_NAT",
+                    ["NOBILITY"]            = "1d20 + INT + SK_NOB",
+                    ["PLANES"]              = "1d20 + INT + SK_PLA",
+                    ["RELIGION"]            = "1d20 + INT + SK_REL",
+                    ["LINGUISTICS"]         = "1d20 + INT + SK_LNG",
+                    ["PERCEPTION"]          = "1d20 + WIS + SK_PER",
+                    ["RIDE"]                = "1d20 + DEX + SK_RDE + AC_PENALTY",
+                    ["SENSE_MOTIVE"]        = "1d20 + WIS + SK_SMO",
+                    ["SLEIGHT_OF_HAND"]     = "1d20 + DEX + SK_SLE + AC_PENALTY",
+                    ["SPELLCRAFT"]          = "1d20 + INT + SK_SPL",
+                    ["STEALTH"]             = "1d20 + DEX + SK_STL + AC_PENALTY" + "SIZE_MOD_STEALTH",
+                    ["SURVIVAL"]            = "1d20 + WIS + SK_SUR",
+                    ["SWIM"]                = "1d20 + STR + SK_SWM + AC_PENALTY",
+                    ["USE_MAGIC_DEVICE"]    = "1d20 + CHA + SK_UMD",
                 }
                 
             };
