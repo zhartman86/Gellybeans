@@ -60,7 +60,6 @@ namespace Gellybeans.Pathfinder
         public int Call(string methodName, int[] args) => methodName switch
         {
             "mod"           => (args[0] - 10) / 2,
-            "modulo"        => args[0] % args[1],
             "min"           => Math.Min(args[0], args[1]),
             "max"           => Math.Max(args[0], args[1]),
             "clamp"         => Math.Clamp(args[0], args[1], args[2]),

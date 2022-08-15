@@ -25,7 +25,7 @@ namespace Gellybeans.Expressions
             while(true)
             {
                 Func<int, int, int> op = null;
-
+                
                 if(tokenizer.Token == TokenType.Equals)         { op = (a, b) => a == b ? 1 : 0; }
                 else if(tokenizer.Token == TokenType.NotEquals) { op = (a, b) => a != b ? 1 : 0; }
 
