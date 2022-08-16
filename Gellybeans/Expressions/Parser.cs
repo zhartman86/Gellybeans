@@ -1,6 +1,4 @@
-﻿using System.Text;
-
-namespace Gellybeans.Expressions
+﻿namespace Gellybeans.Expressions
 {
     public class Parser
     {
@@ -12,11 +10,32 @@ namespace Gellybeans.Expressions
         }
 
         public ExpressionNode ParseExpr()
-        {                     
+        {
             var expr = ParseEquals();
             if(tokenizer.Token != TokenType.EOF) throw new Exception("Unexpected character at end of expression.");
             return expr;
         }               
+        
+        ExpressionNode ParseTernary()
+        {
+            var conditional = ParseEquals();
+
+            while(true)
+            {
+                Func<int, int, int, int> op = null;
+
+                if(tokenizer.Token == TokenType.Ternary) { op = (a, b, c) => a == 1 ? b : c; }
+
+                if(op == null) return conditional;
+
+                tokenizer.NextToken();
+
+                var lhs = ParseEquals();
+                var rhs = ParseEquals();
+
+                conditional = new TernaryNode(conditional, lhs, rhs, op);
+            }
+        }
         
         ExpressionNode ParseEquals()
         {
@@ -139,7 +158,7 @@ namespace Gellybeans.Expressions
             if(tokenizer.Token == TokenType.OpenPar)
             {
                 tokenizer.NextToken();
-                var node = ParseAddSub();
+                var node = ParseEquals();
                 
                 if(tokenizer.Token != TokenType.ClosePar) 
                     throw new Exception("Missing closed parens.");
@@ -181,7 +200,7 @@ namespace Gellybeans.Expressions
                     var args = new List<ExpressionNode>();
                     while(true)
                     {
-                        args.Add(ParseAddSub());
+                        args.Add(ParseEquals());
 
                         if(tokenizer.Token == TokenType.Comma)
                         {

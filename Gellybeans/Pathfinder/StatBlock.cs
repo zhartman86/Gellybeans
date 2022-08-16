@@ -64,12 +64,16 @@ namespace Gellybeans.Pathfinder
             "max"           => Math.Max(args[0], args[1]),
             "clamp"         => Math.Clamp(args[0], args[1], args[2]),
             "abs"           => Math.Abs(args[0]),
+            "if"            => args[0] == 1 ? args[1] : 0,
             _               => 0
         };
 
         public int Resolve(string varName, StringBuilder sb)
-        {
+        {           
             var toUpper = varName.ToUpper();
+            if(toUpper == "TRUE")   return 1;
+            if(toUpper == "FALSE")  return 0;
+            
             if(Stats.ContainsKey(toUpper))
                 return this[toUpper];
             else if(Expressions.ContainsKey(toUpper))
@@ -123,17 +127,16 @@ namespace Gellybeans.Pathfinder
                     ["WIS_TEMP"] = 0,
                     ["CHA_TEMP"] = 0,
 
-                    ["MOVE"] = 0,
+                    ["MOVE"]        = 0,
 
-                    ["INIT"] = 0,
+                    ["INITIATIVE"]  = 0,
 
-                    ["AC_BASE"] = 10,
-                    ["AC_MAXDEX"] = 99,
-                    ["AC_PENALTY"] = 0,
+                    ["ARMOR_CLASS"] = 10,
+                   
 
-                    ["FORT_BASE"] = 0,
-                    ["REFLEX_BASE"] = 0,
-                    ["WILL_BASE"] = 0,
+                    ["SAVE_FORT"]   = 0,
+                    ["SAVE_REFLEX"] = 0,
+                    ["SAVE_WILL"]   = 0,
 
                     ["BAB"] = 0,
 
@@ -194,8 +197,13 @@ namespace Gellybeans.Pathfinder
                     ["REFLEX"]              = "1d20 + REFLEX_BASE + DEX",
                     ["WILL"]                = "1d20 + WILL_BASE + WIS",
 
-                    ["AC"]                  = "AC_BASE + min(DEX, AC_MAXDEX)",
-                    
+                    ["INIT"]                = "1d20 + INITIATIVE + DEX",
+
+                    ["AC"]                  = "ARMOR_CLASS + min(DEX, AC_MAXDEX)",
+                    ["AC_MAXDEX"]           = "99",
+                    ["AC_PENALTY"]          = "0",
+
+
                     ["CMB"]                 = "1d20 + BAB + STR + SIZE_MOD",
                     ["CMD"]                 = "10 + BAB + STR + DEX + SIZE_MOD",
 
@@ -230,13 +238,133 @@ namespace Gellybeans.Pathfinder
                     ["SURVIVAL"]            = "1d20 + WIS + SK_SUR",
                     ["SWIM"]                = "1d20 + STR + SK_SWM + AC_PENALTY",
                     ["USE_MAGIC_DEVICE"]    = "1d20 + CHA + SK_UMD",
-                }
-                
+                }              
             };
 
             return statBlock;
         }
         
+        
+        public static StatBlock DefaultFifthEd(string name)
+        {
+            var statBlock = new StatBlock()
+            {
+                CharacterName = name,
+                Stats = new Dictionary<string, Stat>()
+                {
+
+                    ["STR_SCORE"] = 10,
+                    ["DEX_SCORE"] = 10,
+                    ["CON_SCORE"] = 10,
+                    ["INT_SCORE"] = 10,
+                    ["WIS_SCORE"] = 10,
+                    ["CHA_SCORE"] = 10,
+
+                    ["PROF"] = 0,
+
+                    ["AC_BASE"] = 10,
+                    ["AC_MAXDEX"] = 99,
+
+                    ["SK_ACR"] = 0,
+                    ["SK_ANI"] = 0,
+                    ["SK_ARC"] = 0,
+                    ["SK_ATH"] = 0,
+                    ["SK_DEC"] = 0,
+                    ["SK_HIS"] = 0,
+                    ["SK_INS"] = 0,
+                    ["SK_INT"] = 0,
+                    ["SK_INV"] = 0,
+                    ["SK_MED"] = 0,
+                    ["SK_NAT"] = 0,
+                    ["SK_PERC"] = 0,
+                    ["SK_PERF"] = 0,
+                    ["SK_PERS"] = 0,
+                    ["SK_REL"] = 0,
+                    ["SK_SLT"] = 0,
+                    ["SK_STL"] = 0,
+                    ["SK_SUR"] = 0,
+
+                    ["ATK_BONUS"] = 0,
+                },
+
+                Expressions = new Dictionary<string, string>()
+                {
+                    //skills
+                    ["ACROBATICS"]      = "1d20 + DEX + if(PROF_ACROBATICS, PROF_BONUS)",
+                    ["HANDLEANIMAL"]    = "1d20 + WIS + if(PROF_HANDLEANIMAL, PROF_BONUS)",
+                    ["ARCANA"]          = "1d20 + INT",
+                    ["ATHLETICS"]       = "1d20 + STR",
+                    ["DECEPTION"]       = "1d20 + CHA",
+                    ["HISTORY"]         = "1d20 + INT",
+                    ["INSIGHT"]         = "1d20 + WIS",
+                    ["INTIMIDATION"]    = "1d20 + CHA",
+                    ["INVESTIGATION"]   = "1d20 + INT",
+                    ["MEDICINE"]        = "1d20 + WIS",
+                    ["NATURE"]          = "1d20 + INT",
+                    ["PERCEPTION"]      = "1d20 + WIS",
+                    ["PERFORM"]         = "1d20 + CHA",
+                    ["PERSUASION"]      = "1d20 + CHA",
+                    ["RELIGION"]        = "1d20 + INT",
+                    ["SLEIGHT"]         = "1d20 + DEX",
+                    ["STEALTH"]         = "1d20 + DEX",
+                    ["SURVIVIAL"]       = "1d20 + WIS",
+
+                    ["PASSIVE"] = "10 + WIS + if(PROF_PERCEPTION, PROF_BONUS)",
+
+                    ["ATK_S"] = "1d20 + STR + PROF_BONUS + ATK_BONUS",
+                    ["ATK_D"] = "1d20 + DEX + PROF_BONUS + ATK_BONUS",
+                    ["ATK_I"] = "1d20 + INT + PROF_BONUS + ATK_BONUS",
+                    ["ATK_W"] = "1d20 + WIS + PROF_BONUS + ATK_BONUS",
+                    ["ATK_C"] = "1d20 + CHA + PROF_BONUS + ATK_BONUS",                  
+
+                    ["STR"] = "mod(STR_SCORE)",
+                    ["DEX"] = "mod(DEX_SCORE)",
+                    ["CON"] = "mod(CON_SCORE)",
+                    ["INT"] = "mod(INT_SCORE)",
+                    ["WIS"] = "mod(WIS_SCORE)",
+                    ["CHA"] = "mod(CHA_SCORE)",
+
+                    ["SAVE_STR"] = "1d20 + STR + if(PROF_SAVE_STR, PROF_BONUS)", 
+                    ["SAVE_DEX"] = "1d20 + DEX + if(PROF_SAVE_DEX, PROF_BONUS)",
+                    ["SAVE_CON"] = "1d20 + CON + if(PROF_SAVE_CON, PROF_BONUS)",
+                    ["SAVE_INT"] = "1d20 + INT + if(PROF_SAVE_INT, PROF_BONUS)",
+                    ["SAVE_WIS"] = "1d20 + WIS + if(PROF_SAVE_WIS, PROF_BONUS)",
+                    ["SAVE_CHA"] = "1d20 + CHA + if(PROF_SAVE_CHA, PROF_BONUS)",
+
+                    ["INIT"]    = "1d20 + DEX",
+                    ["AC"]      = "AC_BASE + min(DEX, AC_MAXDEX)",
+
+                    
+                    ["PROF_STR"] = "FALSE",
+                    ["PROF_DEX"] = "FALSE",
+                    ["PROF_CON"] = "FALSE",
+                    ["PROF_INT"] = "FALSE",
+                    ["PROF_WIS"] = "FALSE",
+                    ["PROF_CHA"] = "FALSE",
+                    ["PROF_ACROBATICS"] = "FALSE",
+                    ["PROF_HANDLEANIMAL"] = "FALSE",
+                    ["PROF_ARCANA"] = "FALSE",
+                    ["PROF_ATHLETICS"] = "FALSE",
+                    ["PROF_DECEPTION"] = "FALSE",
+                    ["PROF_HISTORY"] = "FALSE",
+                    ["PROF_INSIGHT"] = "FALSE",
+                    ["PROF_INTIMIDATION"] = "FALSE",
+                    ["PROF_INVESTIGATION"] = "FALSE",
+                    ["PROF_MEDICINE"] = "FALSE",
+                    ["PROF_NATURE"] = "FALSE",
+                    ["PROF_PERCEPTION"] = "FALSE",
+                    ["PROF_PERFORM"] = "FALSE",
+                    ["PROF_PERSUASION"] = "FALSE",
+                    ["PROF_RELIGION"] = "FALSE",
+                    ["PROF_SLEIGHT"] = "FALSE",
+                    ["PROF_STEALTH"] = "FALSE",
+                    ["PROF_SURVIVIAL"] = "FALSE",
+                }
+            };
+
+            return statBlock;
+        }
+    
     }
    
 }

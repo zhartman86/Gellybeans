@@ -5,6 +5,7 @@ namespace Gellybeans.Expressions
     public class UnaryNode : ExpressionNode
     {
         ExpressionNode rhs;
+        
         Func<int, int> op;
 
         public UnaryNode(ExpressionNode rhs, Func<int, int> op)

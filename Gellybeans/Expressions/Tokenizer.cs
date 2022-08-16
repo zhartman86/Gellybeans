@@ -40,6 +40,7 @@ namespace Gellybeans.Expressions
                 case '\0':
                     currentToken = TokenType.EOF;
                     return;
+              
 
                 case '=':
                     NextChar();
@@ -77,8 +78,7 @@ namespace Gellybeans.Expressions
                         currentToken = TokenType.LessEquals;
                     }                  
                     else currentToken = TokenType.Less;
-                    return;
-                
+                    return;              
                 
                 case '+':
                     NextChar();

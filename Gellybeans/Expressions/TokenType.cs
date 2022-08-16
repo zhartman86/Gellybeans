@@ -8,6 +8,7 @@ namespace Gellybeans.Expressions
 {
     public enum TokenType
     {
+        Ternary,
         Greater,
         GreaterEquals,
         Less,
