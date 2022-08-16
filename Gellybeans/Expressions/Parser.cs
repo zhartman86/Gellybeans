@@ -11,7 +11,7 @@
 
         public ExpressionNode ParseExpr()
         {
-            var expr = ParseEquals();
+            var expr = ParseAssignment();
             if(tokenizer.Token != TokenType.EOF) throw new Exception("Unexpected character at end of expression.");
             return expr;
         }               
@@ -36,6 +36,59 @@
                 conditional = new TernaryNode(conditional, lhs, rhs, op);
             }
         }
+        
+        ExpressionNode ParseAssignment()
+        {
+            if(tokenizer.Token == TokenType.Var)
+            {
+                string lhs = tokenizer.Identifier;
+
+                tokenizer.NextToken();
+                if(tokenizer.Token == TokenType.AssignEquals || tokenizer.Token == TokenType.AssignAdd || tokenizer.Token == TokenType.AssignSub || 
+                                        tokenizer.Token == TokenType.AssignDiv || tokenizer.Token == TokenType.AssignMul || tokenizer.Token == TokenType.AssignMod)
+                {
+                    var type = tokenizer.Token;
+                    tokenizer.NextToken();
+                    var rhs = ParseEquals();
+                    var lh = new AssignNode(lhs, rhs, type);
+                    return lh;
+                }
+
+                if(tokenizer.Token != TokenType.OpenPar)
+                {
+                    return new VarNode(lhs);
+                }
+
+                else
+                {
+                    tokenizer.NextToken();
+
+                    var args = new List<ExpressionNode>();
+                    while(true)
+                    {
+                        args.Add(ParseEquals());
+
+                        if(tokenizer.Token == TokenType.Comma)
+                        {
+                            tokenizer.NextToken();
+                            continue;
+                        }
+
+                        break;
+                    }
+
+                    if(tokenizer.Token != TokenType.ClosePar)
+                        throw new Exception("Missing close parens.");
+
+                    tokenizer.NextToken();
+
+                    return new FunctionNode(lhs, args.ToArray());
+                }
+
+            }
+            return ParseEquals();
+        }
+        
         
         ExpressionNode ParseEquals()
         {
@@ -222,7 +275,7 @@
 
             throw new Exception($"Unexpected symbol: {tokenizer.Token}");
         }
-    
+     
         public static ExpressionNode Parse(string expr)
         {
             return Parse(new Tokenizer(new StringReader(expr)));
@@ -233,5 +286,8 @@
             var parser = new Parser(tokenizer);
             return parser.ParseExpr();
         }
+    
+    
+        
     }
 }

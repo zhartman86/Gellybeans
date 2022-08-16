@@ -11,7 +11,7 @@ namespace Gellybeans.Expressions
         TokenType   currentToken;
         
         int     number;
-        string  identifier;
+        string  identifier = "";
 
 
         public TokenType    Token       { get { return currentToken; } }       
@@ -48,7 +48,8 @@ namespace Gellybeans.Expressions
                     {
                         NextChar();
                         currentToken = TokenType.Equals;
-                    }                    
+                    }
+                    else currentToken = TokenType.AssignEquals;
                     return;
 
                 case '!':
@@ -82,27 +83,52 @@ namespace Gellybeans.Expressions
                 
                 case '+':
                     NextChar();
-                    currentToken = TokenType.Add;
+                    if(currentChar == '=')
+                    {
+                        NextChar();
+                        currentToken = TokenType.AssignAdd;
+                    }
+                    else currentToken = TokenType.Add;
                     return;
 
                 case '-':
                     NextChar();
-                    currentToken = TokenType.Sub;
+                    if(currentChar == '=')
+                    {
+                        NextChar();
+                        currentToken = TokenType.AssignSub;
+                    }
+                    else currentToken = TokenType.Sub;
                     return;
 
                 case '*':
                     NextChar();
-                    currentToken = TokenType.Mul;
+                    if(currentChar == '=')
+                    {
+                        NextChar();
+                        currentToken = TokenType.AssignMul;
+                    }
+                    else currentToken = TokenType.Mul;
                     return;
 
                 case '/':
                     NextChar();
-                    currentToken = TokenType.Div;
+                    if(currentChar == '=')
+                    {
+                        NextChar();
+                        currentToken = TokenType.AssignDiv;
+                    }
+                    else currentToken = TokenType.Div;
                     return;
 
                 case '%':
                     NextChar();
-                    currentToken = TokenType.Modulo;
+                    if(currentChar == '=')
+                    {
+                        NextChar();
+                        currentToken = TokenType.AssignMod;
+                    }
+                    else currentToken = TokenType.Modulo;
                     return;
 
                 case '(':

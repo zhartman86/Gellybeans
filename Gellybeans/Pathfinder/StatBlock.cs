@@ -81,6 +81,48 @@ namespace Gellybeans.Pathfinder
             return 0;
         }
 
+        public int Assign(string statName, int assignment, TokenType assignType, StringBuilder sb)
+        {
+            var toUpper = statName.ToUpper();
+            if(Stats.ContainsKey(toUpper))
+            {               
+                switch(assignType)
+                {
+                    case TokenType.AssignEquals:
+                        this[toUpper] = assignment;
+                        break;
+
+                    case TokenType.AssignAdd:
+                        this[toUpper] += assignment;
+                        break;
+
+                    case TokenType.AssignSub:
+                        this[toUpper] -= assignment;
+                        break;
+
+                    case TokenType.AssignMul:
+                        this[toUpper] *= assignment;
+                        break;
+
+                    case TokenType.AssignDiv:
+                        this[toUpper] /= assignment;
+                        break;
+
+                    case TokenType.AssignMod:
+                        this[toUpper] %= assignment;
+                        break;
+                }
+                sb.AppendLine($"{statName} set to {Stats[toUpper].Base}");
+                return Stats[toUpper].Base;
+            }
+            if(Expressions.ContainsKey(toUpper))
+            {
+                sb.AppendLine("Cannot assign value to expression. Use /var Set-Expression instead.");
+                return -99;
+            }
+            sb.AppendLine("Value not found.");
+            return -99;           
+        }
 
 
 
@@ -105,12 +147,17 @@ namespace Gellybeans.Pathfinder
 
                 Stats = new Dictionary<string, Stat>()
                 {
+                    ["LEVEL"] = 1,
+                    
                     ["SIZE_MOD"] = 0,
                     ["SIZE_MOD_CM"] = 0,
                     ["SIZE_MOD_FLY"] = 0,
                     ["SIZE_MOD_STEALTH"] = 0,
 
                     ["HP_BASE"] = 0,
+                    ["HP_TEMP"] = 0,
+                    ["HP_DMG"] = 0,
+
 
                     ["STR_SCORE"] = 12,
                     ["DEX_SCORE"] = 15,
@@ -131,7 +178,7 @@ namespace Gellybeans.Pathfinder
 
                     ["INITIATIVE"]  = 0,
 
-                    ["ARMOR_CLASS"] = 10,
+                    ["AC_BONUS"] = 0,
                    
 
                     ["SAVE_FORT"]   = 0,
@@ -183,7 +230,7 @@ namespace Gellybeans.Pathfinder
                     ["ATTACK_M"]            = "1d20 + BAB + STR + SIZE_MOD + mod(STR_TEMP) + ATK_BONUS",
                     ["ATTACK_R"]            = "1d20 + BAB + DEX + SIZE_MOD + mod(DEX_TEMP) + ATK_BONUS",
 
-                    ["LEVEL"]               = "0",
+                    
                     ["HP"]                  = "HP_BASE + (CON * LEVEL)",
 
                     ["STR"]                 = "mod(STR_SCORE)",
@@ -199,7 +246,7 @@ namespace Gellybeans.Pathfinder
 
                     ["INIT"]                = "1d20 + INITIATIVE + DEX",
 
-                    ["AC"]                  = "ARMOR_CLASS + min(DEX, AC_MAXDEX)",
+                    ["AC"]                  = "ARMOR_BONUS + min(DEX, AC_MAXDEX)",
                     ["AC_MAXDEX"]           = "99",
                     ["AC_PENALTY"]          = "0",
 
