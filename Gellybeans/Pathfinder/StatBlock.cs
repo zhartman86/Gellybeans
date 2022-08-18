@@ -10,17 +10,19 @@ namespace Gellybeans.Pathfinder
         public Guid Id { get; set; }
         public ulong Owner { get; set; }
 
+        public event EventHandler<string> ValueAssigned;
+        void OnValueAssigned(string statChanged) { ValueAssigned?.Invoke(this, statChanged); }
 
         public string CharacterName { get; set; } = "Name me"; 
 
-        public Dictionary<string, Stat>     Stats       { get; private set; } = new Dictionary<string, Stat>();
-        public Dictionary<string, string>   Expressions { get; private set; } = new Dictionary<string, string>();
-        public Dictionary<string, string>   Info        { get; private set; } = new Dictionary<string, string>();
+        public Dictionary<string, Stat>     Stats       { get; private set; }   = new Dictionary<string, Stat>();    
+        public Dictionary<string, string>   Expressions { get; private set; }   = new Dictionary<string, string>();
+        public Dictionary<string, Attack>   Attacks     { get; private set; }   = new Dictionary<string, Attack>();
+        public Dictionary<string, string>   Info        { get; private set; }   = new Dictionary<string, string>();
         
         public List<Item>                   Inventory   { get; set; } = new List<Item>();
 
-        public List<Attack>                 Attacks     { get; set; } = new List<Attack>();
-    
+        
      
         public int this[string statName]
         {
@@ -34,6 +36,7 @@ namespace Gellybeans.Pathfinder
                 if(Stats.ContainsKey(statName)) Stats[statName].Base = value;
             }
         }
+
 
         public void AddBonuses(List<StatModifier> bonuses)
         {
@@ -69,7 +72,9 @@ namespace Gellybeans.Pathfinder
         };
 
         public int Resolve(string varName, StringBuilder sb)
-        {           
+        {
+            if(Attacks.ContainsKey(varName)) return ResolveAttack(varName, sb);
+            
             var toUpper = varName.ToUpper();
             if(toUpper == "TRUE")   return 1;
             if(toUpper == "FALSE")  return 0;
@@ -84,46 +89,75 @@ namespace Gellybeans.Pathfinder
         public int Assign(string statName, int assignment, TokenType assignType, StringBuilder sb)
         {
             var toUpper = statName.ToUpper();
-            if(Stats.ContainsKey(toUpper))
-            {               
-                switch(assignType)
-                {
-                    case TokenType.AssignEquals:
-                        this[toUpper] = assignment;
-                        break;
-
-                    case TokenType.AssignAdd:
-                        this[toUpper] += assignment;
-                        break;
-
-                    case TokenType.AssignSub:
-                        this[toUpper] -= assignment;
-                        break;
-
-                    case TokenType.AssignMul:
-                        this[toUpper] *= assignment;
-                        break;
-
-                    case TokenType.AssignDiv:
-                        this[toUpper] /= assignment;
-                        break;
-
-                    case TokenType.AssignMod:
-                        this[toUpper] %= assignment;
-                        break;
-                }
-                sb.AppendLine($"{statName} set to {Stats[toUpper].Base}");
-                return Stats[toUpper].Base;
-            }
             if(Expressions.ContainsKey(toUpper))
             {
                 sb.AppendLine("Cannot assign value to expression. Use /var Set-Expression instead.");
                 return -99;
             }
-            sb.AppendLine("Value not found.");
-            return -99;           
+
+            if(!Stats.ContainsKey(toUpper)) Stats[toUpper] = 0;
+
+            switch(assignType)
+            {
+                case TokenType.AssignEquals:
+                    this[toUpper] = assignment;
+                    break;
+
+                case TokenType.AssignAdd:
+                    this[toUpper] += assignment;
+                    break;
+
+                case TokenType.AssignSub:
+                    this[toUpper] -= assignment;
+                    break;
+
+                case TokenType.AssignMul:
+                    this[toUpper] *= assignment;
+                    break;
+
+                case TokenType.AssignDiv:
+                    this[toUpper] /= assignment;
+                    break;
+
+                case TokenType.AssignMod:
+                    this[toUpper] %= assignment;
+                    break;
+            }
+            sb.AppendLine($"{statName} set to {Stats[toUpper].Base}");
+            OnValueAssigned(statName);
+            return Stats[toUpper].Base;          
         }
 
+        int ResolveAttack(string attackName, StringBuilder sb)
+        {
+            if(Attacks.ContainsKey(attackName))
+            {
+                Console.WriteLine(attackName  + ":TEST");
+                var attack = Attacks[attackName];
+                
+                var random = new Random();
+
+                var roll = random.Next(1, attack.Sides + 1);                
+               
+                var atkBonus = Parser.Parse(attack.ToHitExpr).Eval(this, sb);
+                sb.AppendLine   ($"Hit: [{roll}] + {atkBonus} = {roll + atkBonus}");            
+                sb.Append       ($"Dmg: "); var damageExpr = Parser.Parse(attack.DamageExpr).Eval(this, sb); sb.AppendLine($" = {damageExpr}"); 
+                sb.AppendLine();
+                
+               
+                
+                if(roll > attack.CritRange)
+                {
+                    int conf = random.Next(1, attack.Sides + 1);
+                    if(attack.Confirm) sb.AppendLine($"**CONFIRM**: [{conf}] + {atkBonus} = {conf + atkBonus}");
+
+                    sb.Append("**CRIT**: "); var critExpr = Parser.Parse(attack.CritExpr).Eval(this, sb); sb.AppendLine($" = {critExpr}");                   
+                }
+
+                return roll;
+            }
+            return 0;
+        }
 
 
         public static StatBlock DefaultPathfinder(string name)
@@ -143,6 +177,11 @@ namespace Gellybeans.Pathfinder
                     ["HAIR"] = "",
                     ["EYES"] = "",
                     ["BIO"] = ""
+                },
+
+                Attacks = new Dictionary<string, Attack>()
+                {
+                    { "$ATK_TEST", new Attack(20,"ATK_M","2d6","4d6",17) }
                 },
 
                 Stats = new Dictionary<string, Stat>()
@@ -227,8 +266,8 @@ namespace Gellybeans.Pathfinder
 
                 Expressions = new Dictionary<string, string>()
                 {
-                    ["ATTACK_M"]            = "1d20 + BAB + STR + SIZE_MOD + mod(STR_TEMP) + ATK_BONUS",
-                    ["ATTACK_R"]            = "1d20 + BAB + DEX + SIZE_MOD + mod(DEX_TEMP) + ATK_BONUS",
+                    ["ATK_M"]            = "BAB + STR + SIZE_MOD (STR_TEMP / 2) + ATK_BONUS",
+                    ["ATK_R"]            = "BAB + DEX + SIZE_MOD (DEX_TEMP / 2) + ATK_BONUS",
 
                     
                     ["HP"]                  = "HP_BASE + (CON * LEVEL)",
@@ -259,11 +298,11 @@ namespace Gellybeans.Pathfinder
                     ["BLUFF"]               = "1d20 + CHA + SK_BLF",
                     ["CLIMB"]               = "1d20 + STR + SK_CLM + AC_PENALTY",
                     ["DIPLOMACY"]           = "1d20 + CHA + SK_DPL",
-                    ["DISABLE_DEVICE"]      = "1d20 + DEX + SK_DEV",
+                    ["DISABLE"]             = "1d20 + DEX + SK_DEV",
                     ["DISGUISE"]            = "1d20 + CHA + SK_DSG",
                     ["ESCAPE"]              = "1d20 + DEX + SK_ESC + AC_PENALTY",
                     ["FLY"]                 = "1d20 + DEX + SK_FLY + AC_PENALTY" + "SIZE_MOD_FLY",
-                    ["HANDLE_ANIMAL"]       = "1d20 + DEX + SK_HAN",
+                    ["HANDLE"]              = "1d20 + DEX + SK_HAN",
                     ["HEAL"]                = "1d20 + WIS + SK_HEA",
                     ["INTIMIDATE"]          = "1d20 + CHA + SK_INT",
                     ["ARCANA"]              = "1d20 + INT + SK_ARC",
@@ -278,13 +317,13 @@ namespace Gellybeans.Pathfinder
                     ["LINGUISTICS"]         = "1d20 + INT + SK_LNG",
                     ["PERCEPTION"]          = "1d20 + WIS + SK_PER",
                     ["RIDE"]                = "1d20 + DEX + SK_RDE + AC_PENALTY",
-                    ["SENSE_MOTIVE"]        = "1d20 + WIS + SK_SMO",
-                    ["SLEIGHT_OF_HAND"]     = "1d20 + DEX + SK_SLE + AC_PENALTY",
+                    ["MOTIVE"]              = "1d20 + WIS + SK_SMO",
+                    ["SLEIGHT"]             = "1d20 + DEX + SK_SLE + AC_PENALTY",
                     ["SPELLCRAFT"]          = "1d20 + INT + SK_SPL",
                     ["STEALTH"]             = "1d20 + DEX + SK_STL + AC_PENALTY" + "SIZE_MOD_STEALTH",
                     ["SURVIVAL"]            = "1d20 + WIS + SK_SUR",
                     ["SWIM"]                = "1d20 + STR + SK_SWM + AC_PENALTY",
-                    ["USE_MAGIC_DEVICE"]    = "1d20 + CHA + SK_UMD",
+                    ["UMD"]                 = "1d20 + CHA + SK_UMD",
                 }              
             };
 

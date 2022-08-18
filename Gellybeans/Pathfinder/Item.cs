@@ -7,6 +7,8 @@
         public float    Value       { get; set; } = 0;
         public float    Weight      { get; set; } = 0;
 
+        public bool     isEquipped  { get; set; } = false;
+
         public static bool operator ==(Item a, Item b) { return a.Name == b.Name; }
         public static bool operator !=(Item a, Item b) { return !(a == b); }
 

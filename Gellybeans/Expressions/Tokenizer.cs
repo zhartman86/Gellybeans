@@ -41,7 +41,7 @@ namespace Gellybeans.Expressions
                     currentToken = TokenType.EOF;
                     return;
               
-
+                
                 case '=':
                     NextChar();
                     if(currentChar == '=')
@@ -147,20 +147,26 @@ namespace Gellybeans.Expressions
                     return;
             }
             
-            if(char.IsDigit(currentChar) || currentChar == 'd')
+            if(char.IsDigit(currentChar) || currentChar == 'd' || currentChar == 'D')
             {              
                 var builder = new StringBuilder();
 
                 bool hasD = false;
                 
-                while(char.IsDigit(currentChar) || (!hasD && currentChar == 'd'))
+                while(char.IsDigit(currentChar) || (!hasD && currentChar == 'd') || (!hasD && currentChar == 'D'))
                 {
                     builder.Append(currentChar);
-                    hasD = currentChar == 'd';
+                    hasD = currentChar == 'd' || currentChar == 'D';
                     NextChar();
+                    if(currentChar == 'r')
+                    {
+                        builder.Append(currentChar);
+                        NextChar();
+                    }                       
                 }
 
-                if(builder.ToString().Contains('d'))
+                var bts = builder.ToString();
+                if(bts.Contains('d') || bts.Contains('D'))
                 {
                     currentToken = TokenType.Dice;
                     identifier = builder.ToString();
@@ -174,11 +180,11 @@ namespace Gellybeans.Expressions
                 }                    
             }
 
-            if(char.IsLetter(currentChar) || currentChar == '_')
+            if(char.IsLetter(currentChar) || currentChar == '_' || currentChar == '$')
             {
                 var builder = new StringBuilder();
 
-                while(char.IsLetterOrDigit(currentChar) || currentChar == '_')
+                while(char.IsLetterOrDigit(currentChar) || currentChar == '_' || currentChar == '$')
                 {
                     builder.Append(currentChar);
                     NextChar();
