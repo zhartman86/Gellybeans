@@ -7,7 +7,6 @@ namespace Gellybeans.Expressions
         int count;
         int sides;
 
-        public int Critical     { get; init; }  = 999999;
         public int Reroll       { get; init; }  = 0;
         public int Keep         { get; init; }  = 0;
 
@@ -40,24 +39,20 @@ namespace Gellybeans.Expressions
                     r = random.Next(1, sides + 1);                 
                 }
 
-
                 total += r;
-                results.Add(r);
-            
-                
+                results.Add(r);            
             }             
 
             if(sb != null)
             {
+                sb.AppendLine();
                 sb.Append(ToString() + ": ");
                 for(int i = 0; i < results.Count; i++)
                 {
-                    sb.Append(results[i] > Critical ? $"[**{results[i]}**]" : $"[{results[i]}]");
+                    sb.Append($"[{results[i]}]");
                 }
-                if(rerolled) sb.Append($" ({rerolledResults})");                              
-               
+                if(rerolled) sb.Append($" ({rerolledResults})");
             }
-
 
             return total;
         }
@@ -66,8 +61,7 @@ namespace Gellybeans.Expressions
         {
             return count + "d" + sides;
         }
-    
-    
+        
         public static DiceNode operator *(DiceNode node, int multiplier)
         {
             return new DiceNode(node.count * multiplier, node.sides) { Keep = node.Keep, Reroll = node.Reroll};

@@ -2,6 +2,7 @@
 {
     public class Attack
     {   
+        public string   AttackName  { get; init; }
         public string   ToHitExpr   { get; init; } = "ATK_M + 1";
         public string   DamageExpr  { get; init; } = "1d1";
         public string   CritExpr    { get; init; } = "2d1";
@@ -11,13 +12,26 @@
 
 
         public Attack() { }
-        public Attack(int sides, string toHitExpr, string damageExpr, string critExpr, int critRange)
+        public Attack(string atkName, int sides, string toHitExpr, string damageExpr, string critExpr, int critRange)
         {
+            AttackName  = atkName;
             Sides       = sides;
             ToHitExpr   = toHitExpr;
-            DamageExpr  = damageExpr;
-            CritRange   = critRange;
+            DamageExpr  = damageExpr;     
             CritExpr    = critExpr;
+            CritRange   = critRange;
+        }
+
+        public override string ToString()
+        {
+            var confirm = Confirm ? "YES" : "NO";
+            return
+                @$"__{AttackName}__      
+                HIT:       1d{Sides} + {ToHitExpr}
+                DMG:       {DamageExpr}
+                CRIT.DMG:  {CritExpr}
+                CRIT.RNG:  {CritRange}
+                CONFIRM:   {confirm}";
         }
     }
 }

@@ -145,28 +145,28 @@ namespace Gellybeans.Expressions
                     NextChar();
                     currentToken = TokenType.Comma;
                     return;
-            }
+            }       
             
-            if(char.IsDigit(currentChar) || currentChar == 'd' || currentChar == 'D')
-            {              
+            if(char.IsDigit(currentChar) || currentChar == 'd')
+            {
                 var builder = new StringBuilder();
 
                 bool hasD = false;
-                
-                while(char.IsDigit(currentChar) || (!hasD && currentChar == 'd') || (!hasD && currentChar == 'D'))
+
+                while(char.IsDigit(currentChar) || (!hasD && currentChar == 'd'))
                 {
                     builder.Append(currentChar);
-                    hasD = currentChar == 'd' || currentChar == 'D';
+                    hasD = currentChar == 'd';
                     NextChar();
                     if(currentChar == 'r')
                     {
                         builder.Append(currentChar);
                         NextChar();
-                    }                       
+                    }
                 }
 
                 var bts = builder.ToString();
-                if(bts.Contains('d') || bts.Contains('D'))
+                if(bts.Contains('d'))
                 {
                     currentToken = TokenType.Dice;
                     identifier = builder.ToString();
@@ -177,7 +177,7 @@ namespace Gellybeans.Expressions
                     number = int.Parse(builder.ToString(), CultureInfo.InvariantCulture);
                     currentToken = TokenType.Number;
                     return;
-                }                    
+                }
             }
 
             if(char.IsLetter(currentChar) || currentChar == '_' || currentChar == '$')

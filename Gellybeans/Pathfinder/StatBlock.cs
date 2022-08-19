@@ -132,28 +132,33 @@ namespace Gellybeans.Pathfinder
         {
             if(Attacks.ContainsKey(attackName))
             {
-                Console.WriteLine(attackName  + ":TEST");
                 var attack = Attacks[attackName];
-                
                 var random = new Random();
 
-                var roll = random.Next(1, attack.Sides + 1);                
-               
+                var roll = random.Next(1, attack.Sides + 1);
                 var atkBonus = Parser.Parse(attack.ToHitExpr).Eval(this, sb);
-                sb.AppendLine   ($"Hit: [{roll}] + {atkBonus} = {roll + atkBonus}");            
-                sb.Append       ($"Dmg: "); var damageExpr = Parser.Parse(attack.DamageExpr).Eval(this, sb); sb.AppendLine($" = {damageExpr}"); 
+                sb.AppendLine   ($"*Hit:* [{roll}] + {atkBonus} = {roll + atkBonus}");
+
+                var holder = new StringBuilder();
+                var damageExpr = Parser.Parse(attack.DamageExpr).Eval(this, holder);
+
+
+                sb.AppendLine($"*Dmg Total:* {damageExpr} {holder}");
                 sb.AppendLine();
-                
-               
-                
-                if(roll > attack.CritRange)
+
+
+                if(roll >= attack.CritRange)
                 {
                     int conf = random.Next(1, attack.Sides + 1);
-                    if(attack.Confirm) sb.AppendLine($"**CONFIRM**: [{conf}] + {atkBonus} = {conf + atkBonus}");
+                    if(attack.Confirm) sb.AppendLine($"**CONFIRM:** [{conf}] + {atkBonus} = {conf + atkBonus}");
 
-                    sb.Append("**CRIT**: "); var critExpr = Parser.Parse(attack.CritExpr).Eval(this, sb); sb.AppendLine($" = {critExpr}");                   
+                    holder.Clear();
+                    var critExpr = Parser.Parse(attack.CritExpr).Eval(this, holder);
+
+
+                    sb.Append($"**CRIT:** {critExpr} {holder}");
+                    sb.AppendLine();
                 }
-
                 return roll;
             }
             return 0;
@@ -181,7 +186,7 @@ namespace Gellybeans.Pathfinder
 
                 Attacks = new Dictionary<string, Attack>()
                 {
-                    { "$ATK_TEST", new Attack(20,"ATK_M","2d6","4d6",17) }
+                    { "$ATK_TEST", new Attack("ATK_TEST", 20,"ATK_M","2d6","4d6",17) }
                 },
 
                 Stats = new Dictionary<string, Stat>()
@@ -266,8 +271,8 @@ namespace Gellybeans.Pathfinder
 
                 Expressions = new Dictionary<string, string>()
                 {
-                    ["ATK_M"]            = "BAB + STR + SIZE_MOD (STR_TEMP / 2) + ATK_BONUS",
-                    ["ATK_R"]            = "BAB + DEX + SIZE_MOD (DEX_TEMP / 2) + ATK_BONUS",
+                    ["ATK_M"]            = "BAB + STR + SIZE_MOD + (STR_TEMP / 2) + ATK_BONUS",
+                    ["ATK_R"]            = "BAB + DEX + SIZE_MOD + (DEX_TEMP / 2) + ATK_BONUS",
 
                     
                     ["HP"]                  = "HP_BASE + (CON * LEVEL)",
