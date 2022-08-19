@@ -159,6 +159,7 @@ namespace Gellybeans.Pathfinder
                     sb.Append($"**CRIT:** {critExpr} {holder}");
                     sb.AppendLine();
                 }
+                
                 return roll;
             }
             return 0;

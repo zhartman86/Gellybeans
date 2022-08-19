@@ -26,12 +26,12 @@
         {
             var confirm = Confirm ? "YES" : "NO";
             return
-                @$"__{AttackName}__      
-                HIT:       1d{Sides} + {ToHitExpr}
-                DMG:       {DamageExpr}
-                CRIT.DMG:  {CritExpr}
-                CRIT.RNG:  {CritRange}
-                CONFIRM:   {confirm}";
+@$"```NAME:       {AttackName}
+HIT:        1d{Sides} + {ToHitExpr}
+DMG:        {DamageExpr}
+CRIT.DMG:   {CritExpr}
+CRIT.RNG:   {CritRange}
+CONFIRM:    {confirm}```";
         }
     }
 }
