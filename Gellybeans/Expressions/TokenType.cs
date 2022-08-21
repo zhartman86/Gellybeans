@@ -10,6 +10,9 @@ namespace Gellybeans.Expressions
     {
         Attack,
         Ternary,
+        AssignBon,
+        AssignAddBon,
+        AssignSubBon,
         AssignMod,
         AssignDiv,
         AssignMul,

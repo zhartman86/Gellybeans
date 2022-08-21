@@ -81,8 +81,8 @@ namespace Gellybeans.Pathfinder
         {
             var toUpper = varName.ToUpper();
 
-            if(toUpper == "TRUE") return 1;
-            if(toUpper == "FALSE") return 0;
+            if(toUpper == "TRUE")   return 1;
+            if(toUpper == "FALSE")  return 0;
 
             if(Stats.ContainsKey(toUpper))
                 return this[toUpper];
@@ -128,9 +128,45 @@ namespace Gellybeans.Pathfinder
                     this[toUpper] %= assignment;
                     break;
             }
-            sb.AppendLine($"{statName} set to {Stats[toUpper].Base}");
+            sb.AppendLine($"{toUpper} set to {Stats[toUpper].Base}");
             OnValueAssigned(statName);
             return Stats[toUpper].Base;
+        }
+
+        public int AssignBonus(string statName, string bonusName, int type, int value, TokenType assignType, StringBuilder sb)
+        {
+            if(Enum.GetName(typeof(BonusType), type) == null)
+            {
+                sb.AppendLine("Invalid bonus type.");
+                return -99;
+            }
+            var toUpper = statName.ToUpper();
+            if(Expressions.ContainsKey(toUpper))
+            {
+                sb.AppendLine("Cannot assign value to expression. Use /var Set-Expression instead.");
+                return -99;
+            }
+
+            if(!Stats.ContainsKey(toUpper)) Stats[toUpper] = 0;
+
+            
+            switch(assignType)
+            {
+                case TokenType.AssignAddBon:
+                    var bonus = new Bonus { Name = bonusName, Type = (BonusType)type, Value = value };            
+                    Stats[toUpper].AddBonus(bonus);
+                    sb.AppendLine(bonus.ToString());
+                    break;
+
+                case TokenType.AssignSubBon:
+                    Stats[toUpper].RemoveBonus(bonusName);
+                    sb.AppendLine($"{bonusName} removed from {statName}");
+                    break;
+            }
+            
+            sb.AppendLine($"{toUpper} set to {this[toUpper]}");
+            OnValueAssigned(statName);
+            return value;    
         }
 
         public static StatBlock DefaultPathfinder(string name)
@@ -155,7 +191,7 @@ namespace Gellybeans.Pathfinder
                 {
                     ["LEVEL"] = 1,
 
-                    ["SIZE_ATK"] = 0,
+                    ["SIZE_MOD"] = 0,
                     ["SIZE_MAN"] = 0,
                     ["SIZE_FLY"] = 0,
                     ["SIZE_STEALTH"] = 0,
@@ -254,12 +290,12 @@ namespace Gellybeans.Pathfinder
 
                     ["INIT"]    = "1d20 + INITIATIVE + DEX",
 
-                    ["AC"]      = "ARMOR_BONUS + min(DEX, AC_MAXDEX) + SIZE_ATK",
+                    ["AC"]      = "ARMOR_BONUS + min(DEX, AC_MAXDEX) + SIZE_MOD",
 
-                    ["CMB"]     = "1d20 + BAB + STR + SIZE_ATK",
-                    ["CMD"]     = "10 + BAB + STR + DEX + SIZE_ATK",             
+                    ["CMB"]     = "1d20 + BAB + STR + SIZE_MOD",
+                    ["CMD"]     = "10 + BAB + STR + DEX + SIZE_MOD",             
 
-                    ["ATK"]     = "BAB + SIZE_ATK + ATK_BONUS + if(TW, TW_PEN)",
+                    ["ATK"]     = "BAB + SIZE_MOD + ATK_BONUS + if(TW, TW_PEN)",
                     ["TW"]      = "FALSE",
 
                     ["ATK_S"]   = "ATK + STR + (STR_TEMP / 2)",
@@ -566,8 +602,7 @@ namespace Gellybeans.Pathfinder
                     ["SAVE_CHA"] = "1d20 + CHA + if(PROF_CHA, PROF_BONUS)",
 
                     ["INIT"] = "1d20 + DEX",
-                    ["AC"] = "AC_BASE + min(DEX, AC_MAXDEX)",
-
+                    ["AC"] = "AC_BASE + min(DEX, AC_MAXDEX) + SIZE_MOD",
 
                     ["PROF_STR"]            = "FALSE",
                     ["PROF_DEX"]            = "FALSE",

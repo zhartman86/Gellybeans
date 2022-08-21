@@ -11,9 +11,9 @@ namespace Gellybeans.Expressions
 
         public BinaryNode(ExpressionNode lhs, ExpressionNode rhs, Func<int, int, int> op)
         {
-            this.lhs = lhs;
-            this.rhs = rhs;
-            this.op = op;
+            this.lhs    = lhs;
+            this.rhs    = rhs;
+            this.op     = op;
         }
 
         public override int Eval(IContext ctx, StringBuilder sb)

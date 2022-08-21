@@ -19,5 +19,10 @@
         public override int GetHashCode() { unchecked { return Name.GetHashCode() + Type.GetHashCode(); } }
 
         public int Compare(Bonus a, Bonus b) { return a.Value.CompareTo(b); }
+
+        public override string ToString()
+        {
+            return $"{Name}: {Value} {Enum.GetName(typeof(BonusType), Type)}";
+        }
     }
 }

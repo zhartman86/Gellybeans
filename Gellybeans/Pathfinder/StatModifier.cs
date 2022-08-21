@@ -20,33 +20,33 @@
                 }
             },
             {
-                "CATS", new List<StatModifier>()
+                "CATS_GRACE", new List<StatModifier>()
                 {
-                    new StatModifier("DEX_TEMP")            { Bonus = new Bonus() { Name = "CATS", Type = BonusType.Enhancement, Value = 4 } }
+                    new StatModifier("DEX_TEMP")            { Bonus = new Bonus() { Name = "CATS_GRACE", Type = BonusType.Enhancement, Value = 4 } }
                 }
             },
             {
-                "BEARS", new List<StatModifier>()
+                "BEARS_ENDURANCE", new List<StatModifier>()
                 {
-                    new StatModifier("CON_TEMP")            { Bonus = new Bonus() { Name = "BEARS", Type = BonusType.Enhancement, Value = 4 } }
+                    new StatModifier("CON_TEMP")            { Bonus = new Bonus() { Name = "BEARS_ENDURANCE", Type = BonusType.Enhancement, Value = 4 } }
                 }
             },
             {
-                "FOXS", new List<StatModifier>()
+                "FOXS_CUNNING", new List<StatModifier>()
                 {
-                    new StatModifier("INT_TEMP")            { Bonus = new Bonus() { Name = "FOXS", Type = BonusType.Enhancement, Value = 4 } }
+                    new StatModifier("INT_TEMP")            { Bonus = new Bonus() { Name = "FOXS_CUNNING", Type = BonusType.Enhancement, Value = 4 } }
                 }
             },
             {
-                "OWLS", new List<StatModifier>()
+                "OWLS_WISDOM", new List<StatModifier>()
                 {
-                    new StatModifier("WIS_TEMP")            { Bonus = new Bonus() { Name = "OWLS", Type = BonusType.Enhancement, Value = 4 } }
+                    new StatModifier("WIS_TEMP")            { Bonus = new Bonus() { Name = "OWLS_WISDOM", Type = BonusType.Enhancement, Value = 4 } }
                 }
             },
             {
-                "EAGLES", new List<StatModifier>()
+                "EAGLES_SPLENDOR", new List<StatModifier>()
                 {
-                    new StatModifier("CHA_TEMP")            { Bonus = new Bonus() { Name = "EAGLES", Type = BonusType.Enhancement, Value = 4 } }
+                    new StatModifier("CHA_TEMP")            { Bonus = new Bonus() { Name = "EAGLES_SPLENDOR", Type = BonusType.Enhancement, Value = 4 } }
                 }
             },
             {

@@ -19,6 +19,8 @@
             {
                 if(!dict.ContainsKey(b.Type)) dict[b.Type] = new List<Bonus>();
                 dict[b.Type].Add(b);
+                
+                //this is imporant. sort the highest bonus to the top.
                 dict[b.Type].Sort((x, y) => y.Value.CompareTo(x.Value));
             }
             Bonus = GetTotal(dict);
@@ -68,21 +70,23 @@
             return false;
         }
     
-        public bool RemoveBonus(string bonusName)
+        public int RemoveBonus(string bonusName)
         {
             int count = 0;
+            var bonuses = new List<Bonus>();
+            
             for(int i = 0; i < Bonuses.Count; i++)
             {            
                 if(Bonuses[i].Name == bonusName)
                 {
                     count++;
-                    Bonuses.Remove(Bonuses[i]); 
+                    bonuses.Add(Bonuses[i]);
                 }                         
             }
+            foreach(Bonus b in bonuses) RemoveBonus(b);
             GetTotal();
 
-            if(count > 0) return true;
-            return false;
+            return count;
         }
     }
 }

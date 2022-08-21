@@ -10,15 +10,15 @@ namespace Gellybeans.Expressions
 
         public AssignNode(string lhs, ExpressionNode rhs, TokenType assignType)
         {
-            this.lhs = lhs;
-            this.rhs = rhs;
+            this.lhs        = lhs;
+            this.rhs        = rhs;
             this.assignType = assignType;
         }
 
         public override int Eval(IContext ctx, StringBuilder sb)
         {
             var rhValue = rhs.Eval(ctx, sb);
-            var result = ctx.Assign(lhs, rhValue, assignType, sb);
+            var result  = ctx.Assign(lhs, rhValue, assignType, sb);
             
             return result;
         }

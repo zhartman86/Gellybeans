@@ -36,10 +36,8 @@
 
                 conditional = new TernaryNode(conditional, lhs, rhs, op);
             }          
-        }                     
-        
-        
-        
+        }                 
+             
         ExpressionNode ParseEquals()
         {
             var lhs = ParseGreaterLess();
@@ -160,8 +158,8 @@
             if(tokenizer.Token == TokenType.OpenPar)
             {
                 tokenizer.NextToken();
-                var node = ParseEquals();
-                
+                var node = ParseTernary();
+
                 if(tokenizer.Token != TokenType.ClosePar) 
                     throw new Exception("Missing closed parens.");
                 
@@ -192,7 +190,7 @@
                 if(tokenizer.Token == TokenType.Mul)
                 {
                     tokenizer.NextToken();
-                    var rhs = ParseEquals();                
+                    var rhs = ParseTernary();
                     return new DiceMultiplierNode(lhs, rhs);
                 }
                 return lhs;
@@ -201,16 +199,32 @@
 
             if(tokenizer.Token == TokenType.Var)
             {                             
-                var name = tokenizer.Identifier;
-                
+                var name = tokenizer.Identifier;             
                 tokenizer.NextToken();                            
+                
                 if(tokenizer.Token == TokenType.AssignEquals || tokenizer.Token == TokenType.AssignAdd || tokenizer.Token == TokenType.AssignSub || tokenizer.Token == TokenType.AssignDiv || tokenizer.Token == TokenType.AssignMul || tokenizer.Token == TokenType.AssignMod)
                 {
                     var type = tokenizer.Token;
                     tokenizer.NextToken();
-                    var rhs = ParseEquals();
+                    var rhs = ParseTernary();
                     var lh = new AssignNode(name, rhs, type);
                     return lh;
+                }
+
+                if(tokenizer.Token == TokenType.AssignBon || tokenizer.Token == TokenType.AssignAddBon || tokenizer.Token == TokenType.AssignSubBon)
+                {
+                    var type = tokenizer.Token;
+                    tokenizer.NextToken();
+                    if(tokenizer.Token == TokenType.Var)
+                    {
+                        var bName = tokenizer.Identifier;
+                        tokenizer.NextToken();
+                        var bType = ParseTernary();
+                        var bVal = ParseTernary();
+                        
+                        var lh = new AssignBonusNode(name, bName, bType, bVal, type);
+                        return lh;
+                    }                                 
                 }
 
 
@@ -226,7 +240,7 @@
                     var args = new List<ExpressionNode>();
                     while(true)
                     {
-                        args.Add(ParseEquals());
+                        args.Add(ParseTernary());
 
                         if(tokenizer.Token == TokenType.Comma)
                         {

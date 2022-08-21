@@ -45,7 +45,12 @@ namespace Gellybeans.Expressions
                     NextChar();
                     currentToken = TokenType.Ternary;
                     return;
-                             
+
+                case '$':
+                    NextChar();
+                    currentToken = TokenType.AssignBon;
+                    return;
+                
                 case '=':
                     NextChar();
                     if(currentChar == '=')
@@ -93,6 +98,11 @@ namespace Gellybeans.Expressions
                         NextChar();
                         currentToken = TokenType.AssignAdd;
                     }
+                    else if(currentChar == '$')
+                    {
+                        NextChar();
+                        currentToken = TokenType.AssignAddBon;
+                    }
                     else currentToken = TokenType.Add;
                     return;
 
@@ -102,6 +112,11 @@ namespace Gellybeans.Expressions
                     {
                         NextChar();
                         currentToken = TokenType.AssignSub;
+                    }
+                    else if(currentChar == '$')
+                    {
+                        NextChar();
+                        currentToken = TokenType.AssignSubBon;
                     }
                     else currentToken = TokenType.Sub;
                     return;
