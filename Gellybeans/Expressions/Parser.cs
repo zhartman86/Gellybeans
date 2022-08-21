@@ -11,13 +11,14 @@
 
         public ExpressionNode ParseExpr()
         {
-            var expr = ParseEquals();
+            var expr = ParseTernary();
             if(tokenizer.Token != TokenType.EOF) throw new Exception("Unexpected character at end of expression.");        
             return expr;
         }               
         
         ExpressionNode ParseTernary()
-        {
+        {           
+            
             var conditional = ParseEquals();
 
             while(true)
@@ -34,7 +35,7 @@
                 var rhs = ParseEquals();
 
                 conditional = new TernaryNode(conditional, lhs, rhs, op);
-            }
+            }          
         }                     
         
         

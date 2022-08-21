@@ -33,15 +33,19 @@ namespace Gellybeans.Expressions
 
         public void NextToken()
         {
-            while(char.IsWhiteSpace(currentChar)) { NextChar(); }
+            while(char.IsWhiteSpace(currentChar) || currentChar == ':') { NextChar(); }
         
             switch(currentChar)
             {
                 case '\0':
                     currentToken = TokenType.EOF;
                     return;
-              
                 
+                case '?':
+                    NextChar();
+                    currentToken = TokenType.Ternary;
+                    return;
+                             
                 case '=':
                     NextChar();
                     if(currentChar == '=')
@@ -146,6 +150,7 @@ namespace Gellybeans.Expressions
                     currentToken = TokenType.Comma;
                     return;
             }       
+            
             
             if(char.IsDigit(currentChar) || currentChar == 'd')
             {

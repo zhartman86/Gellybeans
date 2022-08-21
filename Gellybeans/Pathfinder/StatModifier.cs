@@ -14,39 +14,39 @@
         public static Dictionary<string, List<StatModifier>> Buffs = new Dictionary<string, List<StatModifier>>()
         {
             {
-                "BULLS_STRENGTH", new List<StatModifier>()
+                "BULLS", new List<StatModifier>()
                 {
-                    new StatModifier("STR_TEMP")            { Bonus = new Bonus() { Name = "BULLS_STRENGTH", Type = BonusType.Enhancement, Value = 4 } }
+                    new StatModifier("STR_TEMP")            { Bonus = new Bonus() { Name = "BULLS", Type = BonusType.Enhancement, Value = 4 } }
                 }
             },
             {
-                "CATS_GRACE", new List<StatModifier>()
+                "CATS", new List<StatModifier>()
                 {
-                    new StatModifier("DEX_TEMP")            { Bonus = new Bonus() { Name = "CATS_GRACE", Type = BonusType.Enhancement, Value = 4 } }
+                    new StatModifier("DEX_TEMP")            { Bonus = new Bonus() { Name = "CATS", Type = BonusType.Enhancement, Value = 4 } }
                 }
             },
             {
-                "BEARS_ENDURANCE", new List<StatModifier>()
+                "BEARS", new List<StatModifier>()
                 {
-                    new StatModifier("CON_TEMP")            { Bonus = new Bonus() { Name = "BEARS_ENDURANCE", Type = BonusType.Enhancement, Value = 4 } }
+                    new StatModifier("CON_TEMP")            { Bonus = new Bonus() { Name = "BEARS", Type = BonusType.Enhancement, Value = 4 } }
                 }
             },
             {
-                "FOXS_CUNNING", new List<StatModifier>()
+                "FOXS", new List<StatModifier>()
                 {
-                    new StatModifier("INT_TEMP")            { Bonus = new Bonus() { Name = "FOXS_CUNNING", Type = BonusType.Enhancement, Value = 4 } }
+                    new StatModifier("INT_TEMP")            { Bonus = new Bonus() { Name = "FOXS", Type = BonusType.Enhancement, Value = 4 } }
                 }
             },
             {
-                "OWLS_WISDOM", new List<StatModifier>()
+                "OWLS", new List<StatModifier>()
                 {
-                    new StatModifier("WIS_TEMP")            { Bonus = new Bonus() { Name = "OWLS_WISDOM", Type = BonusType.Enhancement, Value = 4 } }
+                    new StatModifier("WIS_TEMP")            { Bonus = new Bonus() { Name = "OWLS", Type = BonusType.Enhancement, Value = 4 } }
                 }
             },
             {
-                "EAGLES_SLENDOR", new List<StatModifier>()
+                "EAGLES", new List<StatModifier>()
                 {
-                    new StatModifier("CHA_TEMP")            { Bonus = new Bonus() { Name = "EAGLES_SLENDOR", Type = BonusType.Enhancement, Value = 4 } }
+                    new StatModifier("CHA_TEMP")            { Bonus = new Bonus() { Name = "EAGLES", Type = BonusType.Enhancement, Value = 4 } }
                 }
             },
             {
@@ -63,10 +63,10 @@
                 {
                     new StatModifier("STR_TEMP")            { Bonus = new Bonus() { Name = "ENLARGE_P", Type = BonusType.Size, Value = 2 } },
                     new StatModifier("DEX_TEMP")            { Bonus = new Bonus() { Name = "ENLARGE_P", Type = BonusType.Typeless, Value = -2 } },
-                    new StatModifier("SIZE_MOD")            { Bonus = new Bonus() { Name = "ENLARGE_P", Type = BonusType.Typeless, Value = -1 } },
-                    new StatModifier("SIZE_MOD_CM")         { Bonus = new Bonus() { Name = "ENLARGE_P", Type = BonusType.Typeless, Value = 1 } },
-                    new StatModifier("SIZE_MOD_FLY")        { Bonus = new Bonus() { Name = "ENLARGE_P", Type = BonusType.Typeless, Value = -2 } },
-                    new StatModifier("SIZE_MOD_STEALTH")    { Bonus = new Bonus() { Name = "ENLARGE_P", Type = BonusType.Typeless, Value = -4 } }
+                    new StatModifier("SIZE_ATK")            { Bonus = new Bonus() { Name = "ENLARGE_P", Type = BonusType.Typeless, Value = -1 } },
+                    new StatModifier("SIZE_CM")         { Bonus = new Bonus() { Name = "ENLARGE_P", Type = BonusType.Typeless, Value = 1 } },
+                    new StatModifier("SIZE_FLY")        { Bonus = new Bonus() { Name = "ENLARGE_P", Type = BonusType.Typeless, Value = -2 } },
+                    new StatModifier("SIZE_STEALTH")    { Bonus = new Bonus() { Name = "ENLARGE_P", Type = BonusType.Typeless, Value = -4 } }
                 }
             },
             {   
@@ -74,31 +74,31 @@
                 {
                     new StatModifier("STR_TEMP")            { Bonus = new Bonus() { Name = "REDUCE_P", Type = BonusType.Size, Value = -2 } },
                     new StatModifier("DEX_TEMP")            { Bonus = new Bonus() { Name = "REDUCE_P", Type = BonusType.Typeless, Value = 2 } },
-                    new StatModifier("SIZE_MOD")            { Bonus = new Bonus() { Name = "REDUCE_P", Type = BonusType.Typeless, Value = 1 } },
-                    new StatModifier("SIZE_MOD_CM")         { Bonus = new Bonus() { Name = "REDUCE_P", Type = BonusType.Typeless, Value = -1 } },
-                    new StatModifier("SIZE_MOD_FLY")        { Bonus = new Bonus() { Name = "REDUCE_P", Type = BonusType.Typeless, Value = 2 } },
-                    new StatModifier("SIZE_MOD_STEALTH")    { Bonus = new Bonus() { Name = "REDUCE_P", Type = BonusType.Typeless, Value = 4 } }
+                    new StatModifier("SIZE_ATK")            { Bonus = new Bonus() { Name = "REDUCE_P", Type = BonusType.Typeless, Value = 1 } },
+                    new StatModifier("SIZE_CM")         { Bonus = new Bonus() { Name = "REDUCE_P", Type = BonusType.Typeless, Value = -1 } },
+                    new StatModifier("SIZE_FLY")        { Bonus = new Bonus() { Name = "REDUCE_P", Type = BonusType.Typeless, Value = 2 } },
+                    new StatModifier("SIZE_STEALTH")    { Bonus = new Bonus() { Name = "REDUCE_P", Type = BonusType.Typeless, Value = 4 } }
                 }
             },
             {
                 "FLAGBEARER", new List<StatModifier>()
                 {
                     new StatModifier("ATK_BONUS")           { Bonus = new Bonus() { Name = "FLAGBEARER", Type = BonusType.Morale, Value = 1 } },
-                    new StatModifier("WPN_DMG")             { Bonus = new Bonus() { Name = "FLAGBEARER", Type = BonusType.Morale, Value = 1 } }
+                    new StatModifier("DMG_BONUS")             { Bonus = new Bonus() { Name = "FLAGBEARER", Type = BonusType.Morale, Value = 1 } }
                 }
             },
             {
                 "INSPIRE_COURAGE_1", new List<StatModifier>()
                 {
                     new StatModifier("ATK_BONUS")           { Bonus = new Bonus() { Name = "INSPIRE_COURAGE", Type = BonusType.Competence, Value = 1 } },
-                    new StatModifier("WPN_DMG")             { Bonus = new Bonus() { Name = "INSPIRE_COURAGE", Type = BonusType.Competence, Value = 1 } }
+                    new StatModifier("DMG_BONUS")             { Bonus = new Bonus() { Name = "INSPIRE_COURAGE", Type = BonusType.Competence, Value = 1 } }
                 }
             },
             {
                 "INSPIRE_COURAGE_2", new List<StatModifier>()
                 {
                     new StatModifier("ATK_BONUS")           { Bonus = new Bonus() { Name = "INSPIRE_COURAGE", Type = BonusType.Competence, Value = 2 } },
-                    new StatModifier("WPN_DMG")             { Bonus = new Bonus() { Name = "INSPIRE_COURAGE", Type = BonusType.Competence, Value = 2 } } 
+                    new StatModifier("DMG_BONUS")             { Bonus = new Bonus() { Name = "INSPIRE_COURAGE", Type = BonusType.Competence, Value = 2 } } 
                 }
             }
 
