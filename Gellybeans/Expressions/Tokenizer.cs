@@ -63,6 +63,7 @@ namespace Gellybeans.Expressions
                         NextChar();
                         currentToken = TokenType.NotEquals;
                     }
+                    else currentToken = TokenType.Not;
                     return;
                              
                 case '>':

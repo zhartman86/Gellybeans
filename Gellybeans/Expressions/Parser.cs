@@ -144,7 +144,6 @@
                     var rhs = ParseUnary();                  
                     return new UnaryNode(rhs, (a) => -a);
                 }
-
                 return ParseLeaf();
             }                      
         }

@@ -27,6 +27,7 @@ namespace Gellybeans.Expressions
         GreaterEquals,
         Less,
         LessEquals,       
+        Not,
         Add,
         Sub,
         Mul,
