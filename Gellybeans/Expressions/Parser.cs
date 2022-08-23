@@ -196,7 +196,6 @@
                 return lhs;
             }
 
-
             if(tokenizer.Token == TokenType.Var)
             {                             
                 var name = tokenizer.Identifier;             
@@ -219,14 +218,21 @@
                     {
                         var bName = tokenizer.Identifier;
                         tokenizer.NextToken();
+
+                        AssignBonusNode lh;
+                        if(type == TokenType.AssignSubBon)
+                        {
+                            lh = new AssignBonusNode(name, bName, null, null, type);
+                            return lh;
+                        }
+
                         var bType = ParseTernary();
                         var bVal = ParseTernary();
-                        
-                        var lh = new AssignBonusNode(name, bName, bType, bVal, type);
+ 
+                        lh = new AssignBonusNode(name, bName, bType, bVal, type);
                         return lh;
                     }                                 
                 }
-
 
                 if(tokenizer.Token != TokenType.OpenPar)
                 {
@@ -252,7 +258,7 @@
                     }
 
                     if(tokenizer.Token != TokenType.ClosePar)
-                        throw new Exception("Missing close parens.");
+                        Console.WriteLine("Missing close parens.");
                     
                     tokenizer.NextToken();
 

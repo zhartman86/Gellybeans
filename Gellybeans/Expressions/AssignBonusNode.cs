@@ -20,10 +20,9 @@ namespace Gellybeans.Expressions
         }
 
         public override int Eval(IContext ctx, StringBuilder sb)
-        {
-            
-            var bType   = bonusType.Eval(ctx, sb);
-            var bVal    = bonusValue.Eval(ctx, sb);
+        {          
+            var bType   = bonusType != null ? bonusType.Eval(ctx, sb) : 0;
+            var bVal    = bonusValue != null ? bonusValue.Eval(ctx, sb) : 0;
             var result  = ctx.AssignBonus(lhs, bonusName, bType, bVal, assignType, sb);
 
             return result;

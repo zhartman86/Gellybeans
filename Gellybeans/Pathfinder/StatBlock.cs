@@ -466,8 +466,8 @@ namespace Gellybeans.Pathfinder
                             Set = new List<Expr>()
                             {
                                 new Expr("HIT",     "1d20 + ATK_S"),
-                                new Expr("MAIN",    "1d8 + DMG"),
-                                new Expr("TWOHAND", "1d8 + DMG_TH"),
+                                new Expr("DMG_M",   "1d8 + DMG"),
+                                new Expr("DMG_TH",  "1d8 + DMG_TH"),
                                 new Expr("CRIT_M",  "(1d8*2) + DMG*2"),
                                 new Expr("CRIT_TH", "(1d8*2) + DMG_TH*2"),
                             },
@@ -481,10 +481,10 @@ namespace Gellybeans.Pathfinder
                             Set = new List<Expr>()
                             {
                                 new Expr("HIT",     "1d20 + ATK_S"),
-                                new Expr("MAIN",    "1d4 + DMG"),
-                                new Expr("OFF",     "1d4 + DMG_OH"),
+                                new Expr("DMG_M",   "1d4 + DMG"),
+                                new Expr("DMG_OH",  "1d4 + DMG_OH"),
                                 new Expr("CRIT_M",  "(1d4*2) + DMG*2"),
-                                new Expr("CMB",     "CMB"),
+                                new Expr("CRIT_OH", "(1d4*2) + DMG_OH*2"),
                             },
                         }
                     },
@@ -499,7 +499,7 @@ namespace Gellybeans.Pathfinder
                                 new Expr("DMG",         "1d8"),
                                 new Expr("CRIT",        "1d8*3"),
                                 new Expr("DMG_COMP",    "1d8 + DMG"),
-                                new Expr("CRIT_COMP",   "(1d8*3) + DMG*3"),
+                                new Expr("CRT_COMP",    "(1d8*3) + DMG*3"),
                             },
                         }
 
@@ -522,6 +522,9 @@ namespace Gellybeans.Pathfinder
                 CharacterName = name,
                 Stats = new Dictionary<string, Stat>()
                 {
+                    ["HP_BASE"] = 0,
+                    ["HP_TEMP"] = 0,
+                    ["DMG"] = 0,
 
                     ["STR_SCORE"] = 10,
                     ["DEX_SCORE"] = 10,
@@ -534,6 +537,8 @@ namespace Gellybeans.Pathfinder
 
                     ["AC_BASE"] = 10,
                     ["AC_MAXDEX"] = 99,
+
+                    ["INITIATIVE"] = 0,
 
                     ["SK_ACR"] = 0,
                     ["SK_ANI"] = 0,
@@ -555,38 +560,20 @@ namespace Gellybeans.Pathfinder
                     ["SK_SUR"] = 0,
 
                     ["ATK_BONUS"] = 0,
+                    ["DMG_BONUS"] = 0,
                 },
 
                 Expressions = new Dictionary<string, string>()
-                {
-                    //skills
-                    ["ACROBATICS"] = "1d20 + DEX + if(PROF_ACROBATICS, PROF_BONUS)",
-                    ["HANDLEANIMAL"] = "1d20 + WIS + if(PROF_HANDLEANIMAL, PROF_BONUS)",
-                    ["ARCANA"] = "1d20 + INT",
-                    ["ATHLETICS"] = "1d20 + STR",
-                    ["DECEPTION"] = "1d20 + CHA",
-                    ["HISTORY"] = "1d20 + INT",
-                    ["INSIGHT"] = "1d20 + WIS",
-                    ["INTIMIDATION"] = "1d20 + CHA",
-                    ["INVESTIGATION"] = "1d20 + INT",
-                    ["MEDICINE"] = "1d20 + WIS",
-                    ["NATURE"] = "1d20 + INT",
-                    ["PERCEPTION"] = "1d20 + WIS",
-                    ["PERFORM"] = "1d20 + CHA",
-                    ["PERSUASION"] = "1d20 + CHA",
-                    ["RELIGION"] = "1d20 + INT",
-                    ["SLEIGHT"] = "1d20 + DEX",
-                    ["STEALTH"] = "1d20 + DEX",
-                    ["SURVIVIAL"] = "1d20 + WIS",
+                {               
+                    ["HP"] = "HP_BASE + (CON * LEVEL)",                   
 
-                    ["PASSIVE"] = "10 + WIS + if(PROF_PERCEPTION, PROF_BONUS)",
+                    ["ATK_S"] = "1d20 + STR + PROF + ATK_BONUS",
+                    ["ATK_D"] = "1d20 + DEX + PROF + ATK_BONUS",
+                    ["ATK_I"] = "1d20 + INT + PROF + ATK_BONUS",
+                    ["ATK_W"] = "1d20 + WIS + PROF + ATK_BONUS",
+                    ["ATK_C"] = "1d20 + CHA + PROF + ATK_BONUS",
 
-                    ["ATK_S"] = "1d20 + STR + PROF_BONUS + ATK_BONUS",
-                    ["ATK_D"] = "1d20 + DEX + PROF_BONUS + ATK_BONUS",
-                    ["ATK_I"] = "1d20 + INT + PROF_BONUS + ATK_BONUS",
-                    ["ATK_W"] = "1d20 + WIS + PROF_BONUS + ATK_BONUS",
-                    ["ATK_C"] = "1d20 + CHA + PROF_BONUS + ATK_BONUS",
-
+                    
                     ["STR"] = "mod(STR_SCORE)",
                     ["DEX"] = "mod(DEX_SCORE)",
                     ["CON"] = "mod(CON_SCORE)",
@@ -594,47 +581,252 @@ namespace Gellybeans.Pathfinder
                     ["WIS"] = "mod(WIS_SCORE)",
                     ["CHA"] = "mod(CHA_SCORE)",
 
-                    ["SAVE_STR"] = "1d20 + STR + if(PROF_STR, PROF_BONUS)",
-                    ["SAVE_DEX"] = "1d20 + DEX + if(PROF_DEX, PROF_BONUS)",
-                    ["SAVE_CON"] = "1d20 + CON + if(PROF_CON, PROF_BONUS)",
-                    ["SAVE_INT"] = "1d20 + INT + if(PROF_INT, PROF_BONUS)",
-                    ["SAVE_WIS"] = "1d20 + WIS + if(PROF_WIS, PROF_BONUS)",
-                    ["SAVE_CHA"] = "1d20 + CHA + if(PROF_CHA, PROF_BONUS)",
+                    ["SAVE_STR"] = "1d20 + STR + if(PROF_STR, PROF)",
+                    ["SAVE_DEX"] = "1d20 + DEX + if(PROF_DEX, PROF)",
+                    ["SAVE_CON"] = "1d20 + CON + if(PROF_CON, PROF)",
+                    ["SAVE_INT"] = "1d20 + INT + if(PROF_INT, PROF)",
+                    ["SAVE_WIS"] = "1d20 + WIS + if(PROF_WIS, PROF)",
+                    ["SAVE_CHA"] = "1d20 + CHA + if(PROF_CHA, PROF)",
 
-                    ["INIT"] = "1d20 + DEX",
-                    ["AC"] = "AC_BASE + min(DEX, AC_MAXDEX) + SIZE_MOD",
+                    ["INIT"]    = "1d20 + DEX + INITIATIVE",
+                    ["AC"]      = "AC_BASE + min(DEX, AC_MAXDEX)",
 
-                    ["PROF_STR"]            = "FALSE",
-                    ["PROF_DEX"]            = "FALSE",
-                    ["PROF_CON"]            = "FALSE",
-                    ["PROF_INT"]            = "FALSE",
-                    ["PROF_WIS"]            = "FALSE",
-                    ["PROF_CHA"]            = "FALSE",
-                    ["PROF_ACROBATICS"]     = "FALSE",
-                    ["PROF_HANDLEANIMAL"]   = "FALSE",
-                    ["PROF_ARCANA"]         = "FALSE",
-                    ["PROF_ATHLETICS"]      = "FALSE",
-                    ["PROF_DECEPTION"]      = "FALSE",
-                    ["PROF_HISTORY"]        = "FALSE",
-                    ["PROF_INSIGHT"]        = "FALSE",
-                    ["PROF_INTIMIDATION"]   = "FALSE",
-                    ["PROF_INVESTIGATION"]  = "FALSE",
-                    ["PROF_MEDICINE"]       = "FALSE",
-                    ["PROF_NATURE"]         = "FALSE",
-                    ["PROF_PERCEPTION"]     = "FALSE",
-                    ["PROF_PERFORM"]        = "FALSE",
-                    ["PROF_PERSUASION"]     = "FALSE",
-                    ["PROF_RELIGION"]       = "FALSE",
-                    ["PROF_SLEIGHT"]        = "FALSE",
-                    ["PROF_STEALTH"]        = "FALSE",
-                    ["PROF_SURVIVIAL"]      = "FALSE",
+
+                    //skills
+                    ["ACRO"] = "1d20 + DEX + if(PROF_ACRO, PROF)",
+                    ["HAND"] = "1d20 + WIS + if(PROF_HAND, PROF)",
+                    ["ARCA"] = "1d20 + INT + if(PROF_ARCA, PROF)",
+                    ["ATHL"] = "1d20 + STR + if(PROF_ATHL, PROF)",
+                    ["DECE"] = "1d20 + CHA + if(PROF_DECE, PROF)",
+                    ["HIST"] = "1d20 + INT + if(PROF_HIST, PROF)",
+                    ["INSI"] = "1d20 + WIS + if(PROF_INSI, PROF)",
+                    ["INTI"] = "1d20 + CHA + if(PROF_INTI, PROF)",
+                    ["INVE"] = "1d20 + INT + if(PROF_INVE, PROF)",
+                    ["MEDI"] = "1d20 + WIS + if(PROF_MEDI, PROF)",
+                    ["NATU"] = "1d20 + INT + if(PROF_NATU, PROF)",
+                    ["PERC"] = "1d20 + WIS + if(PROF_PERC, PROF)",
+                    ["PERF"] = "1d20 + CHA + if(PROF_PERF, PROF)",
+                    ["PERS"] = "1d20 + CHA + if(PROF_PERS, PROF)",
+                    ["RELI"] = "1d20 + INT + if(PROF_RELI, PROF)",
+                    ["SLEI"] = "1d20 + DEX + if(PROF_SLEI, PROF)",
+                    ["STEA"] = "1d20 + DEX + if(PROF_STEA, PROF)",
+                    ["SURV"] = "1d20 + WIS + if(PROF_SURV, PROF)",
+
+                    ["PASSIVE"] = "10 + WIS + if(PROF_PERC, PROF)",
+
+
+                    //proficiencies
+                    ["PROF_STR"]    = "FALSE",
+                    ["PROF_DEX"]    = "FALSE",
+                    ["PROF_CON"]    = "FALSE",
+                    ["PROF_INT"]    = "FALSE",
+                    ["PROF_WIS"]    = "FALSE",
+                    ["PROF_CHA"]    = "FALSE",
+                    
+                    ["PROF_ACRO"]   = "FALSE",
+                    ["PROF_HAND"]   = "FALSE",
+                    ["PROF_ARCA"]   = "FALSE",
+                    ["PROF_ATHL"]   = "FALSE",
+                    ["PROF_DECE"]   = "FALSE",
+                    ["PROF_HIST"]   = "FALSE",
+                    ["PROF_INSI"]   = "FALSE",
+                    ["PROF_INTI"]   = "FALSE",
+                    ["PROF_INVE"]   = "FALSE",
+                    ["PROF_MEDI"]   = "FALSE",
+                    ["PROF_NATU"]   = "FALSE",
+                    ["PROF_PERC"]   = "FALSE",
+                    ["PROF_PERF"]   = "FALSE",
+                    ["PROF_PERS"]   = "FALSE",
+                    ["PROF_RELI"]   = "FALSE",
+                    ["PROF_SLEI"]   = "FALSE",
+                    ["PROF_STEA"]   = "FALSE",
+                    ["PROF_SURV"]   = "FALSE",
+                },
+
+                ExprRows = new Dictionary<string, ExprRow>()
+                {
+                    {
+                        "$SK_ONE", new ExprRow()
+                        {
+                            RowName = "$SK_ONE",
+                            Set = new List<Expr>()
+                            {
+                                new Expr("ACRO", "ACRO"),
+                                new Expr("HAND", "HAND"),
+                                new Expr("ACRA", "ARCA"),
+                                new Expr("ATHL", "ATHL"),
+                                new Expr("DECE", "DECE"),
+                            }
+                        }
+                    },
+                    {
+                        "$SK_TWO", new ExprRow()
+                        {
+                            RowName = "$SK_TWO",
+                            Set = new List<Expr>()
+                            {
+                                new Expr("HIST", "HIST"),
+                                new Expr("INSI", "INSI"),
+                                new Expr("INTI", "INTI"),
+                                new Expr("INVE", "INVE"),
+                                new Expr("MEDI", "MEDI"),
+                            }
+                        }
+                    },
+                    {
+                        "$SK_THREE", new ExprRow()
+                        {
+                            RowName = "$SK_THREE",
+                            Set = new List<Expr>()
+                            {
+                                new Expr("NATU", "NATU"),
+                                new Expr("PERC", "PERC"),
+                                new Expr("PERF", "PERF"),
+                                new Expr("PERS", "PERS"),
+                                new Expr("RELI", "RELI"),
+                            }
+                        }
+                    },
+                    {
+                        "$SK_FOUR", new ExprRow()
+                        {
+                            RowName = "$SK_FOUR",
+                            Set = new List<Expr>()
+                            {
+                                new Expr("SLEI", "SLEI"),
+                                new Expr("STEA", "STEA"),
+                                new Expr("SURV", "SURV"),
+                            }
+                        }
+
+                    },           
+                },
+
+                Grids = new Dictionary<string, string[]>()
+                {
+                    { "#SK", new string[4] { "$SK_ONE","$SK_TWO","$SK_THREE","$SK_FOUR" } }
                 }
             };
 
             return statBlock;
             }
-        }
+
+        public static StatBlock DefaultStarfinder(string name)
+        {
+            var statblock = new StatBlock()
+            {
+                Stats = new Dictionary<string, Stat>()
+                {
+                    ["LEVEL"] = 1,
+
+                    ["CREDITS"] = 0,
+
+                    ["HP"] = 0,
+                    ["STAM_BASE"] = 0,
+                    ["RESOLVE"] = 0,
+                    
+                    ["DMG_HP"] = 0,
+                    ["DMG_STAM"] = 0,
+
+                    ["STR_SCORE"] = 10,
+                    ["DEX_SCORE"] = 10,
+                    ["CON_SCORE"] = 10,
+                    ["INT_SCORE"] = 10,
+                    ["WIS_SCORE"] = 10,
+                    ["CHA_SCORE"] = 10,
+
+                    ["EAC_BONUS"] = 0,
+                    ["KAC_BONUS"] = 0,
+                    ["AC_MAXDEX"] = 99,
+                    ["AC_PENALTY"] = 0,
+
+                    ["INITIATIVE"] = 0,
+
+                    ["SAVE_FORT"] = 0,
+                    ["SAVE_REFL"] = 0,
+                    ["SAVE_WILL"] = 0,
+
+                    ["BAB"] = 0,
+
+                    ["ATK_M_BONUS"]     = 0,
+                    ["ATK_R_BONUS"]     = 0,
+                    ["ATK_T_BONUS"]     = 0,
+                    ["ATK_CM_BONUS"]    = 0,
+
+                    //skills
+                    ["SK_ACR"] = 0,
+                    ["SK_ATH"] = 0,
+                    ["SK_BLF"] = 0,
+                    ["SK_COM"] = 0,
+                    ["SK_CUL"] = 0,
+                    ["SK_DPL"] = 0,                    
+                    ["SK_DSG"] = 0,
+                    ["SK_ENG"] = 0,
+                    ["SK_INT"] = 0,
+                    ["SK_LIF"] = 0,
+                    ["SK_MED"] = 0,
+                    ["SK_MYS"] = 0,
+                    ["SK_PER"] = 0,
+                    ["SK_PHY"] = 0,
+                    ["SK_PLT"] = 0,
+                    ["SK_MOT"] = 0,
+                    ["SK_SLE"] = 0,
+                    ["SK_STL"] = 0,
+                    ["SK_SUR"] = 0,
+                },
+                
+                Expressions = new Dictionary<string, string>()
+                {
+                    ["STR"]     = "mod(STR_SCORE)",
+                    ["DEX"]     = "mod(DEX_SCORE)",
+                    ["CON"]     = "mod(CON_SCORE)",
+                    ["INT"]     = "mod(INT_SCORE)",
+                    ["WIS"]     = "mod(WIS_SCORE)",
+                    ["CHA"]     = "mod(CHA_SCORE)",
+
+                    ["FORT"]    = "1d20 + FORT_BASE + CON",
+                    ["REFL"]    = "1d20 + REFL_BASE + DEX",
+                    ["WILL"]    = "1d20 + WILL_BASE + WIS",
+
+                    ["INIT"]    = "1d20 + INITIATIVE + DEX",
+
+                    ["EAC"]     = "EAC_BONUS + min(DEX, AC_MAXDEX)",
+                    ["KAC"]     = "KAC_BONUS + min(DEX, AC_MAXDEX)",
+                    ["CMD"]     = "KAC + 8",
+
+                    
+                    ["ATK_M"]   = "1d20 + BAB + STR + ATK_M_BONUS",
+                    ["ATK_R"]   = "1d20 + BAB + DEX + ATK_R_BONUS",
+                    ["ATK_T"]   = "1d20 + BAB + STR + ATK_T_BONUS",
+                    ["ATK_CM"]  = "1d20 + BAB + STR + ATK_CM_BONUS",
+
+                    //skills
+                    ["ACRO"]        = "1d20 + DEX + SK_ACR + AC_PENALTY",
+                    ["ATHL"]        = "1d20 + DEX + SK_ATH + AC_PENALTY",              
+                    ["BLUFF"]       = "1d20 + CHA + SK_BLF",
+                    ["COMP"]        = "1d20 + INT + SK_COM",
+                    ["CULT"]        = "1d20 + INT + SK_CUL",
+                    ["DIPL"]        = "1d20 + CHA + SK_DPL",
+                    ["DISG"]        = "1d20 + CHA + SK_DSG",
+                    ["ENG"]         = "1d20 + INT + SK_ENG",
+                    ["INTI"]        = "1d20 + CHA + SK_INT",
+                    ["LIFE"]        = "1d20 + INT + SK_LIF",
+                    ["MED"]         = "1d20 + INT + SK_MED",
+                    ["MYST"]        = "1d20 + WIS + SK_MYS",
+                    ["PERC"]        = "1d20 + WIS + SK_PER",
+                    ["PHYS"]        = "1d20 + INT + SK_PHY",
+                    ["PILOT"]       = "1d20 + DEX + SK_PIL",
+                    ["MOTIVE"]      = "1d20 + WIS + SK_MOT",
+                    ["SLEIGHT"]     = "1d20 + DEX + SK_SLE + AC_PENALTY",
+                    ["STEALTH"]     = "1d20 + DEX + SK_STL + AC_PENALTY",
+                    ["SURV"]        = "1d20 + WIS + SK_SUR",
+                }           
+            };
+            
+            return statblock;
+        }       
     }
+}
 
 
 
