@@ -40,7 +40,17 @@ namespace Gellybeans.Expressions
                 case '\0':
                     currentToken = TokenType.EOF;
                     return;
-                
+
+                case '=':
+                    NextChar();
+                    if(currentChar == '=')
+                    {
+                        NextChar();
+                        currentToken = TokenType.Equals;
+                    }
+                    else currentToken = TokenType.AssignEquals;
+                    return;
+
                 case '?':
                     NextChar();
                     currentToken = TokenType.Ternary;
@@ -50,15 +60,25 @@ namespace Gellybeans.Expressions
                     NextChar();
                     currentToken = TokenType.AssignBon;
                     return;
-                
-                case '=':
+
+                case '|':
                     NextChar();
-                    if(currentChar == '=')
+                    if(currentChar == '|')
                     {
                         NextChar();
-                        currentToken = TokenType.Equals;
+                        currentToken = TokenType.LogicalOr;
                     }
-                    else currentToken = TokenType.AssignEquals;
+                    else currentToken = TokenType.BitwiseOr;
+                    return;
+                
+                case '&':
+                    NextChar();
+                    if(currentChar == '&')
+                    {
+                        NextChar();
+                        currentToken = TokenType.LogicalAnd;
+                    }
+                    else currentToken = TokenType.BitwiseAnd;
                     return;
 
                 case '!':
@@ -201,11 +221,11 @@ namespace Gellybeans.Expressions
                 }
             }
 
-            if(char.IsLetter(currentChar) || currentChar == '_' || currentChar == '$')
+            if(char.IsLetter(currentChar) || currentChar == '_' || currentChar == '@')
             {
                 var builder = new StringBuilder();
 
-                while(char.IsLetterOrDigit(currentChar) || currentChar == '_' || currentChar == '$')
+                while(char.IsLetterOrDigit(currentChar) || currentChar == '_' || currentChar == '@')
                 {
                     builder.Append(currentChar);
                     NextChar();

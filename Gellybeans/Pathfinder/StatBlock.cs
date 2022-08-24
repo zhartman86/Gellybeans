@@ -15,14 +15,15 @@ namespace Gellybeans.Pathfinder
 
         public string CharacterName { get; set; } = "Name me";
 
+
         public Dictionary<string, Stat>         Stats       { get; private set; } = new Dictionary<string, Stat>();
         public Dictionary<string, string>       Expressions { get; private set; } = new Dictionary<string, string>();
         public Dictionary<string, ExprRow>      ExprRows    { get; private set; } = new Dictionary<string, ExprRow>();
-
-        public Dictionary<string, string>       Info        { get; private set; } = new Dictionary<string, string>();
-
         public Dictionary<string, string[]>     Grids       { get; private set; } = new Dictionary<string, string[]>();
-        
+        public Dictionary<string, string>       Info        { get; private set; } = new Dictionary<string, string>();
+        public Dictionary<string, Template>     Templates   { get; private set; } = new Dictionary<string, Template>();
+
+        public Dictionary<string, CraftItem>    Crafts      { get; private set; } = new Dictionary<string, CraftItem>();
         
 
         public List<Item> Inventory { get; set; } = new List<Item>();
@@ -64,7 +65,130 @@ namespace Gellybeans.Pathfinder
                 }
             }
         }
+        
+        public string AddTemplate(Template t, StringBuilder sb)
+        {
+            sb.AppendLine($"~ADD TEMPLATE: {t.Name}~");
+            
+            foreach(var stat in t.Stats)
+            {
+                if(Stats.ContainsKey(stat.Key))
+                {
+                    Stats[stat.Key].Base += t.Stats[stat.Key].Base;
+                    sb.AppendLine($"{stat.Key} updated to {Stats[stat.Key].Base}.");
+                }                 
+                else
+                {
+                    Stats[stat.Key] = t.Stats[stat.Key];
+                    sb.AppendLine($"{stat.Key} added to stats (value:{stat.Value.Base})");
+                }                    
+            }          
+            sb.AppendLine();            
+            
+            foreach(var expr in t.AddExpressions)
+            {
+                if(Expressions.ContainsKey(expr.Key))
+                    sb.AppendLine($"{expr.Key} was overwritten to {expr.Value}.");                 
+                else
+                    sb.AppendLine($"Added {expr.Key} to expressions ({expr.Value})");                   
+                
+                Expressions[expr.Key] = expr.Value;
+            }
+            sb.AppendLine();
 
+            foreach(var expr in t.ModExpressions)
+            {
+                if(Expressions.ContainsKey(expr.Key))
+                {
+                    sb.AppendLine($"{expr.Value} was added to {expr.Key}");
+                    Expressions[expr.Key] = $"{Expressions[expr.Key]} + {expr.Value}";
+                }
+                else
+                {
+                    sb.AppendLine($"{expr.Key} was created (value: {expr.Value}");
+                    Expressions[expr.Key] = expr.Value;
+                }
+            }
+            sb.AppendLine();
+
+            Templates.Add(t.Name, t);
+            return sb.ToString();
+        }
+
+        public string AddTemplate(List<Template> templates, StringBuilder sb)
+        {
+            for(int i = 0; i < templates.Count; i++)
+                AddTemplate(templates[i], sb);
+            
+            return sb.ToString();
+        }
+
+        string RemoveTemplate(Template t, StringBuilder sb)
+        {
+            foreach(var stat in t.Stats)
+            {
+                if(Stats.ContainsKey(stat.Key))
+                {
+                    Stats[stat.Key].Base -= t.Stats[stat.Key].Base;
+                    sb.AppendLine($"{stat.Key} updated to {Stats[stat.Key].Base}.");
+                }
+                else
+                {
+                    sb.AppendLine($"{stat.Key} not found");
+                }
+            }
+            sb.AppendLine();
+
+            foreach(var expr in t.ModExpressions)
+            {
+                if(Expressions.ContainsKey(expr.Key))
+                {
+                    Expressions[expr.Key].Replace($" + {expr.Value}", "");
+                    sb.AppendLine($"{expr.Value} was removed from {expr.Key}");
+                }                                 
+                else
+                {
+                    Expressions.Remove(expr.Key);
+                    sb.AppendLine($"{expr.Key} was removed");
+                }
+            }
+            sb.AppendLine();
+            
+            foreach(var expr in t.AddExpressions)
+            {
+                if(Expressions.ContainsKey(expr.Key))
+                {
+                    Expressions.Remove(expr.Key);
+                    sb.AppendLine($"{expr.Key} was removed");
+                }
+                else
+                {
+                    sb.AppendLine($"{expr.Key} was not found");
+                }
+            }
+            sb.AppendLine();
+
+            return sb.ToString();
+        }
+        
+        public string RemoveTemplate(int amount, StringBuilder sb)
+        {
+            if(Templates.Count < amount)
+            {
+                sb.AppendLine("Not enough levels to remove!");
+                return sb.ToString();
+            }
+            
+            for(int i = 0; i < amount; i++)
+            {              
+                RemoveTemplate(Templates.Count - 1, sb);
+            }
+
+            return sb.ToString();
+        }
+
+        
+        //IContext
         public int Call(string methodName, int[] args) => methodName switch
         {
             "mod"       => (args[0] - 10) / 2,
@@ -84,6 +208,12 @@ namespace Gellybeans.Pathfinder
             if(toUpper == "TRUE")   return 1;
             if(toUpper == "FALSE")  return 0;
 
+            if(toUpper[0] == '@')
+            {
+                var replace = toUpper.Replace("@", "");
+                if(Stats.ContainsKey(replace)) return Stats[replace].Base;
+            }
+            
             if(Stats.ContainsKey(toUpper))
                 return this[toUpper];
             else if(Expressions.ContainsKey(toUpper))
@@ -200,12 +330,12 @@ namespace Gellybeans.Pathfinder
                     ["HP_TEMP"] = 0,
                     ["HP_DMG"] = 0,
 
-                    ["STR_SCORE"] = 12,
-                    ["DEX_SCORE"] = 15,
-                    ["CON_SCORE"] = 16,
-                    ["INT_SCORE"] = 18,
-                    ["WIS_SCORE"] = 8,
-                    ["CHA_SCORE"] = 6,
+                    ["STR_SCORE"] = 10,
+                    ["DEX_SCORE"] = 10,
+                    ["CON_SCORE"] = 10,
+                    ["INT_SCORE"] = 10,
+                    ["WIS_SCORE"] = 10,
+                    ["CHA_SCORE"] = 10,
 
                     //since damage and temporary bonuses apply symmetrical effects, the same field can be used for both.
                     ["STR_TEMP"] = 0,
@@ -222,12 +352,7 @@ namespace Gellybeans.Pathfinder
                     ["AC_BONUS"] = 0,
                     ["AC_MAXDEX"] = 99,
                     ["AC_PENALTY"] = 0,
-
-                    ["SAVE_FORT"] = 0,
-                    ["SAVE_REFLEX"] = 0,
-                    ["SAVE_WILL"] = 0,
-
-                    ["BAB"]         = 0,
+                 
                     ["ATK_BONUS"]   = 0,
                     ["TW_PEN"]      = -2,
 
@@ -243,28 +368,31 @@ namespace Gellybeans.Pathfinder
                     ["SK_APR"] = 0,
                     ["SK_BLF"] = 0,
                     ["SK_CLM"] = 0,
-                    ["SK_DPL"] = 0,
-                    ["SK_DEV"] = 0,
+                    ["SK_DIP"] = 0,
+                    ["SK_DSA"] = 0,
                     ["SK_DSG"] = 0,
                     ["SK_ESC"] = 0,
                     ["SK_FLY"] = 0,
-                    ["SK_HAN"] = 0,
+                    ["SK_HND"] = 0,
                     ["SK_HEA"] = 0,
-                    ["SK_INT"] = 0,
+                    ["SK_ITM"] = 0,
+                    
                     ["SK_ARC"] = 0,
                     ["SK_DUN"] = 0,
+                    ["SK_ENG"] = 0,
                     ["SK_GEO"] = 0,
                     ["SK_HIS"] = 0,
-                    ["SK_LOC"] = 0,
-                    ["SK_NAT"] = 0,
-                    ["SK_NOB"] = 0,
-                    ["SK_PLA"] = 0,
-                    ["SK_REL"] = 0,
+                    ["SK_LCL"] = 0,
+                    ["SK_NTR"] = 0,
+                    ["SK_NBL"] = 0,
+                    ["SK_PLN"] = 0,
+                    ["SK_RLG"] = 0,
+                    
                     ["SK_LNG"] = 0,
-                    ["SK_PER"] = 0,
+                    ["SK_PRC"] = 0,
                     ["SK_RDE"] = 0,
-                    ["SK_SMO"] = 0,
-                    ["SK_SLE"] = 0,
+                    ["SK_SNS"] = 0,
+                    ["SK_SLT"] = 0,
                     ["SK_SPL"] = 0,
                     ["SK_STL"] = 0,
                     ["SK_SUR"] = 0,
@@ -284,18 +412,26 @@ namespace Gellybeans.Pathfinder
                     ["WIS"] = "mod(WIS_SCORE)",
                     ["CHA"] = "mod(CHA_SCORE)",
 
+
+                    ["FORT_BASE"]   = "",
+                    ["REF_BASE"]    = "",
+                    ["WILL_BASE"]   = "",
+
                     ["FORT"]    = "1d20 + FORT_BASE + CON",
                     ["REFLEX"]  = "1d20 + REFLEX_BASE + DEX",
                     ["WILL"]    = "1d20 + WILL_BASE + WIS",
+
 
                     ["INIT"]    = "1d20 + INITIATIVE + DEX",
 
                     ["AC"]      = "ARMOR_BONUS + min(DEX, AC_MAXDEX) + SIZE_MOD",
 
                     ["CMB"]     = "1d20 + BAB + STR + SIZE_MOD",
-                    ["CMD"]     = "10 + BAB + STR + DEX + SIZE_MOD",             
+                    ["CMD"]     = "10 + BAB + STR + DEX + SIZE_MOD",
 
+                    ["BAB"]     = "0",
                     ["ATK"]     = "BAB + SIZE_MOD + ATK_BONUS + if(TW, TW_PEN)",
+                    
                     ["TW"]      = "FALSE",
 
                     ["ATK_S"]   = "ATK + STR + (STR_TEMP / 2)",
@@ -317,38 +453,75 @@ namespace Gellybeans.Pathfinder
 
                     
                     //skills
-                    ["ACROBATICS"]      = "1d20 + DEX + SK_ACR + AC_PENALTY",
-                    ["APPRAISE"]        = "1d20 + INT + SK_APR",
-                    ["BLUFF"]           = "1d20 + CHA + SK_BLF",
-                    ["CLIMB"]           = "1d20 + STR + SK_CLM + AC_PENALTY",
-                    ["DIPLOMACY"]       = "1d20 + CHA + SK_DPL",
-                    ["DISABLE"]         = "1d20 + DEX + SK_DEV",
-                    ["DISGUISE"]        = "1d20 + CHA + SK_DSG",
-                    ["ESCAPE"]          = "1d20 + DEX + SK_ESC + AC_PENALTY",
-                    ["FLY"]             = "1d20 + DEX + SK_FLY + AC_PENALTY" + "SIZE_FLY",
-                    ["HANDLE"]          = "1d20 + DEX + SK_HAN",
-                    ["HEAL"]            = "1d20 + WIS + SK_HEA",
-                    ["INTIMIDATE"]      = "1d20 + CHA + SK_INT",
-                    ["ARCANA"]          = "1d20 + INT + SK_ARC",
-                    ["DUNGEONEERING"]   = "1d20 + INT + SK_DUN",
-                    ["GEOGRAPHY"]       = "1d20 + INT + SK_GEO",
-                    ["HISTORY"]         = "1d20 + INT + SK_HIS",
-                    ["LOCAL"]           = "1d20 + INT + SK_LOC",
-                    ["NATURE"]          = "1d20 + INT + SK_NAT",
-                    ["NOBILITY"]        = "1d20 + INT + SK_NOB",
-                    ["PLANES"]          = "1d20 + INT + SK_PLA",
-                    ["RELIGION"]        = "1d20 + INT + SK_REL",
-                    ["LINGUISTICS"]     = "1d20 + INT + SK_LNG",
-                    ["PERCEPTION"]      = "1d20 + WIS + SK_PER",
-                    ["RIDE"]            = "1d20 + DEX + SK_RDE + AC_PENALTY",
-                    ["MOTIVE"]          = "1d20 + WIS + SK_SMO",
-                    ["SLEIGHT"]         = "1d20 + DEX + SK_SLE + AC_PENALTY",
-                    ["SPELLCRAFT"]      = "1d20 + INT + SK_SPL",
-                    ["STEALTH"]         = "1d20 + DEX + SK_STL + AC_PENALTY" + "SIZE_STEALTH",
-                    ["SURVIVAL"]        = "1d20 + WIS + SK_SUR",
-                    ["SWIM"]            = "1d20 + STR + SK_SWM + AC_PENALTY",
-                    ["UMD"]             = "1d20 + CHA + SK_UMD",
+                    ["ACR"] = "1d20 + DEX + SK_ACR + if(CS_ACR && @SK_ACR > 0,3)",
+                    ["APR"] = "1d20 + INT + SK_APR + if(CS_APR && @SK_APR > 0,3)",
+                    ["BLF"] = "1d20 + CHA + SK_BLF + if(CS_BLF && @SK_BLF > 0,3)",
+                    ["CLM"] = "1d20 + STR + SK_CLM + if(CS_CLM && @SK_CLM > 0,3)",
+                    ["DIP"] = "1d20 + CHA + SK_DIP + if(CS_DIP && @SK_DIP > 0,3)",
+                    ["DSA"] = "1d20 + DEX + SK_DSA + if(CS_DSA && @SK_DSA > 0,3)",
+                    ["DSG"] = "1d20 + CHA + SK_DSG + if(CS_DSG && @SK_DSG > 0,3)",
+                    ["ESC"] = "1d20 + DEX + SK_ESC + if(CS_ESC && @SK_ESC > 0,3)",
+                    ["FLY"] = "1d20 + DEX + SK_FLY + if(CS_FLY && @SK_FLY > 0,3)",
+                    ["HND"] = "1d20 + DEX + SK_HND + if(CS_HND && @SK_HND > 0,3)",
+                    ["HEA"] = "1d20 + WIS + SK_HEA + if(CS_HEA && @SK_HEA > 0,3)",
+                    ["ITM"] = "1d20 + CHA + SK_ITM + if(CS_ITM && @SK_ITM > 0,3)",
+     
+                    ["ARC"] = "1d20 + INT + SK_ARC + if(CS_ARC && @SK_ARC > 0,3)",
+                    ["DUN"] = "1d20 + INT + SK_DUN + if(CS_DUN && @SK_DUN > 0,3)",
+                    ["ENG"] = "1d20 + INT + SK_ENG + if(CS_ENG && @SK_ENG > 0,3)",
+                    ["GEO"] = "1d20 + INT + SK_GEO + if(CS_GEO && @SK_GEO > 0,3)",
+                    ["HIS"] = "1d20 + INT + SK_HIS + if(CS_HIS && @SK_HIS > 0,3)",
+                    ["LCL"] = "1d20 + INT + SK_LCL + if(CS_LCL && @SK_LCL > 0,3)",
+                    ["NTR"] = "1d20 + INT + SK_NTR + if(CS_NTR && @SK_NTR > 0,3)",
+                    ["NBL"] = "1d20 + INT + SK_NBL + if(CS_NBL && @SK_NBL > 0,3)",
+                    ["PLN"] = "1d20 + INT + SK_PLN + if(CS_PLN && @SK_PLN > 0,3)",
+                    ["RLG"] = "1d20 + INT + SK_RLG + if(CS_RLG && @SK_RLG > 0,3)",
+    
+                    ["LNG"] = "1d20 + INT + SK_LNG + if(CS_LNG && @SK_LNG > 0,3)",
+                    ["PRC"] = "1d20 + WIS + SK_PRC + if(CS_PRC && @SK_PRC > 0,3)",
+                    ["RDE"] = "1d20 + DEX + SK_RDE + if(CS_RDE && @SK_RDE > 0,3)",
+                    ["SNS"] = "1d20 + WIS + SK_SNS + if(CS_SNS && @SK_SNS > 0,3)",
+                    ["SLT"] = "1d20 + DEX + SK_SLT + if(CS_SLT && @SK_SLT > 0,3)",
+                    ["SPL"] = "1d20 + INT + SK_SPL + if(CS_SPL && @SK_SPL > 0,3)",
+                    ["STL"] = "1d20 + DEX + SK_STL + if(CS_STL && @SK_STL > 0,3)",
+                    ["SUR"] = "1d20 + WIS + SK_SUR + if(CS_SUR && @SK_SUR > 0,3)",
+                    ["SWM"] = "1d20 + STR + SK_SWM + if(CS_SWM && @SK_SWM > 0,3)",
+                    ["UMD"] = "1d20 + CHA + SK_UMD + if(CS_UMD && @SK_UMD > 0,3)",
 
+                    ["CS_ACR"] = "FALSE",
+                    ["CS_APR"] = "FALSE",
+                    ["CS_BLF"] = "FALSE",
+                    ["CS_CLM"] = "FALSE",
+                    ["CS_DIP"] = "FALSE",
+                    ["CS_DSA"] = "FALSE",
+                    ["CS_DSG"] = "FALSE",
+                    ["CS_ESC"] = "FALSE",
+                    ["CS_FLY"] = "FALSE",
+                    ["CS_HND"] = "FALSE",
+                    ["CS_HEA"] = "FALSE",
+                    ["CS_ITM"] = "FALSE",
+                    
+                    ["CS_ARC"] = "FALSE",
+                    ["CS_DUN"] = "FALSE",
+                    ["CS_ENG"] = "FALSE",
+                    ["CS_GEO"] = "FALSE",
+                    ["CS_HIS"] = "FALSE",
+                    ["CS_LCL"] = "FALSE",
+                    ["CS_NTR"] = "FALSE",
+                    ["CS_NBL"] = "FALSE",
+                    ["CS_PLN"] = "FALSE",
+                    ["CS_RLG"] = "FALSE",
+                    
+                    ["CS_LNG"] = "FALSE",
+                    ["CS_PRC"] = "FALSE",
+                    ["CS_RDE"] = "FALSE",
+                    ["CS_SNS"] = "FALSE",
+                    ["CS_SLT"] = "FALSE",
+                    ["CS_SPL"] = "FALSE",
+                    ["CS_STL"] = "FALSE",
+                    ["CS_SUR"] = "FALSE",
+                    ["CS_SWM"] = "FALSE",
+                    ["CS_UMD"] = "FALSE",
                 },
 
                 ExprRows = new Dictionary<string, ExprRow>()
@@ -361,10 +534,8 @@ namespace Gellybeans.Pathfinder
                             Set = new List<Expr>()
                             { 
                                 new Expr("FORT",    "FORT"),
-                                new Expr("REF",     "REFLEX"),
-                                new Expr("WILL",    "WILL"),
-                                new Expr("INIT",    "INIT"),
-                                new Expr("CMB",     "CMB"),                                
+                                new Expr("REF",     "REF"),
+                                new Expr("WILL",    "WILL"),                         
                             },                        
                         }
                     },
@@ -375,11 +546,11 @@ namespace Gellybeans.Pathfinder
 
                             Set = new List<Expr>()
                             {
-                                new Expr("ACRO",    "ACROBATICS"),
-                                new Expr("APPR",    "APPRAISE"),
-                                new Expr("BLFF",    "BLUFF"),
-                                new Expr("CLMB",    "CLIMB"),
-                                new Expr("DIPL",    "DIPLOMACY"),
+                                new Expr("ACRO",    "ACR"),
+                                new Expr("APPR",    "APR"),
+                                new Expr("BLFF",    "BLF"),
+                                new Expr("CLMB",    "CLM"),
+                                new Expr("DIPL",    "DPL"),
                             },            
                         }
                     },
@@ -390,11 +561,11 @@ namespace Gellybeans.Pathfinder
 
                             Set = new List<Expr>()
                             {
-                                new Expr("DISBL",    "DISABLE"),
-                                new Expr("ESC",     "ESCAPE"),
-                                new Expr("HND",    "HANDLE"),
-                                new Expr("HEAL",    "HEAL"),
-                                new Expr("INTI",    "INTIMIDATE"),
+                                new Expr("DISBL",   "DSA"),
+                                new Expr("ESC",     "ESC"),
+                                new Expr("HND",     "HND"),
+                                new Expr("HEAL",    "HEA"),
+                                new Expr("INTI",    "ITM"),
                             }, 
                         }
                     },
@@ -405,11 +576,11 @@ namespace Gellybeans.Pathfinder
 
                             Set = new List<Expr>()
                             {
-                                new Expr("ARCA",    "ARCANA"),
-                                new Expr("DNG",     "DUNGEONEERING"),
-                                new Expr("ENG",     "ENGINEERING"),
-                                new Expr("GEO",     "GEOGRAPHY"),
-                                new Expr("HIST",    "HISTORY"),
+                                new Expr("ARCA",    "ARC"),
+                                new Expr("DNG",     "DUN"),
+                                new Expr("ENG",     "ENG"),
+                                new Expr("GEO",     "GEO"),
+                                new Expr("HIST",    "HIS"),
                             },                   
                         }
                     },
@@ -420,11 +591,11 @@ namespace Gellybeans.Pathfinder
 
                             Set = new List<Expr>()
                             {
-                                new Expr("LOCL",    "LOCAL"),
-                                new Expr("NAT",     "NATURE"),
-                                new Expr("NOBL",    "NOBILITY"),
-                                new Expr("PLNS",    "PLANES"),
-                                new Expr("RLGN",    "RELIGION"),
+                                new Expr("LOCL",    "LCL"),
+                                new Expr("NAT",     "NAT"),
+                                new Expr("NOBL",    "NBL"),
+                                new Expr("PLNS",    "PLN"),
+                                new Expr("RLGN",    "RLG"),
                             },                    
                         }
                     },
@@ -435,26 +606,26 @@ namespace Gellybeans.Pathfinder
 
                             Set = new List<Expr>()
                             {
-                                new Expr("PERC",    "PERCEPTION"),
-                                new Expr("SENS",    "MOTIVE"),
-                                new Expr("SPEL",    "SPELLCRAFT"),
-                                new Expr("STL",     "STEALTH"),
-                                new Expr("SURV",    "SURVIVAL"),
+                                new Expr("PERC",    "PRC"),
+                                new Expr("SENS",    "SNS"),
+                                new Expr("SPEL",    "SPL"),
+                                new Expr("STL",     "STL"),
+                                new Expr("SURV",    "SUR"),
                             },
                         }
                     },
                     {
                         "$SK_SIX", new ExprRow()
                         {
-                            RowName = "$SK_MISC",
+                            RowName = "$SK_SIX",
 
                             Set = new List<Expr>()
                             {
-                                new Expr("DISG",    "DISGUISE"),
-                                new Expr("LING",    "LINGUISTICS"),
-                                new Expr("RIDE",    "RIDE"),
-                                new Expr("SLGT",    "SLEIGHT"),
-                                new Expr("SWIM",    "SWIM"),
+                                new Expr("DISG",    "DSG"),
+                                new Expr("LING",    "LNG"),
+                                new Expr("RIDE",    "RDE"),
+                                new Expr("SLGT",    "SLT"),
+                                new Expr("SWIM",    "SWM"),
                             },
                         }
                     },
@@ -533,46 +704,49 @@ namespace Gellybeans.Pathfinder
                     ["WIS_SCORE"] = 10,
                     ["CHA_SCORE"] = 10,
 
-                    ["PROF"] = 0,
+
 
                     ["AC_BASE"] = 10,
                     ["AC_MAXDEX"] = 99,
 
                     ["INITIATIVE"] = 0,
 
-                    ["SK_ACR"] = 0,
-                    ["SK_ANI"] = 0,
-                    ["SK_ARC"] = 0,
-                    ["SK_ATH"] = 0,
-                    ["SK_DEC"] = 0,
-                    ["SK_HIS"] = 0,
-                    ["SK_INS"] = 0,
-                    ["SK_INT"] = 0,
-                    ["SK_INV"] = 0,
-                    ["SK_MED"] = 0,
-                    ["SK_NAT"] = 0,
+                    ["SK_ACRO"] = 0,
+                    ["SK_ANIM"] = 0,
+                    ["SK_ARCA"] = 0,
+                    ["SK_ATHL"] = 0,
+                    ["SK_DECE"] = 0,
+                    ["SK_HIST"] = 0,
+                    ["SK_INSI"] = 0,
+                    ["SK_INTI"] = 0,
+                    ["SK_INVE"] = 0,
+                    ["SK_MEDI"] = 0,
+                    ["SK_NATU"] = 0,
                     ["SK_PERC"] = 0,
                     ["SK_PERF"] = 0,
                     ["SK_PERS"] = 0,
-                    ["SK_REL"] = 0,
-                    ["SK_SLT"] = 0,
-                    ["SK_STL"] = 0,
-                    ["SK_SUR"] = 0,
+                    ["SK_RELI"] = 0,
+                    ["SK_SLEI"] = 0,
+                    ["SK_STEA"] = 0,
+                    ["SK_SURV"] = 0,
 
                     ["ATK_BONUS"] = 0,
                     ["DMG_BONUS"] = 0,
                 },
 
                 Expressions = new Dictionary<string, string>()
-                {               
-                    ["HP"] = "HP_BASE + (CON * LEVEL)",                   
+                {
+                    ["LEVEL"] = "",
+                    
+                    ["HP"] = "HP_BASE + (CON * LEVEL)",
 
+                    ["PROF"] = "2 + (LEVEL - 1) / 4",
+                    
                     ["ATK_S"] = "1d20 + STR + PROF + ATK_BONUS",
                     ["ATK_D"] = "1d20 + DEX + PROF + ATK_BONUS",
                     ["ATK_I"] = "1d20 + INT + PROF + ATK_BONUS",
                     ["ATK_W"] = "1d20 + WIS + PROF + ATK_BONUS",
                     ["ATK_C"] = "1d20 + CHA + PROF + ATK_BONUS",
-
                     
                     ["STR"] = "mod(STR_SCORE)",
                     ["DEX"] = "mod(DEX_SCORE)",
@@ -593,24 +767,24 @@ namespace Gellybeans.Pathfinder
 
 
                     //skills
-                    ["ACRO"] = "1d20 + DEX + if(PROF_ACRO, PROF)",
-                    ["HAND"] = "1d20 + WIS + if(PROF_HAND, PROF)",
-                    ["ARCA"] = "1d20 + INT + if(PROF_ARCA, PROF)",
-                    ["ATHL"] = "1d20 + STR + if(PROF_ATHL, PROF)",
-                    ["DECE"] = "1d20 + CHA + if(PROF_DECE, PROF)",
-                    ["HIST"] = "1d20 + INT + if(PROF_HIST, PROF)",
-                    ["INSI"] = "1d20 + WIS + if(PROF_INSI, PROF)",
-                    ["INTI"] = "1d20 + CHA + if(PROF_INTI, PROF)",
-                    ["INVE"] = "1d20 + INT + if(PROF_INVE, PROF)",
-                    ["MEDI"] = "1d20 + WIS + if(PROF_MEDI, PROF)",
-                    ["NATU"] = "1d20 + INT + if(PROF_NATU, PROF)",
-                    ["PERC"] = "1d20 + WIS + if(PROF_PERC, PROF)",
-                    ["PERF"] = "1d20 + CHA + if(PROF_PERF, PROF)",
-                    ["PERS"] = "1d20 + CHA + if(PROF_PERS, PROF)",
-                    ["RELI"] = "1d20 + INT + if(PROF_RELI, PROF)",
-                    ["SLEI"] = "1d20 + DEX + if(PROF_SLEI, PROF)",
-                    ["STEA"] = "1d20 + DEX + if(PROF_STEA, PROF)",
-                    ["SURV"] = "1d20 + WIS + if(PROF_SURV, PROF)",
+                    ["ACRO"] = "1d20 + DEX + SK_ACR) + if(PROF_ACRO, PROF)",
+                    ["ANIM"] = "1d20 + WIS + SK_ANIM + if(PROF_ANIM, PROF)",
+                    ["ARCA"] = "1d20 + INT + SK_ACRA + if(PROF_ARCA, PROF)",
+                    ["ATHL"] = "1d20 + STR + SK_ATHL + if(PROF_ATHL, PROF)",
+                    ["DECE"] = "1d20 + CHA + SK_DECE + if(PROF_DECE, PROF)",
+                    ["HIST"] = "1d20 + INT + SK_HIST + if(PROF_HIST, PROF)",
+                    ["INSI"] = "1d20 + WIS + SK_INSI + if(PROF_INSI, PROF)",
+                    ["INTI"] = "1d20 + CHA + SK_INTI + if(PROF_INTI, PROF)",
+                    ["INVE"] = "1d20 + INT + SK_INVE + if(PROF_INVE, PROF)",
+                    ["MEDI"] = "1d20 + WIS + SK_MEDI + if(PROF_MEDI, PROF)",
+                    ["NATU"] = "1d20 + INT + SK_NATU + if(PROF_NATU, PROF)",
+                    ["PERC"] = "1d20 + WIS + SK_PERC + if(PROF_PERC, PROF)",
+                    ["PERF"] = "1d20 + CHA + SK_PERF + if(PROF_PERF, PROF)",
+                    ["PERS"] = "1d20 + CHA + SK_PERS + if(PROF_PERS, PROF)",
+                    ["RELI"] = "1d20 + INT + SK_RELI + if(PROF_RELI, PROF)",
+                    ["SLEI"] = "1d20 + DEX + SK_SLEI + if(PROF_SLEI, PROF)",
+                    ["STEA"] = "1d20 + DEX + SK_STEA + if(PROF_STEA, PROF)",
+                    ["SURV"] = "1d20 + WIS + SK_SURV + if(PROF_SURV, PROF)",
 
                     ["PASSIVE"] = "10 + WIS + if(PROF_PERC, PROF)",
 
@@ -624,7 +798,7 @@ namespace Gellybeans.Pathfinder
                     ["PROF_CHA"]    = "FALSE",
                     
                     ["PROF_ACRO"]   = "FALSE",
-                    ["PROF_HAND"]   = "FALSE",
+                    ["PROF_ANIM"]   = "FALSE",
                     ["PROF_ARCA"]   = "FALSE",
                     ["PROF_ATHL"]   = "FALSE",
                     ["PROF_DECE"]   = "FALSE",

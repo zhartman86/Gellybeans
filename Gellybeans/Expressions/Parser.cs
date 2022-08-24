@@ -19,7 +19,7 @@
         ExpressionNode ParseTernary()
         {           
             
-            var conditional = ParseEquals();
+            var conditional = ParseLogicalAndOr();
 
             while(true)
             {
@@ -31,13 +31,35 @@
 
                 tokenizer.NextToken();
 
-                var lhs = ParseEquals();
-                var rhs = ParseEquals();
+                var lhs = ParseLogicalAndOr();
+                var rhs = ParseLogicalAndOr();
 
                 conditional = new TernaryNode(conditional, lhs, rhs, op);
             }          
         }                 
              
+        
+        ExpressionNode ParseLogicalAndOr()
+        {
+            var lhs = ParseEquals();
+
+            while(true)
+            {
+                Func<int, int, int> op = null;
+
+                if(tokenizer.Token == TokenType.LogicalOr)          { op = (a, b) => (a == 1 || b == 1) ? 1 : 0; }
+                else if(tokenizer.Token == TokenType.LogicalAnd)    { op = (a, b) => (a == 1 && b == 1) ? 1 : 0; }
+
+                if(op == null) return lhs;
+
+                tokenizer.NextToken();
+
+                var rhs = ParseEquals();
+
+                lhs = new BinaryNode(lhs, rhs, op);
+            }
+        }
+        
         ExpressionNode ParseEquals()
         {
             var lhs = ParseGreaterLess();
@@ -237,8 +259,7 @@
                 if(tokenizer.Token != TokenType.OpenPar)
                 {
                     return new VarNode(name);
-                }
-            
+                }           
                 else
                 {
                     tokenizer.NextToken();
