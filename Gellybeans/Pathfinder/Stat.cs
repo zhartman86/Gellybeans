@@ -2,9 +2,10 @@
 {
     public class Stat
     {
-        public int      Value       { get { return Base + Bonus; } }
+        
         public int      Base        { get; set; } = 0;
-        public int      Bonus       { get; set; } = 0;
+        public int      Bonus       { get { return GetTotal(); } }
+        public int      Value       { get { return Base + Bonus; } }
 
         public List<Bonus> Bonuses { get; set; } = new List<Bonus>();
 
@@ -12,7 +13,16 @@
         public static implicit operator int(Stat stat)  => stat.Value;
         public static implicit operator Stat(int value) => new Stat { Base = value };
 
-        private void GetTotal()
+        public static Stat operator +(Stat a, Stat b)
+        {
+            var stat = new Stat() { Base = a.Base + b.Base };
+            a.Bonuses.AddRange(b.Bonuses);
+            return stat;
+        }
+
+
+
+        private int GetTotal()
         {
             Dictionary<BonusType, List<Bonus>> dict = new Dictionary<BonusType, List<Bonus>>();
             foreach(Bonus b in Bonuses)
@@ -23,7 +33,7 @@
                 //this is imporant. sort the highest bonus to the top—so that checking for bonuses that don't stack is easier.
                 dict[b.Type].Sort((x, y) => y.Value.CompareTo(x.Value));
             }
-            Bonus = GetTotal(dict);
+            return GetTotal(dict);
         }
         
         
@@ -55,7 +65,6 @@
         public Bonus AddBonus(Bonus b)
         {
             Bonuses.Add(b);
-            GetTotal();
             return b;
         }
 
@@ -63,10 +72,8 @@
         {
             if(Bonuses.Remove(b))
             {
-                GetTotal();
                 return true;
             }
-            GetTotal();
             return false;
         }
     
@@ -84,8 +91,6 @@
                 }                         
             }
             foreach(Bonus b in bonuses) RemoveBonus(b);
-            GetTotal();
-
             return count;
         }
     }

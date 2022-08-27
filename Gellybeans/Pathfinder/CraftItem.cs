@@ -37,6 +37,4 @@ namespace Gellybeans.Pathfinder
             else sb.AppendLine("Oh no! You've failed and destroyed half of the materials in the process!");
         }      
     }
-
-
 }

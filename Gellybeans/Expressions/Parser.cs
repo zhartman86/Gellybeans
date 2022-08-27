@@ -32,7 +32,7 @@
                 tokenizer.NextToken();
 
                 var lhs = ParseLogicalAndOr();
-                var rhs = ParseLogicalAndOr();
+                var rhs = ParseTernary();
 
                 conditional = new TernaryNode(conditional, lhs, rhs, op);
             }          
@@ -286,7 +286,7 @@
                     return new FunctionNode(name, args.ToArray());
                 }
             }
-
+            Console.WriteLine($"Unexpected symbol: {tokenizer.Token}");
             throw new Exception($"Unexpected symbol: {tokenizer.Token}");
         }
      
