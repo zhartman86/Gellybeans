@@ -58,7 +58,7 @@ namespace Gellybeans.Expressions
 
                 case '$':
                     NextChar();
-                    currentToken = TokenType.AssignBon;
+                    currentToken = TokenType.GetBon;
                     return;
 
                 case '|':

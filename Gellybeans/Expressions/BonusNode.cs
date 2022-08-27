@@ -2,7 +2,7 @@
 
 namespace Gellybeans.Expressions
 {
-    public class AssignBonusNode : ExpressionNode
+    public class BonusNode : ExpressionNode
     {
         string          lhs;
         string          bonusName;
@@ -10,7 +10,7 @@ namespace Gellybeans.Expressions
         ExpressionNode  bonusValue;
         TokenType       assignType;
 
-        public AssignBonusNode(string lhs, string bonusName, ExpressionNode bonusType, ExpressionNode bonusValue, TokenType assignType)
+        public BonusNode(string lhs, string bonusName, ExpressionNode bonusType, ExpressionNode bonusValue, TokenType assignType)
         {
             this.lhs        = lhs;
             this.bonusName  = bonusName;
@@ -23,7 +23,7 @@ namespace Gellybeans.Expressions
         {          
             var bType   = bonusType != null ? bonusType.Eval(ctx, sb) : 0;
             var bVal    = bonusValue != null ? bonusValue.Eval(ctx, sb) : 0;
-            var result  = ctx.AssignBonus(lhs, bonusName, bType, bVal, assignType, sb);
+            var result  = ctx.Bonus(lhs, bonusName, bType, bVal, assignType, sb);
 
             return result;
         }

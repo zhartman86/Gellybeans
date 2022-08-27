@@ -26,7 +26,9 @@
                     },
                     SetExpressions = new Dictionary<string, string>()
                     {
-                        ["RAGE_RNDS"] = "(4 + CON) + ((BARBARIAN_LEVEL - 1) * 2)"
+                        ["RAGE_RNDS"] = "(4 + CON) + ((BARBARIAN_LEVEL - 1) * 2)",
+                        ["RAGE_PWRS"] = "(BARBARIAN / 2)",
+
                     },
                     ModExpressions = new Dictionary<string, string>()
                     {
@@ -68,7 +70,8 @@
                     },
                     SetExpressions = new Dictionary<string, string>()
                     {
-                        ["CHANNELS"] = "(3 + CHA)"
+                        ["CHANNELS"] = "(3 + CHA)",
+                        ["CHANNEL_DMG"] = "(1d6 * (CLERIC_LEVEL / 2))"
                     },
                     ModExpressions = new Dictionary<string, string>()
                     {
@@ -135,7 +138,7 @@
                     },
                     SetExpressions = new Dictionary<string, string>()
                     {
-
+                        ["DMG_UNARMED"] = "MONK_LEVEL < 4 ? 1d4 : MONK_LEVEL < 8 ? 1d6 : MONK_LEVEL < 12 ? 1d8 : MONK_LEVEL < 16 ? 1d10 : MONK_LEVEL < 20 ? 2d6 : 2d8"
                     },
                     ModExpressions = new Dictionary<string, string>()
                     {
@@ -143,8 +146,8 @@
                         ["FORT_BASE"]   = "good(MONK_LEVEL)",
                         ["REF_BASE"]    = "good(MONK_LEVEL)",
                         ["WILL_BASE"]   = "good(MONK_LEVEL)",
-                        ["AC"]          = "(WIS + MONK_LEVEL >= 4 ? 1 + (MONK_LEVEL - 4) / 4 : 0)",
-                        ["CMD"]         = "(WIS + MONK_LEVEL >= 4 ? 1 + (MONK_LEVEL - 4) / 4 : 0)",
+                        ["AC"]          = "(WIS + (MONK_LEVEL / 4) : 0)",
+                        ["CMD"]         = "(WIS + (MONK_LEVEL / 4) : 0)",
                     }
                 }
             },
@@ -159,7 +162,7 @@
                     SetExpressions = new Dictionary<string, string>()
                     {
                         ["SMITES"]      = "(1 + PALADIN_LEVEL >= 4 ? 1 + (PALADIN_LEVEL - 4) / 3 : 0)",
-                        ["SMITE_DMG"]   = "(PALADIN_LEVEL * 2)",
+                        ["DMG_SMITE"]   = "(PALADIN_LEVEL * 2)",
                         ["LOH"]         = "(PALADIN_LEVEL > 1 ? ((PALADIN_LEVEL - 1) / 2) + CHA : 0)",
                     },
                     ModExpressions = new Dictionary<string, string>()
@@ -237,7 +240,7 @@
             {
                 "PF_WIZARD", new Template()
                 {
-                    Name = "",
+                    Name = "WIZARD",
                     Stats = new Dictionary<string, Stat>()
                     {
                         ["WIZARD_LEVEL"] = 1,
@@ -301,7 +304,7 @@
             {
                 "PF_GUNSLINGER", new Template()
                 {
-                    Name = "",
+                    Name = "GUNSLINGER",
                     Stats = new Dictionary<string, Stat>()
                     {
                         ["GUNSLINGER_LEVEL"] = 1,
@@ -322,7 +325,7 @@
             {
                 "PF_INQUISITOR", new Template()
                 {
-                    Name = "",
+                    Name = "INQUISITOR",
                     Stats = new Dictionary<string, Stat>()
                     {
                         ["INQUISITOR_LEVEL"] = 1,
@@ -405,8 +408,7 @@
                         ["WILL_BASE"]   = "good(OMDURA_LEVEL)",
                     }
                 }
-            },
-            
+            },          
             {
                 "PF_SHIFTER", new Template()
                 {
@@ -793,7 +795,7 @@
             {
                 "PF_UC_BARBARIAN", new Template()
                 {
-                    Name = "BARBARIAN",
+                    Name = "UC_BARBARIAN",
                     Stats = new Dictionary<string, Stat>()
                     {
                         ["BARBARIAN_LEVEL"] = 1,
@@ -814,7 +816,7 @@
             {
                 "PF_UC_MONK", new Template()
                 {
-                    Name = "MONK",
+                    Name = "UC_MONK",
                     Stats = new Dictionary<string, Stat>()
                     {
                         ["MONK_LEVEL"] = 1,
@@ -835,7 +837,7 @@
             {
                 "PF_UC_ROGUE", new Template()
                 {
-                    Name = "ROGUE",
+                    Name = "UC_ROGUE",
                     Stats = new Dictionary<string, Stat>()
                     {
                         ["ROGUE_LEVEL"] = 1,
@@ -856,7 +858,7 @@
             {
                 "PF_UC_SUMMONER", new Template()
                 {
-                    Name = "SUMMONER",
+                    Name = "UC_SUMMONER",
                     Stats = new Dictionary<string, Stat>()
                     {
                         ["SUMMONER_LEVEL"] = 1,

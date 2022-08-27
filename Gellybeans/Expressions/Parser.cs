@@ -232,7 +232,7 @@
                     return lh;
                 }
 
-                if(tokenizer.Token == TokenType.AssignBon || tokenizer.Token == TokenType.AssignAddBon || tokenizer.Token == TokenType.AssignSubBon)
+                if(tokenizer.Token == TokenType.GetBon || tokenizer.Token == TokenType.AssignAddBon || tokenizer.Token == TokenType.AssignSubBon)
                 {
                     var type = tokenizer.Token;
                     tokenizer.NextToken();
@@ -241,17 +241,23 @@
                         var bName = tokenizer.Identifier;
                         tokenizer.NextToken();
 
-                        AssignBonusNode lh;
+                        BonusNode lh;
+                        if(type == TokenType.GetBon)
+                        {
+                            lh = new BonusNode(name, bName, null, null, type);
+                            return lh;
+                        }
+                        
                         if(type == TokenType.AssignSubBon)
                         {
-                            lh = new AssignBonusNode(name, bName, null, null, type);
+                            lh = new BonusNode(name, bName, null, null, type);
                             return lh;
                         }
 
                         var bType = ParseTernary();
                         var bVal = ParseTernary();
  
-                        lh = new AssignBonusNode(name, bName, bType, bVal, type);
+                        lh = new BonusNode(name, bName, bType, bVal, type);
                         return lh;
                     }                                 
                 }

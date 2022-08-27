@@ -20,7 +20,15 @@
             return stat;
         }
 
-
+        public int GetBonus(BonusType type)
+        {
+            Bonuses.Sort((x, y) => y.Value.CompareTo(x.Value));
+            if(Bonuses.Any(x => x.Type == type))
+            {
+                return Bonuses.First(x => x.Type == type).Value;
+            }
+            return 0;
+        }
 
         private int GetTotal()
         {
@@ -30,7 +38,7 @@
                 if(!dict.ContainsKey(b.Type)) dict[b.Type] = new List<Bonus>();
                 dict[b.Type].Add(b);
                 
-                //this is imporant. sort the highest bonus to the top—so that checking for bonuses that don't stack is easier.
+                //this is imporant. sort the highest bonus to the top so that checking for bonuses that don't stack is easier.
                 dict[b.Type].Sort((x, y) => y.Value.CompareTo(x.Value));
             }
             return GetTotal(dict);

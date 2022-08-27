@@ -125,7 +125,7 @@ namespace Gellybeans.Pathfinder
             return sb.ToString();
         }
 
-        string RemoveTemplate(string templateName, StringBuilder sb)
+        public string RemoveTemplate(string templateName, StringBuilder sb)
         {
             if(!Templates.ContainsKey(templateName))
             {
@@ -135,7 +135,11 @@ namespace Gellybeans.Pathfinder
                 
             foreach(var stat in Templates[templateName].Stats)
                 if(Stats.Remove(stat.Key)) 
-                    sb.AppendLine($"{stat.Key} removed from stats.");
+                    sb.AppendLine($"{stat.Key} removed from stats");
+
+            foreach(var expr in Templates[templateName].SetExpressions)
+                if(Expressions.Remove(expr.Key))
+                    sb.AppendLine($"{expr.Key} removed from expressions");
 
             Templates.Remove(templateName);
             sb.AppendLine($"{templateName} removed");
@@ -243,8 +247,14 @@ namespace Gellybeans.Pathfinder
             return Stats[toUpper].Base;
         }
 
-        public int AssignBonus(string statName, string bonusName, int type, int value, TokenType assignType, StringBuilder sb)
-        {
+        public int Bonus(string statName, string bonusName, int type, int value, TokenType assignType, StringBuilder sb)
+        {           
+            if(assignType == TokenType.GetBon)
+            {
+                var result = Parser.Parse(bonusName).Eval(this, sb);
+                    return Stats[statName].GetBonus((BonusType)result);         
+            }            
+            
             if(Enum.GetName(typeof(BonusType), type) == null)
             {
                 sb.AppendLine("Invalid bonus type.");
@@ -300,6 +310,7 @@ namespace Gellybeans.Pathfinder
                 Constants = new Dictionary<string, int>()
                 {
                     //bonus types
+                    ["TYPELESS"]        = 0,
                     ["ALCHEMICAL"]      = 1,
                     ["ARMOR"]           = 2,
                     ["CIRCUMSTANCE"]    = 3,
@@ -318,8 +329,7 @@ namespace Gellybeans.Pathfinder
                     ["SACRED"]          = 16,
                     ["SHIELD"]          = 17,
                     ["SIZE"]            = 18,
-                    ["TRAIT"]           = 19,
-                                  
+                    ["TRAIT"]           = 19,                                 
                 },
                 
                 
@@ -330,7 +340,7 @@ namespace Gellybeans.Pathfinder
                     ["SIZE_MOD"] = 0,
                     ["SIZE_MAN"] = 0,
                     ["SIZE_FLY"] = 0,
-                    ["SIZE_STEALTH"] = 0,
+                    ["SIZE_STL"] = 0,
 
                     ["HP_BASE"] = 0,
                     ["HP_TEMP"] = 0,
@@ -351,23 +361,24 @@ namespace Gellybeans.Pathfinder
                     ["WIS_TEMP"] = 0,
                     ["CHA_TEMP"] = 0,
 
-                    ["FORT_BONUS"] = 0,
-                    ["REF_BONUS"] = 0,
-                    ["WILL_BONUS"] = 0,
+                    ["SAVE_FORT"] = 0,
+                    ["SAVE_REF"] = 0,
+                    ["SAVE_WILL"] = 0,
                     
                     ["MOVE"] = 0,
 
-                    ["INIT_BONUS"] = 0,
+                    ["BAB"] = 0,
 
-                    ["AC_BONUS"] = 0,
+                    ["INIT_BONUS"] = 0,
+                    ["CMB_BONUS"] = 0,
+                    ["CMD_BONUS"] = 0,
+
+                    ["AC_BONUS"] = 10,
                     ["AC_MAXDEX"] = 99,
                     ["AC_PENALTY"] = 0,
                  
                     ["ATK_BONUS"]   = 0,
-                    ["TW_PEN"]      = -2,
-
                     ["DMG_BONUS"]   = 0,
-
 
                     //magic
                     ["CL"] = 0,
@@ -409,6 +420,10 @@ namespace Gellybeans.Pathfinder
                     ["SK_SWM"] = 0,
                     ["SK_UMD"] = 0,
 
+                    ["PP"] = 0,
+                    ["GP"] = 0,
+                    ["SP"] = 0,
+                    ["CP"] = 0
                 },
 
                 Expressions = new Dictionary<string, string>()
@@ -422,23 +437,19 @@ namespace Gellybeans.Pathfinder
                     ["WIS"] = "mod(WIS_SCORE)",
                     ["CHA"] = "mod(CHA_SCORE)",
 
+                    ["FORT"]    = "1d20 + SAVE_FORT + CON",
+                    ["REF"]     = "1d20 + SAVE_REF + DEX",
+                    ["WILL"]    = "1d20 + SAVE_WILL + WIS",
 
-                    ["FORT_BASE"]   = "",
-                    ["REF_BASE"]    = "",
-                    ["WILL_BASE"]   = "",
+                    ["INIT"]    = "1d20 + INIT_BONUS + DEX",
 
-                    ["FORT"]    = "1d20 + FORT_BONUS + FORT_BASE + CON",
-                    ["REF"]     = "1d20 + REF_BONUS + REFLEX_BASE + DEX",
-                    ["WILL"]    = "1d20 + WILL_BONUS + WILL_BASE + WIS",
+                    ["AC"]      = "AC_BONUS + min(DEX, AC_MAXDEX) + SIZE_MOD",
+                    ["TOUCH"]   = "AC - ((AC_BONUS $ ARMOR) + (AC_BONUS $ SHIELD) + (AC_BONUS $ NATURAL))",
+                    ["FLAT"]    = "AC - ((AC_BONUS $ DODGE) + DEX)",
 
-                    ["INIT"]    = "1d20 + INITIATIVE + DEX",
-
-                    ["AC"]      = "ARMOR_BONUS + min(DEX, AC_MAXDEX) + SIZE_MOD",
-
-                    ["CMB"]     = "1d20 + BAB + STR + SIZE_MOD",
-                    ["CMD"]     = "10 + BAB + STR + DEX + SIZE_MOD",
-
-                    ["BAB"]     = "0",
+                    ["CMB"]     = "1d20 + BAB + STR + SIZE_MOD + CMB_BONUS",
+                    ["CMD"]     = "10 + BAB + STR + DEX + SIZE_MOD + CMD_BONUS",
+                    
                     ["ATK"]     = "BAB + SIZE_MOD + ATK_BONUS",                  
 
                     ["ATK_S"]   = "ATK + STR + (STR_TEMP / 2)",
@@ -460,40 +471,41 @@ namespace Gellybeans.Pathfinder
 
                     
                     //skills
-                    ["ACR"] = "1d20 + DEX + SK_ACR",// + if(CS_ACR && @SK_ACR > 0,3)",
-                    ["APR"] = "1d20 + INT + SK_APR",// + if(CS_APR && @SK_APR > 0,3)",
-                    ["BLF"] = "1d20 + CHA + SK_BLF",// + if(CS_BLF && @SK_BLF > 0,3)",
-                    ["CLM"] = "1d20 + STR + SK_CLM",// + if(CS_CLM && @SK_CLM > 0,3)",
-                    ["DIP"] = "1d20 + CHA + SK_DIP",// + if(CS_DIP && @SK_DIP > 0,3)",
-                    ["DSA"] = "1d20 + DEX + SK_DSA",// + if(CS_DSA && @SK_DSA > 0,3)",
-                    ["DSG"] = "1d20 + CHA + SK_DSG",// + if(CS_DSG && @SK_DSG > 0,3)",
-                    ["ESC"] = "1d20 + DEX + SK_ESC",// + if(CS_ESC && @SK_ESC > 0,3)",
-                    ["FLY"] = "1d20 + DEX + SK_FLY",// + if(CS_FLY && @SK_FLY > 0,3)",
-                    ["HND"] = "1d20 + DEX + SK_HND",// + if(CS_HND && @SK_HND > 0,3)",
-                    ["HEA"] = "1d20 + WIS + SK_HEA",// + if(CS_HEA && @SK_HEA > 0,3)",
-                    ["ITM"] = "1d20 + CHA + SK_ITM",// + if(CS_ITM && @SK_ITM > 0,3)",
-                                        
-                    ["ARC"] = "1d20 + INT + SK_ARC",// + if(CS_ARC && @SK_ARC > 0,3)",
-                    ["DUN"] = "1d20 + INT + SK_DUN",// + if(CS_DUN && @SK_DUN > 0,3)",
-                    ["ENG"] = "1d20 + INT + SK_ENG",// + if(CS_ENG && @SK_ENG > 0,3)",
-                    ["GEO"] = "1d20 + INT + SK_GEO",// + if(CS_GEO && @SK_GEO > 0,3)",
-                    ["HIS"] = "1d20 + INT + SK_HIS",// + if(CS_HIS && @SK_HIS > 0,3)",
-                    ["LCL"] = "1d20 + INT + SK_LCL",// + if(CS_LCL && @SK_LCL > 0,3)",
-                    ["NTR"] = "1d20 + INT + SK_NTR",// + if(CS_NTR && @SK_NTR > 0,3)",
-                    ["NBL"] = "1d20 + INT + SK_NBL",// + if(CS_NBL && @SK_NBL > 0,3)",
-                    ["PLN"] = "1d20 + INT + SK_PLN",// + if(CS_PLN && @SK_PLN > 0,3)",
-                    ["RLG"] = "1d20 + INT + SK_RLG",// + if(CS_RLG && @SK_RLG > 0,3)",
+                    ["ACR"] = "1d20 + DEX + SK_ACR + AC_PENALTY",
+                    ["APR"] = "1d20 + INT + SK_APR",
+                    ["BLF"] = "1d20 + CHA + SK_BLF",
+                    ["CLM"] = "1d20 + STR + SK_CLM + AC_PENALTY",
+                    ["DIP"] = "1d20 + CHA + SK_DIP",
+                    ["DSA"] = "1d20 + DEX + SK_DSA + AC_PENALTY",
+                    ["DSG"] = "1d20 + CHA + SK_DSG",
+                    ["ESC"] = "1d20 + DEX + SK_ESC + AC_PENALTY",
+                    ["FLY"] = "1d20 + DEX + SK_FLY + AC_PENALTY",
+                    ["HND"] = "1d20 + DEX + SK_HND",
+                    ["HEA"] = "1d20 + WIS + SK_HEA",
+                    ["ITM"] = "1d20 + CHA + SK_ITM",
+                    ["LNG"] = "1d20 + INT + SK_LNG",
+                    ["PRC"] = "1d20 + WIS + SK_PRC",
+                    ["RDE"] = "1d20 + DEX + SK_RDE + AC_PENALTY",
+                    ["SNS"] = "1d20 + WIS + SK_SNS",
+                    ["SLT"] = "1d20 + DEX + SK_SLT + AC_PENALTY",
+                    ["SPL"] = "1d20 + INT + SK_SPL",
+                    ["STL"] = "1d20 + DEX + SK_STL + AC_PENALTY",
+                    ["SUR"] = "1d20 + WIS + SK_SUR",
+                    ["SWM"] = "1d20 + STR + SK_SWM + AC_PENALTY",
+                    ["UMD"] = "1d20 + CHA + SK_UMD",
+
+                    ["ARC"] = "1d20 + INT + SK_ARC",
+                    ["DUN"] = "1d20 + INT + SK_DUN",
+                    ["ENG"] = "1d20 + INT + SK_ENG",
+                    ["GEO"] = "1d20 + INT + SK_GEO",
+                    ["HIS"] = "1d20 + INT + SK_HIS",
+                    ["LCL"] = "1d20 + INT + SK_LCL",
+                    ["NTR"] = "1d20 + INT + SK_NTR",
+                    ["NBL"] = "1d20 + INT + SK_NBL",
+                    ["PLN"] = "1d20 + INT + SK_PLN",
+                    ["RLG"] = "1d20 + INT + SK_RLG",
                                                  
-                    ["LNG"] = "1d20 + INT + SK_LNG",// + if(CS_LNG && @SK_LNG > 0,3)",
-                    ["PRC"] = "1d20 + WIS + SK_PRC",// + if(CS_PRC && @SK_PRC > 0,3)",
-                    ["RDE"] = "1d20 + DEX + SK_RDE",// + if(CS_RDE && @SK_RDE > 0,3)",
-                    ["SNS"] = "1d20 + WIS + SK_SNS",// + if(CS_SNS && @SK_SNS > 0,3)",
-                    ["SLT"] = "1d20 + DEX + SK_SLT",// + if(CS_SLT && @SK_SLT > 0,3)",
-                    ["SPL"] = "1d20 + INT + SK_SPL",// + if(CS_SPL && @SK_SPL > 0,3)",
-                    ["STL"] = "1d20 + DEX + SK_STL",// + if(CS_STL && @SK_STL > 0,3)",
-                    ["SUR"] = "1d20 + WIS + SK_SUR",// + if(CS_SUR && @SK_SUR > 0,3)",
-                    ["SWM"] = "1d20 + STR + SK_SWM",// + if(CS_SWM && @SK_SWM > 0,3)",
-                    ["UMD"] = "1d20 + CHA + SK_UMD",// + if(CS_UMD && @SK_UMD > 0,3)",
+                   
 
                     //["CS_ACR"] = "FALSE",
                     //["CS_APR"] = "FALSE",
@@ -635,53 +647,7 @@ namespace Gellybeans.Pathfinder
                                 new Expr("SWIM",    "SWM"),
                             },
                         }
-                    },
-                    {
-                        "LONGSWORD", new ExprRow()
-                        {
-                            RowName = "LONGSWORD",
-
-                            Set = new List<Expr>()
-                            {
-                                new Expr("HIT",     "1d20 + ATK_S"),
-                                new Expr("DMG_M",   "1d8 + DMG"),
-                                new Expr("DMG_TH",  "1d8 + DMG_TH"),
-                                new Expr("CRIT_M",  "(1d8*2) + DMG*2"),
-                                new Expr("CRIT_TH", "(1d8*2) + DMG_TH*2"),
-                            },
-                        }                       
-                    },
-                    {
-                        "SHIELD_HEAVY", new ExprRow()
-                        {
-                            RowName = "SHIELD_HEAVY",
-
-                            Set = new List<Expr>()
-                            {
-                                new Expr("HIT",     "1d20 + ATK_S"),
-                                new Expr("DMG_M",   "1d4 + DMG"),
-                                new Expr("DMG_OH",  "1d4 + DMG_OH"),
-                                new Expr("CRIT_M",  "(1d4*2) + DMG*2"),
-                                new Expr("CRIT_OH", "(1d4*2) + DMG_OH*2"),
-                            },
-                        }
-                    },
-                    {
-                        "LONGBOW", new ExprRow()
-                        {
-                            RowName = "LONGBOW",
-
-                            Set = new List<Expr>()
-                            {
-                                new Expr("HIT",         "1d20 + ATK_D"),
-                                new Expr("DMG",         "1d8"),
-                                new Expr("CRIT",        "1d8*3"),
-                                new Expr("DMG_COMP",    "1d8 + DMG"),
-                                new Expr("CRT_COMP",    "(1d8*3) + DMG*3"),
-                            },
-                        }
-
-                    },
+                    },                    
                 },
                 
                 Grids = new Dictionary<string, string[]>()
