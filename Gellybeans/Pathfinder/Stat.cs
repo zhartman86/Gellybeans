@@ -23,18 +23,20 @@
         public int GetBonus(BonusType type)
         {
             Bonuses.Sort((x, y) => y.Value.CompareTo(x.Value));
+            
             if(Bonuses.Any(x => x.Type == type))
-            {
                 return Bonuses.First(x => x.Type == type).Value;
-            }
             return 0;
         }
 
         private int GetTotal()
-        {
+        {         
             Dictionary<BonusType, List<Bonus>> dict = new Dictionary<BonusType, List<Bonus>>();
             foreach(Bonus b in Bonuses)
             {
+               
+
+
                 if(!dict.ContainsKey(b.Type)) dict[b.Type] = new List<Bonus>();
                 dict[b.Type].Add(b);
                 
@@ -72,6 +74,9 @@
 
         public Bonus AddBonus(Bonus b)
         {
+            if(b.Value == 0)
+                return null;
+
             Bonuses.Add(b);
             return b;
         }

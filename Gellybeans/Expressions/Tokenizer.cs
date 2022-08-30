@@ -41,6 +41,11 @@ namespace Gellybeans.Expressions
                     currentToken = TokenType.EOF;
                     return;
 
+                case '~':
+                    NextChar();
+                    currentToken = TokenType.Comment;
+                    return;
+                
                 case '=':
                     NextChar();
                     if(currentChar == '=')
@@ -223,15 +228,15 @@ namespace Gellybeans.Expressions
 
             if(char.IsLetter(currentChar) || currentChar == '_' || currentChar == '@')
             {
-                var builder = new StringBuilder();
+                var sb = new StringBuilder();
 
                 while(char.IsLetterOrDigit(currentChar) || currentChar == '_' || currentChar == '@')
                 {
-                    builder.Append(currentChar);
+                    sb.Append(currentChar);
                     NextChar();
                 }
 
-                identifier = builder.ToString();
+                identifier = sb.ToString();
                 currentToken = TokenType.Var;
                 return;
             }

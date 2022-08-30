@@ -4,8 +4,8 @@
     {
         public string   Name        { get; set; } = "Name Me";
         public string   Description { get; set; } = "";
-        public float    Value       { get; set; } = 0;
-        public float    Weight      { get; set; } = 0;
+        public decimal  Value       { get; set; } = 0;
+        public decimal  Weight      { get; set; } = 0;
 
         public static bool operator ==(Item a, Item b) { return a.Name == b.Name; }
         public static bool operator !=(Item a, Item b) { return !(a == b); }

@@ -12,13 +12,16 @@
         public ExpressionNode ParseExpr()
         {
             var expr = ParseTernary();
-            if(tokenizer.Token != TokenType.EOF) throw new Exception("Unexpected character at end of expression.");        
+            if(tokenizer.Token != TokenType.EOF)
+            {
+                Console.WriteLine($"Unexpected character {tokenizer.Identifier} at end of expression.");
+                throw new Exception("Unexpected character at end of expression.");
+            }                      
             return expr;
         }               
-        
+
         ExpressionNode ParseTernary()
-        {           
-            
+        {                    
             var conditional = ParseLogicalAndOr();
 
             while(true)
@@ -150,7 +153,7 @@
         ExpressionNode ParseUnary()
         {
             while(true)
-            {
+            {                   
                 if(tokenizer.Token == TokenType.Add)
                 {
                     tokenizer.NextToken();
@@ -169,14 +172,14 @@
         }
         
         ExpressionNode ParseLeaf()
-        {                     
+        {
             if(tokenizer.Token == TokenType.Number)
             {
                 var node = new NumberNode(tokenizer.Number);
                 tokenizer.NextToken();
                 return node;
-            }
-         
+            }      
+
             if(tokenizer.Token == TokenType.OpenPar)
             {
                 tokenizer.NextToken();
@@ -232,6 +235,22 @@
                     return lh;
                 }
 
+                if(tokenizer.Token == TokenType.GetBon)
+                {
+                    var type = tokenizer.Token;
+                    tokenizer.NextToken();
+
+                    var bName = tokenizer.Token == TokenType.Var ? 
+                        tokenizer.Identifier : tokenizer.Token == TokenType.Number ? 
+                        tokenizer.Number.ToString() : "";
+
+                    tokenizer.NextToken();
+
+                    if(bName != "")
+                        return new BonusNode(name, bName, null, null, type);
+
+                }
+
                 if(tokenizer.Token == TokenType.GetBon || tokenizer.Token == TokenType.AssignAddBon || tokenizer.Token == TokenType.AssignSubBon)
                 {
                     var type = tokenizer.Token;
@@ -280,7 +299,6 @@
                             tokenizer.NextToken();
                             continue;
                         }
-
                         break;
                     }
 
@@ -290,8 +308,9 @@
                     tokenizer.NextToken();
 
                     return new FunctionNode(name, args.ToArray());
-                }
+                }             
             }
+
             Console.WriteLine($"Unexpected symbol: {tokenizer.Token}");
             throw new Exception($"Unexpected symbol: {tokenizer.Token}");
         }
@@ -306,8 +325,5 @@
             var parser = new Parser(tokenizer);
             return parser.ParseExpr();
         }
-    
-    
-        
     }
 }

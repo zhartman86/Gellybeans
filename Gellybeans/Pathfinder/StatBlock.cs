@@ -41,7 +41,7 @@ namespace Gellybeans.Pathfinder
             get
             {
                 if(Stats.ContainsKey(statName))
-                    return Stats[statName].Value;
+                    return Stats[statName].Value;            
                 
                 return 0;
             }
@@ -53,27 +53,44 @@ namespace Gellybeans.Pathfinder
             }
         }
 
+        public string InventoryOut()
+        {   
+            var sb = new StringBuilder();
+    
+            sb.AppendLine("```");
+            sb.AppendLine($"{CharacterName}'s Inventory");
+            sb.AppendLine();
+
+            decimal wTotal = 0;
+            decimal vTotal = 0;
+            sb.AppendLine($"|{"#",-4}|{"NAME",-17} |{"WEIGHT",-10} |{"VALUE",-8}");
+            sb.AppendLine("--------------------------------------------");
+            for(int i = 0; i < Inventory.Count; i++)
+            {
+                sb.AppendLine($"|{i,-4}|{Inventory[i].Name,-17} |{Inventory[i].Weight,-10} |{Inventory[i].Value,-8}");
+                wTotal += Inventory[i].Weight;
+                vTotal += Inventory[i].Value;
+            }
+
+            sb.AppendLine("______________________");
+            sb.AppendLine($"{"ITEM COUNT",-15}|{Inventory.Count}\n{"WEIGHT TOTAL",-15}|{wTotal}\n{"VALUE TOTAL",-15}|{vTotal}");
+            sb.AppendLine("```");
+            
+            return sb.ToString();
+        }
         
         public void AddBonuses(List<StatModifier> bonuses)
         {
             for(int i = 0; i < bonuses.Count; i++)
-            {
                 Stats[bonuses[i].StatName].AddBonus(bonuses[i].Bonus);
-            }
         }
 
         public void ClearBonus(string bonusName)
         {
             foreach(var stat in Stats.Values)
-            {
                 for(int i = 0; i < stat.Bonuses.Count; i++)
-                {
                     if(stat.Bonuses[i].Name == bonusName)
-                    {
                         stat.RemoveBonus(stat.Bonuses[i]);
-                    }
-                }
-            }
         }
         
         public string AddTemplate(string templateName, StringBuilder sb)
@@ -166,12 +183,7 @@ namespace Gellybeans.Pathfinder
 
         public int Resolve(string varName, StringBuilder sb)
         {
-            var toUpper = varName.ToUpper();
-
-            if(toUpper == "TRUE")   
-                return 1;
-            if(toUpper == "FALSE")  
-                return 0;
+            var toUpper = varName.ToUpper();      
             if(Constants.ContainsKey(toUpper)) 
                 return Constants[toUpper];           
             
@@ -188,12 +200,9 @@ namespace Gellybeans.Pathfinder
             {
                 string templateExprs = "";
                 foreach(var template in Templates.Values)
-                {
                     if(template.ModExpressions.ContainsKey(toUpper))
-                    {
                         templateExprs += $" + {template.ModExpressions[toUpper]}";
-                    }
-                }
+                
                 var total = Expressions[toUpper];
                 if(templateExprs != "") total += templateExprs;
                 
@@ -201,19 +210,30 @@ namespace Gellybeans.Pathfinder
                 return Parser.Parse(total).Eval(this, sb);
             }
 
-            sb.AppendLine($"{varName} not found.");
+            sb.AppendLine($"{varName} not found");
             return 0;
         }
 
         public int Assign(string statName, int assignment, TokenType assignType, StringBuilder sb)
-        {
+        {          
+            if(Stats.Count > 100)
+            {
+                sb.AppendLine("stat count limited to 100");
+                return -99;
+            }
+                      
             var toUpper = statName.ToUpper();
             if(Expressions.ContainsKey(toUpper))
             {
-                sb.AppendLine("Cannot assign value to expression. Use /var Set-Expression instead.");
+                sb.AppendLine("Cannot assign value to an expression using /eval. Use /var Set-Expression instead");
                 return -99;
             }
-
+            if(Constants.ContainsKey(toUpper))
+            {
+                sb.AppendLine("Cannot change a constant value");
+                return -99;
+            }
+            
             if(!Stats.ContainsKey(toUpper)) Stats[toUpper] = 0;
 
             switch(assignType)
@@ -244,7 +264,7 @@ namespace Gellybeans.Pathfinder
             }
             sb.AppendLine($"{toUpper} set to {Stats[toUpper].Base}");
             OnValueChanged(statName);
-            return Stats[toUpper].Base;
+            return Stats[toUpper];
         }
 
         public int Bonus(string statName, string bonusName, int type, int value, TokenType assignType, StringBuilder sb)
@@ -252,18 +272,19 @@ namespace Gellybeans.Pathfinder
             if(assignType == TokenType.GetBon)
             {
                 var result = Parser.Parse(bonusName).Eval(this, sb);
-                    return Stats[statName].GetBonus((BonusType)result);         
+                return Stats[statName].GetBonus((BonusType)result);         
             }            
             
             if(Enum.GetName(typeof(BonusType), type) == null)
             {
-                sb.AppendLine("Invalid bonus type.");
+                sb.AppendLine("Invalid bonus type");
                 return -99;
             }
+            
             var toUpper = statName.ToUpper();
             if(Expressions.ContainsKey(toUpper))
             {
-                sb.AppendLine("Cannot assign value to expression. Use /var Set-Expression instead.");
+                sb.AppendLine("Cannot assign bonus to expression");
                 return -99;
             }
 
@@ -309,6 +330,10 @@ namespace Gellybeans.Pathfinder
 
                 Constants = new Dictionary<string, int>()
                 {
+                    ["TRUE"]            = 1,
+                    ["FALSE"]           = 0,
+
+
                     //bonus types
                     ["TYPELESS"]        = 0,
                     ["ALCHEMICAL"]      = 1,
@@ -329,7 +354,9 @@ namespace Gellybeans.Pathfinder
                     ["SACRED"]          = 16,
                     ["SHIELD"]          = 17,
                     ["SIZE"]            = 18,
-                    ["TRAIT"]           = 19,                                 
+                    ["TRAIT"]           = 19,
+
+                    ["ORCUS"]           = 666,
                 },
                 
                 
@@ -338,13 +365,10 @@ namespace Gellybeans.Pathfinder
                     ["LEVEL"] = 1,
 
                     ["SIZE_MOD"] = 0,
-                    ["SIZE_MAN"] = 0,
                     ["SIZE_FLY"] = 0,
                     ["SIZE_STL"] = 0,
 
                     ["HP_BASE"] = 0,
-                    ["HP_TEMP"] = 0,
-                    ["HP_DMG"] = 0,
 
                     ["STR_SCORE"] = 10,
                     ["DEX_SCORE"] = 10,
@@ -361,9 +385,9 @@ namespace Gellybeans.Pathfinder
                     ["WIS_TEMP"] = 0,
                     ["CHA_TEMP"] = 0,
 
-                    ["SAVE_FORT"] = 0,
-                    ["SAVE_REF"] = 0,
-                    ["SAVE_WILL"] = 0,
+                    ["FORT_BONUS"]  = 0,
+                    ["REF_BONUS"]   = 0,
+                    ["WILL_BONUS"]  = 0,
                     
                     ["MOVE"] = 0,
 
@@ -376,12 +400,9 @@ namespace Gellybeans.Pathfinder
                     ["AC_BONUS"] = 10,
                     ["AC_MAXDEX"] = 99,
                     ["AC_PENALTY"] = 0,
-                 
+               
                     ["ATK_BONUS"]   = 0,
                     ["DMG_BONUS"]   = 0,
-
-                    //magic
-                    ["CL"] = 0,
 
 
                     //skills
@@ -397,18 +418,6 @@ namespace Gellybeans.Pathfinder
                     ["SK_HND"] = 0,
                     ["SK_HEA"] = 0,
                     ["SK_ITM"] = 0,
-                    
-                    ["SK_ARC"] = 0,
-                    ["SK_DUN"] = 0,
-                    ["SK_ENG"] = 0,
-                    ["SK_GEO"] = 0,
-                    ["SK_HIS"] = 0,
-                    ["SK_LCL"] = 0,
-                    ["SK_NTR"] = 0,
-                    ["SK_NBL"] = 0,
-                    ["SK_PLN"] = 0,
-                    ["SK_RLG"] = 0,
-                    
                     ["SK_LNG"] = 0,
                     ["SK_PRC"] = 0,
                     ["SK_RDE"] = 0,
@@ -420,6 +429,17 @@ namespace Gellybeans.Pathfinder
                     ["SK_SWM"] = 0,
                     ["SK_UMD"] = 0,
 
+                    ["SK_ARC"] = 0,
+                    ["SK_DUN"] = 0,
+                    ["SK_ENG"] = 0,
+                    ["SK_GEO"] = 0,
+                    ["SK_HIS"] = 0,
+                    ["SK_LCL"] = 0,
+                    ["SK_NTR"] = 0,
+                    ["SK_NBL"] = 0,
+                    ["SK_PLN"] = 0,
+                    ["SK_RLG"] = 0,
+
                     ["PP"] = 0,
                     ["GP"] = 0,
                     ["SP"] = 0,
@@ -428,18 +448,18 @@ namespace Gellybeans.Pathfinder
 
                 Expressions = new Dictionary<string, string>()
                 {
-                    ["HP"] = "HP_BASE + (CON * LEVEL)",
+                    ["HP"]      = "HP_BASE + (CON * LEVEL)",
 
-                    ["STR"] = "mod(STR_SCORE)",
-                    ["DEX"] = "mod(DEX_SCORE)",
-                    ["CON"] = "mod(CON_SCORE)",
-                    ["INT"] = "mod(INT_SCORE)",
-                    ["WIS"] = "mod(WIS_SCORE)",
-                    ["CHA"] = "mod(CHA_SCORE)",
-
-                    ["FORT"]    = "1d20 + SAVE_FORT + CON",
-                    ["REF"]     = "1d20 + SAVE_REF + DEX",
-                    ["WILL"]    = "1d20 + SAVE_WILL + WIS",
+                    ["STR"]     = "mod(STR_SCORE)",
+                    ["DEX"]     = "mod(DEX_SCORE)",
+                    ["CON"]     = "mod(CON_SCORE)",
+                    ["INT"]     = "mod(INT_SCORE)",
+                    ["WIS"]     = "mod(WIS_SCORE)",
+                    ["CHA"]     = "mod(CHA_SCORE)",                   
+                    
+                    ["FORT"]    = "1d20 + FORT_BASE + CON",
+                    ["REF"]     = "1d20 + REF_BASE + DEX",
+                    ["WILL"]    = "1d20 + WILL_BASE + WIS",
 
                     ["INIT"]    = "1d20 + INIT_BONUS + DEX",
 
@@ -447,27 +467,21 @@ namespace Gellybeans.Pathfinder
                     ["TOUCH"]   = "AC - ((AC_BONUS $ ARMOR) + (AC_BONUS $ SHIELD) + (AC_BONUS $ NATURAL))",
                     ["FLAT"]    = "AC - ((AC_BONUS $ DODGE) + DEX)",
 
-                    ["CMB"]     = "1d20 + BAB + STR + SIZE_MOD + CMB_BONUS",
-                    ["CMD"]     = "10 + BAB + STR + DEX + SIZE_MOD + CMD_BONUS",
+                    ["CMB"]     = "1d20 + BAB + STR + CMB_BONUS - SIZE_MOD",
+                    ["CMD"]     = "10 + BAB + STR + DEX + CMD_BONUS - SIZE_MOD",
                     
                     ["ATK"]     = "BAB + SIZE_MOD + ATK_BONUS",                  
 
-                    ["ATK_S"]   = "ATK + STR + (STR_TEMP / 2)",
-                    ["ATK_D"]   = "ATK + DEX + (DEX_TEMP / 2)",
-                    ["ATK_C"]   = "ATK + CON + (CON_TEMP / 2)",
-                    ["ATK_I"]   = "ATK + INT + (INT_TEMP / 2)",
-                    ["ATK_W"]   = "ATK + WIS + (WIS_TEMP / 2)",
-                    ["ATK_C"]   = "ATK + CHA + (CHA_TEMP / 2)",
+                    ["ATK_STR"]   = "ATK + STR + (STR_TEMP / 2)",
+                    ["ATK_DEX"]   = "ATK + DEX + (DEX_TEMP / 2)",
+                    ["ATK_CON"]   = "ATK + CON + (CON_TEMP / 2)",
+                    ["ATK_INT"]   = "ATK + INT + (INT_TEMP / 2)",
+                    ["ATK_WIS"]   = "ATK + WIS + (WIS_TEMP / 2)",
+                    ["ATK_CHA"]   = "ATK + CHA + (CHA_TEMP / 2)",
 
-
-                    ["DMG"]     = "STR + DMG_BONUS",
+                    ["DMG"]     = "STR + DMG_BONUS + (STR_TEMP / 2)",
                     ["DMG_TH"]  = "DMG + (DMG / 2)",
                     ["DMG_OH"]  = "DMG / 2",
-
-                    //magic
-                    ["SPELL_MOD"]   = "INT",
-                    ["CONCENTRATE"] = "1d20 + SPELL_MOD + CL",
-
 
                     
                     //skills
@@ -658,7 +672,7 @@ namespace Gellybeans.Pathfinder
            
             return statBlock;
         }
-            
+    
         public static StatBlock DefaultFifthEd(string name)
         {
             var statBlock = new StatBlock()

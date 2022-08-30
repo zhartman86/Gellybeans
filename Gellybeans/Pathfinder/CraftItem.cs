@@ -6,9 +6,9 @@ namespace Gellybeans.Pathfinder
     {
         public string   Item        { get; set; }
         public int      Difficulty  { get; set; }
-        public int      Price { get; set; }
+        public int      Price       { get; set; }
 
-        public int Progress { get; set; } = 0;
+        public int      Progress    { get; set; } = 0;
 
         public void Craft(int result, StringBuilder sb)
         {

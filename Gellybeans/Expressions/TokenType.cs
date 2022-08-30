@@ -41,6 +41,7 @@ namespace Gellybeans.Expressions
         OpenPar,
         ClosePar,
         Comma,
+        Comment,
         Var,
         Dice,
         EOF,       
