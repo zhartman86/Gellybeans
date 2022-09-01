@@ -34,9 +34,6 @@
             Dictionary<BonusType, List<Bonus>> dict = new Dictionary<BonusType, List<Bonus>>();
             foreach(Bonus b in Bonuses)
             {
-               
-
-
                 if(!dict.ContainsKey(b.Type)) dict[b.Type] = new List<Bonus>();
                 dict[b.Type].Add(b);
                 

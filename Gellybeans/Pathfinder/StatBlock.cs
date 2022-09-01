@@ -22,7 +22,7 @@ namespace Gellybeans.Pathfinder
         public Dictionary<string, Stat>         Stats       { get; private set; } = new Dictionary<string, Stat>();        
         public Dictionary<string, string>       Expressions { get; private set; } = new Dictionary<string, string>();
         public Dictionary<string, Template>     Templates   { get; private set; } = new Dictionary<string, Template>();
-        public Dictionary<string, int>          Constants   { get; private set; } = new Dictionary<string, int>();
+        
 
         public Dictionary<string, ExprRow>      ExprRows    { get; private set; } = new Dictionary<string, ExprRow>();
         public Dictionary<string, string[]>     Grids       { get; private set; } = new Dictionary<string, string[]>();
@@ -34,6 +34,36 @@ namespace Gellybeans.Pathfinder
 
         public List<Item> Inventory { get; set; } = new List<Item>();
 
+        public Dictionary<string, int> Constants { get; private set; } = new Dictionary<string, int>()
+        {
+            ["TRUE"] = 1,
+            ["FALSE"] = 0,
+
+
+            //bonus types
+            ["TYPELESS"] = 0,
+            ["ALCHEMICAL"] = 1,
+            ["ARMOR"] = 2,
+            ["CIRCUMSTANCE"] = 3,
+            ["COMPETENCE"] = 4,
+            ["DEFLECTION"] = 5,
+            ["DODGE"] = 6,
+            ["ENHANCEMENT"] = 7,
+            ["INHERENT"] = 8,
+            ["INSIGHT"] = 9,
+            ["LUCK"] = 10,
+            ["MORALE"] = 11,
+            ["NATURAL"] = 12,
+            ["PROFANE"] = 13,
+            ["RACIAL"] = 14,
+            ["RESISTANCE"] = 15,
+            ["SACRED"] = 16,
+            ["SHIELD"] = 17,
+            ["SIZE"] = 18,
+            ["TRAIT"] = 19,
+
+            ["ORCUS"] = 666,
+        };
 
 
         public int this[string statName]
@@ -327,39 +357,7 @@ namespace Gellybeans.Pathfinder
                     ["EYES"] = "",
                     ["BIO"] = ""
                 },
-
-                Constants = new Dictionary<string, int>()
-                {
-                    ["TRUE"]            = 1,
-                    ["FALSE"]           = 0,
-
-
-                    //bonus types
-                    ["TYPELESS"]        = 0,
-                    ["ALCHEMICAL"]      = 1,
-                    ["ARMOR"]           = 2,
-                    ["CIRCUMSTANCE"]    = 3,
-                    ["COMPETENCE"]      = 4,
-                    ["DEFLECTION"]      = 5,
-                    ["DODGE"]           = 6,
-                    ["ENHANCEMENT"]     = 7,
-                    ["INHERENT"]        = 8,
-                    ["INSIGHT"]         = 9,
-                    ["LUCK"]            = 10,
-                    ["MORALE"]          = 11,
-                    ["NATURAL"]         = 12,
-                    ["PROFANE"]         = 13,
-                    ["RACIAL"]          = 14,
-                    ["RESISTANCE"]      = 15,
-                    ["SACRED"]          = 16,
-                    ["SHIELD"]          = 17,
-                    ["SIZE"]            = 18,
-                    ["TRAIT"]           = 19,
-
-                    ["ORCUS"]           = 666,
-                },
-                
-                
+             
                 Stats = new Dictionary<string, Stat>()
                 {
                     ["LEVEL"] = 1,
@@ -479,7 +477,9 @@ namespace Gellybeans.Pathfinder
                     ["ATK_WIS"]   = "ATK + WIS + (WIS_TEMP / 2)",
                     ["ATK_CHA"]   = "ATK + CHA + (CHA_TEMP / 2)",
 
-                    ["DMG"]     = "STR + DMG_BONUS + (STR_TEMP / 2)",
+                    ["DMG_MOD"] = "STR + (STR_TEMP/2)",
+                    
+                    ["DMG"]     = "DMG_MOD + DMG_BONUS + (STR_TEMP / 2)",
                     ["DMG_TH"]  = "DMG + (DMG / 2)",
                     ["DMG_OH"]  = "DMG / 2",
 
@@ -493,7 +493,7 @@ namespace Gellybeans.Pathfinder
                     ["DSA"] = "1d20 + DEX + SK_DSA + AC_PENALTY",
                     ["DSG"] = "1d20 + CHA + SK_DSG",
                     ["ESC"] = "1d20 + DEX + SK_ESC + AC_PENALTY",
-                    ["FLY"] = "1d20 + DEX + SK_FLY + AC_PENALTY",
+                    ["FLY"] = "1d20 + DEX + SK_FLY + AC_PENALTY + SIZE_FLY",
                     ["HND"] = "1d20 + DEX + SK_HND",
                     ["HEA"] = "1d20 + WIS + SK_HEA",
                     ["ITM"] = "1d20 + CHA + SK_ITM",
@@ -503,7 +503,7 @@ namespace Gellybeans.Pathfinder
                     ["SNS"] = "1d20 + WIS + SK_SNS",
                     ["SLT"] = "1d20 + DEX + SK_SLT + AC_PENALTY",
                     ["SPL"] = "1d20 + INT + SK_SPL",
-                    ["STL"] = "1d20 + DEX + SK_STL + AC_PENALTY",
+                    ["STL"] = "1d20 + DEX + SK_STL + AC_PENALTY + SIZE_STL",
                     ["SUR"] = "1d20 + WIS + SK_SUR",
                     ["SWM"] = "1d20 + STR + SK_SWM + AC_PENALTY",
                     ["UMD"] = "1d20 + CHA + SK_UMD",

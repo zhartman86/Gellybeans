@@ -4,17 +4,14 @@
     {
         Tokenizer tokenizer;
 
-        public Parser(Tokenizer tokenizer)
-        {
-            this.tokenizer = tokenizer;
-        }
+        public Parser(Tokenizer tokenizer) => this.tokenizer = tokenizer;
 
         public ExpressionNode ParseExpr()
         {
             var expr = ParseTernary();
             if(tokenizer.Token != TokenType.EOF)
             {
-                Console.WriteLine($"Unexpected character {tokenizer.Identifier} at end of expression.");
+                Console.WriteLine($"Unexpected character {tokenizer.CurrentChar} at end of expression. TOKEN:{tokenizer.Token}");
                 throw new Exception("Unexpected character at end of expression.");
             }                      
             return expr;

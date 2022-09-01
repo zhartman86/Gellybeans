@@ -17,6 +17,7 @@ namespace Gellybeans.Expressions
         public TokenType    Token       { get { return currentToken; } }       
         public int          Number      { get { return number; } }
         public string       Identifier  { get { return identifier; } }
+        public char         CurrentChar { get { return currentChar; } }
         
         public Tokenizer(TextReader textReader)
         {
