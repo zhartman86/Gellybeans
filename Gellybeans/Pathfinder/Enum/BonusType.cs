@@ -21,6 +21,7 @@
         Sacred          = 16,
         Shield          = 17,
         Size            = 18,
-        Trait           = 19
+        Trait           = 19,
+        Penalty         = 20,
     }
 }

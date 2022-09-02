@@ -22,8 +22,12 @@
 
         public int GetBonus(BonusType type)
         {
-            Bonuses.Sort((x, y) => y.Value.CompareTo(x.Value));
+            if(Bonuses.Count == 0)
+                return 0;
             
+            if(Bonuses.Count > 2)
+                Bonuses.Sort((x, y) => y.Value.CompareTo(x.Value));
+
             if(Bonuses.Any(x => x.Type == type))
                 return Bonuses.First(x => x.Type == type).Value;
             return 0;
@@ -60,6 +64,11 @@
                         list.Add(bonusList[i].Name);                                                  
                         total += bonusList[i].Value;
                     }
+                }
+                else if(bonusList[0].Type == BonusType.Penalty)
+                {
+                    for(int i = 0; i < bonusList.Count; i++)
+                        total += bonusList[i].Value;
                 }
                 else
                 {
