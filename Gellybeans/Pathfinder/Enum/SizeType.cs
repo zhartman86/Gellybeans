@@ -2,14 +2,14 @@
 {
     public enum SizeType
     {
-        Fine,
-        Diminutive,
-        Tiny,
-        Small,
-        Medium,
-        Large,
-        Huge,
-        Gargantuan,
-        Colossal
+        Fine = 8,
+        Diminutive = 4,
+        Tiny = 2,
+        Small = 1,
+        Medium = 0,
+        Large = -1,
+        Huge = -2,
+        Gargantuan = -4,
+        Colossal = -8
     }
 }

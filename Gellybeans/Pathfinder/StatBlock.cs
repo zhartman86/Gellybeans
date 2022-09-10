@@ -15,7 +15,6 @@ namespace Gellybeans.Pathfinder
         public event EventHandler<string> ValueChanged;
         void OnValueChanged(string varChanged) { ValueChanged?.Invoke(this, varChanged); }
 
-
         public string CharacterName { get; set; } = "Name me";
 
 
@@ -194,7 +193,7 @@ namespace Gellybeans.Pathfinder
             return sb.ToString();
         }
 
-        
+
         //IContext
         public int Call(string methodName, int[] args) => methodName switch
         {
@@ -344,7 +343,7 @@ namespace Gellybeans.Pathfinder
 
         public static StatBlock DefaultPathfinder(string name)
         {
-            var statBlock = new StatBlock()
+            var stats = new StatBlock()
             {
                 CharacterName = name,
 
@@ -366,7 +365,6 @@ namespace Gellybeans.Pathfinder
 
                     ["SIZE_MOD"] = 0,
                     ["SIZE_FLY"] = 0,
-                    ["SIZE_STL"] = 0,
 
                     ["HP_BASE"] = 0,
 
@@ -460,8 +458,7 @@ namespace Gellybeans.Pathfinder
                     ["FORT"]    = "1d20 + FORT_BASE + CON",
                     ["REF"]     = "1d20 + REF_BASE + DEX",
                     ["WILL"]    = "1d20 + WILL_BASE + WIS",
-
-   
+  
                     ["INIT"]    = "1d20 + INIT_BONUS + DEX",
                     
                     ["MAXDEX"]  = "max(0, AC_MAXDEX)",                    
@@ -470,26 +467,23 @@ namespace Gellybeans.Pathfinder
                     ["FLAT"]    = "AC - ((AC_BONUS $ DODGE) + DEX)",
 
                     ["CMB"]     = "1d20 + BAB + STR + CMB_BONUS - SIZE_MOD",
-                    ["CMD"]     = "10 + BAB + STR + DEX + CMD_BONUS - SIZE_MOD",
+                    ["CMD"]     = "10 + BAB + STR + DEX + CMD_BONUS + ((AC_BONUS $ CIRCUMSTANCE) + (AC_BONUS $ DEFLECTION) + (AC_BONUS $ DODGE) + (AC_BONUS $ INSIGHT) + (AC_BONUS $ LUCK) + (AC_BONUS $ MORALE) + (AC_BONUS $ PROFANE) + (AC_BONUS $ SACRED))  - SIZE_MOD",
                     
-                    ["ATK"]     = "BAB + SIZE_MOD + ATK_BONUS",                  
+                    ["ATK"]     = "BAB + SIZE_MOD + ATK_BONUS",
 
-                    ["ATK_STR"] = "1d20 + (mod(STR_SCORE - (STR_SCORE $ ENHANCEMENT)) + ((STR_TEMP - (STR_TEMP $ ENHANCEMENT))/2) + max(STR_SCORE $ ENHANCEMENT, STR_TEMP $ ENHANCEMENT) / 2) + ATK",
-                    ["ATK_DEX"] = "1d20 + (mod(DEX_SCORE - (DEX_SCORE $ ENHANCEMENT)) + ((DEX_TEMP - (DEX_TEMP $ ENHANCEMENT))/2) + max(DEX_SCORE $ ENHANCEMENT, DEX_TEMP $ ENHANCEMENT) / 2) + ATK",
-                    ["ATK_CON"] = "1d20 + (mod(CON_SCORE - (CON_SCORE $ ENHANCEMENT)) + ((CON_TEMP - (CON_TEMP $ ENHANCEMENT))/2) + max(CON_SCORE $ ENHANCEMENT, CON_TEMP $ ENHANCEMENT) / 2) + ATK",
-                    ["ATK_INT"] = "1d20 + (mod(INT_SCORE - (INT_SCORE $ ENHANCEMENT)) + ((INT_TEMP - (INT_TEMP $ ENHANCEMENT))/2) + max(INT_SCORE $ ENHANCEMENT, INT_TEMP $ ENHANCEMENT) / 2) + ATK",
-                    ["ATK_WIS"] = "1d20 + (mod(WIS_SCORE - (WIS_SCORE $ ENHANCEMENT)) + ((WIS_TEMP - (WIS_TEMP $ ENHANCEMENT))/2) + max(WIS_SCORE $ ENHANCEMENT, WIS_TEMP $ ENHANCEMENT) / 2) + ATK",
-                    ["ATK_CHA"] = "1d20 + (mod(CHA_SCORE - (CHA_SCORE $ ENHANCEMENT)) + ((CHA_TEMP - (CHA_TEMP $ ENHANCEMENT))/2) + max(CHA_SCORE $ ENHANCEMENT, CHA_TEMP $ ENHANCEMENT) / 2) + ATK",
-
-                    ["DMG_STR"] = "(mod(STR_SCORE - (STR_SCORE $ ENHANCEMENT)) + ((STR_TEMP - (STR_TEMP $ ENHANCEMENT))/2) + max(STR_SCORE $ ENHANCEMENT, STR_TEMP $ ENHANCEMENT) / 2) + DMG_BONUS",                
-                    ["DMG_DEX"] = "(mod(DEX_SCORE - (DEX_SCORE $ ENHANCEMENT)) + ((DEX_TEMP - (DEX_TEMP $ ENHANCEMENT))/2) + max(DEX_SCORE $ ENHANCEMENT, DEX_TEMP $ ENHANCEMENT) / 2) + DMG_BONUS",                
-                    ["DMG_CON"] = "(mod(CON_SCORE - (CON_SCORE $ ENHANCEMENT)) + ((CON_TEMP - (CON_TEMP $ ENHANCEMENT))/2) + max(CON_SCORE $ ENHANCEMENT, CON_TEMP $ ENHANCEMENT) / 2) + DMG_BONUS",                
-                    ["DMG_INT"] = "(mod(INT_SCORE - (INT_SCORE $ ENHANCEMENT)) + ((INT_TEMP - (INT_TEMP $ ENHANCEMENT))/2) + max(INT_SCORE $ ENHANCEMENT, INT_TEMP $ ENHANCEMENT) / 2) + DMG_BONUS",                
-                    ["DMG_WIS"] = "(mod(WIS_SCORE - (WIS_SCORE $ ENHANCEMENT)) + ((WIS_TEMP - (WIS_TEMP $ ENHANCEMENT))/2) + max(WIS_SCORE $ ENHANCEMENT, WIS_TEMP $ ENHANCEMENT) / 2) + DMG_BONUS",                
-                    ["DMG_CHA"] = "(mod(CHA_SCORE - (CHA_SCORE $ ENHANCEMENT)) + ((CHA_TEMP - (CHA_TEMP $ ENHANCEMENT))/2) + max(CHA_SCORE $ ENHANCEMENT, CHA_TEMP $ ENHANCEMENT) / 2) + DMG_BONUS",                
-
-           
-
+                    ["ATK_STR"] = "1d20 + (STR + (STR_TEMP / 2)) - (min(STR_SCORE $ ENHANCEMENT, STR_TEMP $ ENHANCEMENT) / 2) + ATK",
+                    ["ATK_DEX"] = "1d20 + (DEX + (DEX_TEMP / 2)) - (min(DEX_SCORE $ ENHANCEMENT, DEX_TEMP $ ENHANCEMENT) / 2) + ATK",
+                    ["ATK_CON"] = "1d20 + (CON + (CON_TEMP / 2)) - (min(CON_SCORE $ ENHANCEMENT, CON_TEMP $ ENHANCEMENT) / 2) + ATK",
+                    ["ATK_INT"] = "1d20 + (INT + (INT_TEMP / 2)) - (min(INT_SCORE $ ENHANCEMENT, INT_TEMP $ ENHANCEMENT) / 2) + ATK",
+                    ["ATK_WIS"] = "1d20 + (WIS + (WIS_TEMP / 2)) - (min(WIS_SCORE $ ENHANCEMENT, WIS_TEMP $ ENHANCEMENT) / 2) + ATK",
+                    ["ATK_CHA"] = "1d20 + (CHA + (CHA_TEMP / 2)) - (min(CHA_SCORE $ ENHANCEMENT, CHA_TEMP $ ENHANCEMENT) / 2) + ATK",
+                    
+                    ["DMG_STR"] = "(STR + (STR_TEMP / 2)) - (min(STR_SCORE $ ENHANCEMENT, STR_TEMP $ ENHANCEMENT) / 2) + DMG_BONUS",
+                    ["DMG_DEX"] = "(DEX + (DEX_TEMP / 2)) - (min(DEX_SCORE $ ENHANCEMENT, DEX_TEMP $ ENHANCEMENT) / 2) + DMG_BONUS",
+                    ["DMG_CON"] = "(CON + (CON_TEMP / 2)) - (min(CON_SCORE $ ENHANCEMENT, CON_TEMP $ ENHANCEMENT) / 2) + DMG_BONUS",
+                    ["DMG_INT"] = "(INT + (INT_TEMP / 2)) - (min(INT_SCORE $ ENHANCEMENT, INT_TEMP $ ENHANCEMENT) / 2) + DMG_BONUS",
+                    ["DMG_WIS"] = "(WIS + (WIS_TEMP / 2)) - (min(WIS_SCORE $ ENHANCEMENT, WIS_TEMP $ ENHANCEMENT) / 2) + DMG_BONUS",
+                    ["DMG_CHA"] = "(CHA + (CHA_TEMP / 2)) - (min(CHA_SCORE $ ENHANCEMENT, CHA_TEMP $ ENHANCEMENT) / 2) + DMG_BONUS",
                     
                     //skills
                     ["ACR"] = "1d20 + DEX + SK_ACR + AC_PENALTY",
@@ -500,7 +494,7 @@ namespace Gellybeans.Pathfinder
                     ["DSA"] = "1d20 + DEX + SK_DSA + AC_PENALTY",
                     ["DSG"] = "1d20 + CHA + SK_DSG",
                     ["ESC"] = "1d20 + DEX + SK_ESC + AC_PENALTY",
-                    ["FLY"] = "1d20 + DEX + SK_FLY + AC_PENALTY + SIZE_FLY",
+                    ["FLY"] = "1d20 + DEX + SK_FLY + AC_PENALTY + SIZE_SKL",
                     ["HND"] = "1d20 + DEX + SK_HND",
                     ["HEA"] = "1d20 + WIS + SK_HEA",
                     ["ITM"] = "1d20 + CHA + SK_ITM",
@@ -510,7 +504,7 @@ namespace Gellybeans.Pathfinder
                     ["SNS"] = "1d20 + WIS + SK_SNS",
                     ["SLT"] = "1d20 + DEX + SK_SLT + AC_PENALTY",
                     ["SPL"] = "1d20 + INT + SK_SPL",
-                    ["STL"] = "1d20 + DEX + SK_STL + AC_PENALTY + SIZE_STL",
+                    ["STL"] = "1d20 + DEX + SK_STL + AC_PENALTY + (SIZE_SKL * 2)",
                     ["SUR"] = "1d20 + WIS + SK_SUR",
                     ["SWM"] = "1d20 + STR + SK_SWM + AC_PENALTY",
                     ["UMD"] = "1d20 + CHA + SK_UMD",
@@ -674,10 +668,10 @@ namespace Gellybeans.Pathfinder
                 Grids = new Dictionary<string, string[]>()
                 {
                     { "SK", new string[5] { "SK_ONE","SK_TWO","SK_THREE","SK_FOUR","SK_FIVE" } }
-                }
+                },           
             };
-           
-            return statBlock;
+
+            return stats;
         }
     
         public static StatBlock DefaultFifthEd(string name)

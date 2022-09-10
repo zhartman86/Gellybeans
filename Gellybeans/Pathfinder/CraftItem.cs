@@ -26,14 +26,10 @@ namespace Gellybeans.Pathfinder
                     sb.AppendLine($"{Item} completed! :)");
                 }
                 else
-                {
                     sb.AppendLine($"You've made {Progress} of {Price} toward a completed {Item}.");
-                }
             }
             else if(Difficulty - result < 5)
-            {
                 sb.AppendLine($"You've made no progress toward {Item} this week :(");
-            }
             else sb.AppendLine("Oh no! You've failed and destroyed half of the materials in the process!");
         }      
     }

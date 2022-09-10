@@ -5,7 +5,7 @@ namespace Gellybeans.Pathfinder
     public class ExprRow
     {
         public string       RowName { get; init; } = "NAME_ME";
-        public List<Expr>   Set     { get; init; } = new List<Expr>();      
+        public List<Expr>   Set     { get; set; } = new List<Expr>();      
 
         public override string ToString()
         {   
