@@ -116,17 +116,16 @@ namespace Gellybeans.Pathfinder
 
         public void ClearBonus(string bonusName)
         {
+            var bonusToUpper = bonusName.ToUpper();
             foreach(var stat in Stats.Values)
-                for(int i = 0; i < stat.Bonuses.Count; i++)
-                    if(stat.Bonuses[i].Name == bonusName)
-                        stat.RemoveBonus(stat.Bonuses[i]);
+                stat.RemoveBonus(bonusToUpper);
         }
         
         public int ClearBonuses()
         {
             foreach(var stat in Stats.Values)
             {
-                stat.BaseMod = null;
+                stat.Override = null;
                 stat.Bonuses.Clear();
             }
             return 1;
@@ -375,7 +374,7 @@ namespace Gellybeans.Pathfinder
                     ["LEVEL"] = 1,
 
                     ["SIZE_MOD"] = 0,
-                    ["SIZE_FLY"] = 0,
+                    ["SIZE_SKL"] = 0,
 
                     ["HP_BASE"] = 0,
 

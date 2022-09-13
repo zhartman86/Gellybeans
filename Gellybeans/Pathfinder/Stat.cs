@@ -5,10 +5,16 @@
         
         public int      Base        { get; set; } = 0;
         public int      Bonus       { get { return GetTotal(); } }
-        public int      Value       { get { return (BaseMod != null ? BaseMod.Value : Base) + Bonus; } }
+        public int      Value       { 
+            get 
+            {
+                if(ReferenceEquals(Override, null)) return Base + Bonus;
+                return Override.Value; 
+            }
+        }
 
         public List<Bonus>  Bonuses { get; set; } = new List<Bonus>();
-        public Bonus        BaseMod { get; set; } = null;
+        public Bonus        Override { get; set; } = null;
 
         public static implicit operator int(Stat stat)  => stat.Value;
         public static implicit operator Stat(int value) => new Stat { Base = value };
@@ -34,15 +40,15 @@
         }
 
         private int GetTotal()
-        {         
+        {
             Dictionary<BonusType, List<Bonus>> dict = new Dictionary<BonusType, List<Bonus>>();
             foreach(Bonus b in Bonuses)
-            {
-                if(!dict.ContainsKey(b.Type)) dict[b.Type] = new List<Bonus>();
-                dict[b.Type].Add(b);
-                
-                //this is imporant. sort the highest bonus to the top so that checking for bonuses that don't stack is easier.
-                dict[b.Type].Sort((x, y) => y.Value.CompareTo(x.Value));
+            {             
+                    if(!dict.ContainsKey(b.Type)) dict[b.Type] = new List<Bonus>();
+                    dict[b.Type].Add(b);
+
+                    //this is imporant. sort the highest bonus to the top so that checking for bonuses that don't stack is easier.
+                    dict[b.Type].Sort((x, y) => y.Value.CompareTo(x.Value));           
             }
             return GetTotal(dict);
         }
@@ -82,7 +88,7 @@
         {
             if(b.Type == BonusType.Base)
             {
-                BaseMod = b;
+                Override = b;
                 return b;
             }
             
@@ -108,7 +114,14 @@
             int count = 0;
             var bonuses = new List<Bonus>();
 
-            if(BaseMod.Name == bonusToUpper) BaseMod = null;
+            if(!ReferenceEquals(Override, null))
+            {
+                if(Override.Name == bonusToUpper)
+                {
+                    Override = null;
+                }
+            }
+            
             for(int i = 0; i < Bonuses.Count; i++)
             {            
                 if(Bonuses[i].Name == bonusToUpper)
