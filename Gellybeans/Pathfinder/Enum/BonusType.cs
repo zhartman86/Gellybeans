@@ -23,5 +23,6 @@
         Size            = 18,
         Trait           = 19,
         Penalty         = 20,
+        Base            = 21,
     }
 }

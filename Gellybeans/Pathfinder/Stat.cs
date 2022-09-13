@@ -5,10 +5,10 @@
         
         public int      Base        { get; set; } = 0;
         public int      Bonus       { get { return GetTotal(); } }
-        public int      Value       { get { return Base + Bonus; } }
+        public int      Value       { get { return (BaseMod != null ? BaseMod.Value : Base) + Bonus; } }
 
-        public List<Bonus> Bonuses { get; set; } = new List<Bonus>();
-
+        public List<Bonus>  Bonuses { get; set; } = new List<Bonus>();
+        public Bonus        BaseMod { get; set; } = null;
 
         public static implicit operator int(Stat stat)  => stat.Value;
         public static implicit operator Stat(int value) => new Stat { Base = value };
@@ -80,6 +80,12 @@
 
         public Bonus AddBonus(Bonus b)
         {
+            if(b.Type == BonusType.Base)
+            {
+                BaseMod = b;
+                return b;
+            }
+            
             if(b.Value == 0)
                 return null;
 
@@ -98,12 +104,14 @@
     
         public int RemoveBonus(string bonusName)
         {
+            var bonusToUpper = bonusName.ToUpper();
             int count = 0;
             var bonuses = new List<Bonus>();
-            
+
+            if(BaseMod.Name == bonusToUpper) BaseMod = null;
             for(int i = 0; i < Bonuses.Count; i++)
             {            
-                if(Bonuses[i].Name == bonusName)
+                if(Bonuses[i].Name == bonusToUpper)
                 {
                     count++;
                     bonuses.Add(Bonuses[i]);

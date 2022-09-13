@@ -122,6 +122,16 @@ namespace Gellybeans.Pathfinder
                         stat.RemoveBonus(stat.Bonuses[i]);
         }
         
+        public int ClearBonuses()
+        {
+            foreach(var stat in Stats.Values)
+            {
+                stat.BaseMod = null;
+                stat.Bonuses.Clear();
+            }
+            return 1;
+        }
+
         public string AddTemplate(string templateName, StringBuilder sb)
         {
 
@@ -197,19 +207,20 @@ namespace Gellybeans.Pathfinder
         //IContext
         public int Call(string methodName, int[] args) => methodName switch
         {
-            "abs"       => Math.Abs(args[0]),
-            "clamp"     => Math.Clamp(args[0], args[1], args[2]),
-            "if"        => args[0] == 1 ? args[1] : 0,
-            "max"       => Math.Max(args[0], args[1]),
-            "min"       => Math.Min(args[0], args[1]),
-            "mod"       => Math.Max(-5, (args[0] - 10) / 2),
-            "rand"      => new Random().Next(args[0], args[1]+1),
-            "bad"       => args[0] / 3,
-            "good"      => 2 + (args[0] / 2),
-            "tQ"        => (args[0] + (args[0] / 2)) / 2,
-            "oh"        => (args[0] / 2),
-            "th"        => (args[0] + (args[0] / 2)),
-            _           => 0
+            "abs"           => Math.Abs(args[0]),
+            "clamp"         => Math.Clamp(args[0], args[1], args[2]),
+            "clearmods"     => ClearBonuses(),
+            "if"            => args[0] == 1 ? args[1] : 0,
+            "max"           => Math.Max(args[0], args[1]),
+            "min"           => Math.Min(args[0], args[1]),
+            "mod"           => Math.Max(-5, (args[0] - 10) / 2),
+            "rand"          => new Random().Next(args[0], args[1]+1),
+            "bad"           => args[0] / 3,
+            "good"          => 2 + (args[0] / 2),
+            "tQ"            => (args[0] + (args[0] / 2)) / 2,
+            "oh"            => (args[0] / 2),
+            "th"            => (args[0] + (args[0] / 2)),
+            _               => 0
         };
 
         public int Resolve(string varName, StringBuilder sb)
