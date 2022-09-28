@@ -1,8 +1,9 @@
 ﻿namespace Gellybeans.Pathfinder
 {
-    public class Attack
+    public class Weapon
     {
         public string?  Name        { get; set; }
+        public string?  Description { get; set; }
         public string?  Fine        { get; set; }
         public string?  Diminutive  { get; set; }
         public string?  Tiny        { get; set; }

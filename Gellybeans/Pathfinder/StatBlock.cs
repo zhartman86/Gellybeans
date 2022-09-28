@@ -21,7 +21,6 @@ namespace Gellybeans.Pathfinder
         public Dictionary<string, Stat>         Stats       { get; private set; } = new Dictionary<string, Stat>();        
         public Dictionary<string, string>       Expressions { get; private set; } = new Dictionary<string, string>();
         public Dictionary<string, Template>     Templates   { get; private set; } = new Dictionary<string, Template>();
-        
 
         public Dictionary<string, ExprRow>      ExprRows    { get; private set; } = new Dictionary<string, ExprRow>();
         public Dictionary<string, string[]>     Grids       { get; private set; } = new Dictionary<string, string[]>();
@@ -60,6 +59,8 @@ namespace Gellybeans.Pathfinder
             ["SHIELD"] = 17,
             ["SIZE"] = 18,
             ["TRAIT"] = 19,
+            ["PENALTY"] = 20,
+            ["BASE"] = 21,
 
             ["ORCUS"] = 666,
         };
@@ -92,11 +93,11 @@ namespace Gellybeans.Pathfinder
 
             decimal wTotal = 0;
             decimal vTotal = 0;
-            sb.AppendLine($"|{"#",-4}|{"NAME",-17} |{"WEIGHT",-10} |{"VALUE",-8}");
-            sb.AppendLine("--------------------------------------------");
+            sb.AppendLine($"|{"#",-4}|{"NAME",-27} |{"WEIGHT",-10} |{"VALUE",-8}");
+            sb.AppendLine("------------------------------------------------------");
             for(int i = 0; i < Inventory.Count; i++)
             {
-                sb.AppendLine($"|{i,-4}|{Inventory[i].Name,-17} |{Inventory[i].Weight,-10} |{Inventory[i].Value,-8}");
+                sb.AppendLine($"|{i,-4}|{Inventory[i].Name,-27} |{Inventory[i].Weight,-10} |{Inventory[i].Value,-8}");
                 wTotal += Inventory[i].Weight;
                 vTotal += Inventory[i].Value;
             }
@@ -131,77 +132,6 @@ namespace Gellybeans.Pathfinder
             return 1;
         }
 
-        public string AddTemplate(string templateName, StringBuilder sb)
-        {
-
-            var t = Template.Templates[templateName];
-            sb.AppendLine($"~ADD TEMPLATE: {t.Name}~");           
-            foreach(var stat in t.Stats)
-            {
-                if(Stats.ContainsKey(stat.Key))
-                {
-                    Stats[stat.Key].Base += t.Stats[stat.Key].Base;
-                    sb.AppendLine($"{stat.Key} changed to {Stats[stat.Key].Base}.");
-                }                 
-                else
-                {
-                    Stats[stat.Key] = t.Stats[stat.Key];
-                    sb.AppendLine($"{stat.Key} added to stats (value:{stat.Value.Base})");
-                }                    
-            }          
-           
-            sb.AppendLine();
-            foreach(var expr in t.SetExpressions)
-            {
-                if(Expressions.ContainsKey(expr.Key))
-                    sb.AppendLine($"{expr.Key} was overwritten to {expr.Value}.");                 
-                else
-                    sb.AppendLine($"Added {expr.Key} to expressions ({expr.Value})");                   
-                
-                Expressions[expr.Key] = expr.Value;
-            }
-            sb.AppendLine();
-
-            if(t.ModExpressions.Count > 0) sb.AppendLine("The follow modifications will be made during eval:");
-            foreach(var expr in t.ModExpressions)
-                sb.AppendLine($"|{expr.Key,-13} -:- {expr.Value,22}|");
-            
-            sb.AppendLine();
-
-            Templates[t.Name] = t;
-            return sb.ToString();
-        }
-
-        public string AddTemplate(List<string> templates, StringBuilder sb)
-        {
-            for(int i = 0; i < templates.Count; i++)
-                AddTemplate(templates[i], sb);
-            
-            return sb.ToString();
-        }
-
-        public string RemoveTemplate(string templateName, StringBuilder sb)
-        {
-            if(!Templates.ContainsKey(templateName))
-            {
-                sb.AppendLine($"{templateName} not found");
-                return sb.ToString(); ;
-            }
-                
-            foreach(var stat in Templates[templateName].Stats)
-                if(Stats.Remove(stat.Key)) 
-                    sb.AppendLine($"{stat.Key} removed from stats");
-
-            foreach(var expr in Templates[templateName].SetExpressions)
-                if(Expressions.Remove(expr.Key))
-                    sb.AppendLine($"{expr.Key} removed from expressions");
-
-            Templates.Remove(templateName);
-            sb.AppendLine($"{templateName} removed");
-            
-            return sb.ToString();
-        }
-
 
         //IContext
         public int Call(string methodName, int[] args) => methodName switch
@@ -216,7 +146,7 @@ namespace Gellybeans.Pathfinder
             "rand"          => new Random().Next(args[0], args[1]+1),
             "bad"           => args[0] / 3,
             "good"          => 2 + (args[0] / 2),
-            "tQ"            => (args[0] + (args[0] / 2)) / 2,
+            "tq"            => (args[0] + (args[0] / 2)) / 2,
             "oh"            => (args[0] / 2),
             "th"            => (args[0] + (args[0] / 2)),
             _               => 0
@@ -237,19 +167,8 @@ namespace Gellybeans.Pathfinder
             
             if(Stats.ContainsKey(toUpper))
                 return this[toUpper];
-            if(Expressions.ContainsKey(toUpper))
-            {
-                string templateExprs = "";
-                foreach(var template in Templates.Values)
-                    if(template.ModExpressions.ContainsKey(toUpper))
-                        templateExprs += $" + {template.ModExpressions[toUpper]}";
-                
-                var total = Expressions[toUpper];
-                if(templateExprs != "") total += templateExprs;
-                
-                Console.WriteLine(total);
-                return Parser.Parse(total).Eval(this, sb);
-            }
+            if(Expressions.ContainsKey(toUpper))               
+                return Parser.Parse(Expressions[toUpper]).Eval(this, sb);
 
             sb.AppendLine($"{varName} not found");
             return 0;
@@ -396,6 +315,7 @@ namespace Gellybeans.Pathfinder
                     ["FORT_BONUS"]  = 0,
                     ["REF_BONUS"]   = 0,
                     ["WILL_BONUS"]  = 0,
+                    ["SAVES_ALL"]   = 0,
                     
                     ["MOVE"] = 0,
 
@@ -405,12 +325,14 @@ namespace Gellybeans.Pathfinder
                     ["CMB_BONUS"]   = 0,
                     ["CMD_BONUS"]   = 0,
 
-                    ["AC_BONUS"]    = 10,
+                    ["AC_BONUS"]    = 0,
                     ["AC_MAXDEX"]   = 99,
                     ["AC_PENALTY"]  = 0,
                
-                    ["ATK_BONUS"]   = 0,
-                    ["DMG_BONUS"]   = 0,
+                    ["ATK_BONUS"]       = 0,
+                    ["ATK_BONUS_MLE"]   = 0,
+                    ["ATK_BONUS_RNG"]   = 0,
+                    ["DMG_BONUS"]       = 0,
 
 
                     //skills
@@ -436,7 +358,6 @@ namespace Gellybeans.Pathfinder
                     ["SK_SUR"] = 0,
                     ["SK_SWM"] = 0,
                     ["SK_UMD"] = 0,
-
                     ["SK_ARC"] = 0,
                     ["SK_DUN"] = 0,
                     ["SK_ENG"] = 0,
@@ -447,6 +368,7 @@ namespace Gellybeans.Pathfinder
                     ["SK_NBL"] = 0,
                     ["SK_PLN"] = 0,
                     ["SK_RLG"] = 0,
+                    ["SK_ALL"] = 0,
 
                     ["PP"] = 0,
                     ["GP"] = 0,
@@ -465,14 +387,14 @@ namespace Gellybeans.Pathfinder
                     ["WIS"]     = "mod(WIS_SCORE)",
                     ["CHA"]     = "mod(CHA_SCORE)",                   
                     
-                    ["FORT"]    = "1d20 + FORT_BASE + CON",
-                    ["REF"]     = "1d20 + REF_BASE + DEX",
-                    ["WILL"]    = "1d20 + WILL_BASE + WIS",
+                    ["FORT"]    = "1d20 + FORT_BONUS + SAVES_ALL + CON",
+                    ["REF"]     = "1d20 + REF_BONUS + SAVES_ALL + DEX",
+                    ["WILL"]    = "1d20 + WILL_BONUS + SAVES_ALL + WIS",
   
                     ["INIT"]    = "1d20 + INIT_BONUS + DEX",
                     
                     ["MAXDEX"]  = "max(0, AC_MAXDEX)",                    
-                    ["AC"]      = "AC_BONUS + min(DEX, MAXDEX) + SIZE_MOD",
+                    ["AC"]      = "10 + AC_BONUS + min(DEX, MAXDEX) + SIZE_MOD",
                     ["TOUCH"]   = "AC - ((AC_BONUS $ ARMOR) + (AC_BONUS $ SHIELD) + (AC_BONUS $ NATURAL))",
                     ["FLAT"]    = "AC - ((AC_BONUS $ DODGE) + DEX)",
 
@@ -496,76 +418,40 @@ namespace Gellybeans.Pathfinder
                     ["DMG_CHA"] = "(CHA + (CHA_TEMP / 2)) - (min(CHA_SCORE $ ENHANCEMENT, CHA_TEMP $ ENHANCEMENT) / 2) + DMG_BONUS",
                     
                     //skills
-                    ["ACR"] = "1d20 + DEX + SK_ACR + AC_PENALTY",
-                    ["APR"] = "1d20 + INT + SK_APR",
-                    ["BLF"] = "1d20 + CHA + SK_BLF",
-                    ["CLM"] = "1d20 + STR + SK_CLM + AC_PENALTY",
-                    ["DIP"] = "1d20 + CHA + SK_DIP",
-                    ["DSA"] = "1d20 + DEX + SK_DSA + AC_PENALTY",
-                    ["DSG"] = "1d20 + CHA + SK_DSG",
-                    ["ESC"] = "1d20 + DEX + SK_ESC + AC_PENALTY",
-                    ["FLY"] = "1d20 + DEX + SK_FLY + AC_PENALTY + SIZE_SKL",
-                    ["HND"] = "1d20 + DEX + SK_HND",
-                    ["HEA"] = "1d20 + WIS + SK_HEA",
-                    ["ITM"] = "1d20 + CHA + SK_ITM",
-                    ["LNG"] = "1d20 + INT + SK_LNG",
-                    ["PRC"] = "1d20 + WIS + SK_PRC",
-                    ["RDE"] = "1d20 + DEX + SK_RDE + AC_PENALTY",
-                    ["SNS"] = "1d20 + WIS + SK_SNS",
-                    ["SLT"] = "1d20 + DEX + SK_SLT + AC_PENALTY",
-                    ["SPL"] = "1d20 + INT + SK_SPL",
-                    ["STL"] = "1d20 + DEX + SK_STL + AC_PENALTY + (SIZE_SKL * 2)",
-                    ["SUR"] = "1d20 + WIS + SK_SUR",
-                    ["SWM"] = "1d20 + STR + SK_SWM + AC_PENALTY",
-                    ["UMD"] = "1d20 + CHA + SK_UMD",
+                    ["ACR"] = "1d20 + DEX + SK_ALL + SK_ACR + AC_PENALTY",
+                    ["APR"] = "1d20 + INT + SK_ALL + SK_APR",
+                    ["BLF"] = "1d20 + CHA + SK_ALL + SK_BLF",
+                    ["CLM"] = "1d20 + STR + SK_ALL + SK_CLM + AC_PENALTY",
+                    ["DIP"] = "1d20 + CHA + SK_ALL + SK_DIP",
+                    ["DSA"] = "1d20 + DEX + SK_ALL + SK_DSA + AC_PENALTY",
+                    ["DSG"] = "1d20 + CHA + SK_ALL + SK_DSG",
+                    ["ESC"] = "1d20 + DEX + SK_ALL + SK_ESC + AC_PENALTY",
+                    ["FLY"] = "1d20 + DEX + SK_ALL + SK_FLY + AC_PENALTY + SIZE_SKL",
+                    ["HND"] = "1d20 + DEX + SK_ALL + SK_HND",
+                    ["HEA"] = "1d20 + WIS + SK_ALL + SK_HEA",
+                    ["ITM"] = "1d20 + CHA + SK_ALL + SK_ITM",
+                    ["LNG"] = "1d20 + INT + SK_ALL + SK_LNG",
+                    ["PRC"] = "1d20 + WIS + SK_ALL + SK_PRC",
+                    ["RDE"] = "1d20 + DEX + SK_ALL + SK_RDE + AC_PENALTY",
+                    ["SNS"] = "1d20 + WIS + SK_ALL + SK_SNS",
+                    ["SLT"] = "1d20 + DEX + SK_ALL + SK_SLT + AC_PENALTY",
+                    ["SPL"] = "1d20 + INT + SK_ALL + SK_SPL",
+                    ["STL"] = "1d20 + DEX + SK_ALL + SK_STL + AC_PENALTY + (SIZE_SKL * 2)",
+                    ["SUR"] = "1d20 + WIS + SK_ALL + SK_SUR",
+                    ["SWM"] = "1d20 + STR + SK_ALL + SK_SWM + AC_PENALTY",
+                    ["UMD"] = "1d20 + CHA + SK_ALL + SK_UMD",
 
-                    ["ARC"] = "1d20 + INT + SK_ARC",
-                    ["DUN"] = "1d20 + INT + SK_DUN",
-                    ["ENG"] = "1d20 + INT + SK_ENG",
-                    ["GEO"] = "1d20 + INT + SK_GEO",
-                    ["HIS"] = "1d20 + INT + SK_HIS",
-                    ["LCL"] = "1d20 + INT + SK_LCL",
-                    ["NTR"] = "1d20 + INT + SK_NTR",
-                    ["NBL"] = "1d20 + INT + SK_NBL",
-                    ["PLN"] = "1d20 + INT + SK_PLN",
-                    ["RLG"] = "1d20 + INT + SK_RLG",
-                                                 
-                   
-
-                    //["CS_ACR"] = "FALSE",
-                    //["CS_APR"] = "FALSE",
-                    //["CS_BLF"] = "FALSE",
-                    //["CS_CLM"] = "FALSE",
-                    //["CS_DIP"] = "FALSE",
-                    //["CS_DSA"] = "FALSE",
-                    //["CS_DSG"] = "FALSE",
-                    //["CS_ESC"] = "FALSE",
-                    //["CS_FLY"] = "FALSE",
-                    //["CS_HND"] = "FALSE",
-                    //["CS_HEA"] = "FALSE",
-                    //["CS_ITM"] = "FALSE",
+                    ["ARC"] = "1d20 + INT + SK_ALL + SK_ARC",
+                    ["DUN"] = "1d20 + INT + SK_ALL + SK_DUN",
+                    ["ENG"] = "1d20 + INT + SK_ALL + SK_ENG",
+                    ["GEO"] = "1d20 + INT + SK_ALL + SK_GEO",
+                    ["HIS"] = "1d20 + INT + SK_ALL + SK_HIS",
+                    ["LCL"] = "1d20 + INT + SK_ALL + SK_LCL",
+                    ["NTR"] = "1d20 + INT + SK_ALL + SK_NTR",
+                    ["NBL"] = "1d20 + INT + SK_ALL + SK_NBL",
+                    ["PLN"] = "1d20 + INT + SK_ALL + SK_PLN",
+                    ["RLG"] = "1d20 + INT + SK_ALL + SK_RLG",
                     
-                    //["CS_ARC"] = "FALSE",
-                    //["CS_DUN"] = "FALSE",
-                    //["CS_ENG"] = "FALSE",
-                    //["CS_GEO"] = "FALSE",
-                    //["CS_HIS"] = "FALSE",
-                    //["CS_LCL"] = "FALSE",
-                    //["CS_NTR"] = "FALSE",
-                    //["CS_NBL"] = "FALSE",
-                    //["CS_PLN"] = "FALSE",
-                    //["CS_RLG"] = "FALSE",
-                    
-                    //["CS_LNG"] = "FALSE",
-                    //["CS_PRC"] = "FALSE",
-                    //["CS_RDE"] = "FALSE",
-                    //["CS_SNS"] = "FALSE",
-                    //["CS_SLT"] = "FALSE",
-                    //["CS_SPL"] = "FALSE",
-                    //["CS_STL"] = "FALSE",
-                    //["CS_SUR"] = "FALSE",
-                    //["CS_SWM"] = "FALSE",
-                    //["CS_UMD"] = "FALSE",
                 },
 
                 ExprRows = new Dictionary<string, ExprRow>()

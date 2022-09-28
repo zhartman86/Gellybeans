@@ -45,13 +45,11 @@ namespace Gellybeans.Expressions
 
             if(sb != null)
             {
-                sb.AppendLine();
                 sb.Append(ToString() + ": ");
                 for(int i = 0; i < results.Count; i++)
-                {
                     sb.Append($"[{results[i]}]");
-                }
                 if(rerolled) sb.Append($" ({rerolledResults})");
+                sb.AppendLine();
             }
 
             return total;
