@@ -182,7 +182,6 @@
                 new StatModifier("CON_TEMP")        { Bonus = new Bonus() { Name = "DRAGON_FORM", Type = BonusType.Size, Value = 8      }},
                 new StatModifier("STR_TEMP")        { Bonus = new Bonus() { Name = "DRAGON_FORM", Type = BonusType.Size, Value = 10     }}}},
             { "EAGLES_SPLENDOR", new List<StatModifier>()       { new StatModifier("CHA_TEMP")  { Bonus = new Bonus()   { Name = "EAGLES_SPLENDOR",     Type = BonusType.Enhancement, Value = 4  }}}},
-            ///elemental
             { "ELEMENTAL_BODY_SMALL_AIR", new List<StatModifier>(){
                 new StatModifier("SIZE_MOD")        { Bonus = new Bonus() { Name = "ELEMENTAL_BODY", Type = BonusType.Base, Value = 1       }},
                 new StatModifier("SIZE_SKL")        { Bonus = new Bonus() { Name = "ELEMENTAL_BODY", Type = BonusType.Base, Value = 2       }},

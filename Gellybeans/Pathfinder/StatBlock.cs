@@ -1,15 +1,12 @@
 ﻿using Gellybeans.Expressions;
 using System.Text;
-using System.Text.RegularExpressions;
-using System.Linq.Expressions;
-using System.Security.Cryptography;
 
 namespace Gellybeans.Pathfinder
 {
     public class StatBlock : IContext
     {
-
         public Guid Id { get; set; }
+        
         public ulong Owner { get; set; }
 
         public event EventHandler<string> ValueChanged;
@@ -25,12 +22,12 @@ namespace Gellybeans.Pathfinder
         public Dictionary<string, ExprRow>      ExprRows    { get; private set; } = new Dictionary<string, ExprRow>();
         public Dictionary<string, string[]>     Grids       { get; private set; } = new Dictionary<string, string[]>();
         
-        public Dictionary<string, string>       Info        { get; private set; } = new Dictionary<string, string>();     
+        public Dictionary<string, string>       Info        { get; private set; } = new Dictionary<string, string>(); 
 
         public Dictionary<string, CraftItem>    Crafts      { get; private set; } = new Dictionary<string, CraftItem>();
         
-
-        public List<Item> Inventory { get; set; } = new List<Item>();
+        public List<string> Notes       { get; set; } = new List<string>();
+        public List<Item>   Inventory   { get; set; } = new List<Item>();
 
         public Dictionary<string, int> Constants { get; private set; } = new Dictionary<string, int>()
         {

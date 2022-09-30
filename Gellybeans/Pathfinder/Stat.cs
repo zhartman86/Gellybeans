@@ -1,21 +1,22 @@
-﻿namespace Gellybeans.Pathfinder
+﻿using System.Text;
+
+namespace Gellybeans.Pathfinder
 {
     public class Stat
     {
         
-        public int      Base        { get; set; } = 0;
-        public int      Bonus       { get { return GetTotal(); } }
-        public int      Value       { 
+        public int          Base        { get; set; } = 0;
+        public int          Bonus       { get { return GetTotal(); } }
+        public List<Bonus>  Bonuses     { get; set; } = new List<Bonus>();
+        public Bonus        Override    { get; set; } = null;
+        public int          Value       { 
             get 
             {
                 if(ReferenceEquals(Override, null)) return Base + Bonus;
                 return Override.Value; 
             }
         }
-
-        public List<Bonus>  Bonuses { get; set; } = new List<Bonus>();
-        public Bonus        Override { get; set; } = null;
-
+        
         public static implicit operator int(Stat stat)  => stat.Value;
         public static implicit operator Stat(int value) => new Stat { Base = value };
 
@@ -132,6 +133,23 @@
             }
             foreach(Bonus b in bonuses) RemoveBonus(b);
             return count;
+        }
+
+        public override string ToString()
+        {
+            StringBuilder sb = null;
+            
+            if(Override != null)
+                return $"{Override.Value} (override)";
+
+            if(Bonuses.Count > 0)
+            {
+                sb = new StringBuilder();
+                for(int i = 0; i < Bonuses.Count; i++)
+                    sb.Append($"{Bonuses[i].Value} {Enum.GetName(typeof(BonusType), Bonuses[i].Type)},");                         
+            }
+            
+            return $"{Value} {(Bonus > 0 ? $"({sb.ToString().TrimEnd(',').ToLower()})" : "")}";
         }
     }
 }
