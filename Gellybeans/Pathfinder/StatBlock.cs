@@ -20,13 +20,12 @@ namespace Gellybeans.Pathfinder
         public Dictionary<string, Template>     Templates   { get; private set; } = new Dictionary<string, Template>();
 
         public Dictionary<string, ExprRow>      ExprRows    { get; private set; } = new Dictionary<string, ExprRow>();
-        public Dictionary<string, string[]>     Grids       { get; private set; } = new Dictionary<string, string[]>();
+        public Dictionary<string, string[]>     Grids       { get; private set; } = new Dictionary<string, string[]>();      
         
         public Dictionary<string, string>       Info        { get; private set; } = new Dictionary<string, string>(); 
 
         public Dictionary<string, CraftItem>    Crafts      { get; private set; } = new Dictionary<string, CraftItem>();
         
-        public List<string> Notes       { get; set; } = new List<string>();
         public List<Item>   Inventory   { get; set; } = new List<Item>();
 
         public Dictionary<string, int> Constants { get; private set; } = new Dictionary<string, int>()
@@ -88,8 +87,8 @@ namespace Gellybeans.Pathfinder
             sb.AppendLine($"{CharacterName}'s Inventory");
             sb.AppendLine();
 
-            decimal wTotal = 0;
-            decimal vTotal = 0;
+            decimal? wTotal = 0;
+            decimal? vTotal = 0;
             sb.AppendLine($"|{"#",-4}|{"NAME",-27} |{"WEIGHT",-10} |{"VALUE",-8}");
             sb.AppendLine("------------------------------------------------------");
             for(int i = 0; i < Inventory.Count; i++)
@@ -330,6 +329,8 @@ namespace Gellybeans.Pathfinder
                     ["ATK_BONUS_MLE"]   = 0,
                     ["ATK_BONUS_RNG"]   = 0,
                     ["DMG_BONUS"]       = 0,
+
+                    ["CL_BONUS"]        = 0,
 
 
                     //skills

@@ -22,6 +22,7 @@ namespace Gellybeans.Pathfinder
         public string? Domain           { get; set; }
         public string? Deity            { get; set; }
         public string? Description      { get; set; }
+        public string? Source           { get; set; }
 
 
         public override string ToString()
@@ -33,11 +34,14 @@ namespace Gellybeans.Pathfinder
             sb.AppendLine($"**Casting Time** {CastingTime}");
             sb.AppendLine($"**Components** {Components}");
             sb.AppendLine($"**Range** {Range}");
-            sb.AppendLine($"**Target** {Targets}");
+            if(Effect != "")    sb.AppendLine($"**Effect** {Effect}");
+            if(Targets != "")   sb.AppendLine($"**Target** {Targets}");
             sb.AppendLine($"**Duration** {Duration}");
             sb.AppendLine($"**Saving Throw** {SavingThrow}; **Spell Resistance** {SpellResistance}");
             sb.AppendLine();
             sb.AppendLine(Description);
+            sb.AppendLine();
+            sb.AppendLine($"*{Source}*");
             return sb.ToString();
         }
     }

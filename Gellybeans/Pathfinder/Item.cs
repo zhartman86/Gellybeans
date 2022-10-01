@@ -2,17 +2,16 @@
 {
     public class Item
     {
-        public string   Name        { get; set; } = "Name Me";
-        public string   Description { get; set; } = "";
-        public decimal  Value       { get; set; } = 0;
-        public decimal  Weight      { get; set; } = 0;
-
-        public static bool operator ==(Item a, Item b) { return a.Name == b.Name; }
-        public static bool operator !=(Item a, Item b) { return !(a == b); }
-
-        public bool Equals(Item item) { return this == item; }
-        public override bool Equals(object? obj) { if(obj != null && obj.GetType() == typeof(Item)) return Equals((Item)obj); else return false; }
-
-        public override int GetHashCode() { unchecked { return Name.GetHashCode() + Weight.GetHashCode(); } }
+        public string?  Name            { get; set; }
+        public decimal? Weight          { get; set; }
+        public decimal? Value           { get; set; }
+        public string?  Aura            { get; set; }
+        public string?  CL              { get; set; }
+        public string?  Slot            { get; set; }
+        public string?  Description     { get; set; }
+        public string?  Requirements    { get; set; }
+        public string?  Type            { get; set; }
+        public string?  Destruction     { get; set; }
+        public string?  Source          { get; set; }    
     }
 }
