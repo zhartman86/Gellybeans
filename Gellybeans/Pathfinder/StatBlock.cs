@@ -165,13 +165,13 @@ namespace Gellybeans.Pathfinder
                 return this[toUpper];
             if(Expressions.ContainsKey(toUpper))               
                 return Parser.Parse(Expressions[toUpper]).Eval(this, sb);
-
-            sb.AppendLine($"{varName} not found");
+            if(sb != null) sb.AppendLine($"{varName} not found");
             return 0;
         }
 
         public int Assign(string statName, int assignment, TokenType assignType, StringBuilder sb)
         {          
+            if(sb == null) sb = new StringBuilder();
             if(Stats.Count > 100)
             {
                 sb.AppendLine("stat count limited to 100");
@@ -414,6 +414,9 @@ namespace Gellybeans.Pathfinder
                     ["DMG_INT"] = "(INT + (INT_TEMP / 2)) - (min(INT_SCORE $ ENHANCEMENT, INT_TEMP $ ENHANCEMENT) / 2) + DMG_BONUS",
                     ["DMG_WIS"] = "(WIS + (WIS_TEMP / 2)) - (min(WIS_SCORE $ ENHANCEMENT, WIS_TEMP $ ENHANCEMENT) / 2) + DMG_BONUS",
                     ["DMG_CHA"] = "(CHA + (CHA_TEMP / 2)) - (min(CHA_SCORE $ ENHANCEMENT, CHA_TEMP $ ENHANCEMENT) / 2) + DMG_BONUS",
+
+                    ["PA_ATK"] = "1 + BAB/4",
+                    ["PA_DMG"] = "2 + (BAB/4 * 2)",
                     
                     //skills
                     ["ACR"] = "1d20 + DEX + SK_ALL + SK_ACR + AC_PENALTY",

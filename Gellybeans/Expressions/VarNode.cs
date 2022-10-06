@@ -12,10 +12,8 @@ namespace Gellybeans.Expressions
         }
 
         public override int Eval(IContext ctx, StringBuilder sb) 
-        { 
-           
+        {          
             var result = ctx.Resolve(varName, sb);
-
             return result;
         }
     }
