@@ -194,7 +194,7 @@ namespace Gellybeans.Expressions
             }       
             
             
-            if(char.IsDigit(currentChar) || currentChar == 'd')
+            if(char.IsDigit(currentChar))
             {
                 var builder = new StringBuilder();
 
