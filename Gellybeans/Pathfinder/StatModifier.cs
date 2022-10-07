@@ -74,7 +74,7 @@
                 new StatModifier("AC_BONUS")        { Bonus = new Bonus() { Name = "ANIMAL_GROWTH", Type = BonusType.Natural, Value = 2     }},
                 new StatModifier("DEX_SCORE")       { Bonus = new Bonus() { Name = "ANIMAL_GROWTH", Type = BonusType.Penalty, Value = -2    }},
                 new StatModifier("CON_TEMP")        { Bonus = new Bonus() { Name = "ANIMAL_GROWTH", Type = BonusType.Size, Value = 4        }},
-                new StatModifier("STR_TEMP")        { Bonus = new Bonus() { Name = "ANIMAL_GROWTH", Type = BonusType.Size, Value = 8        }}}},       
+                new StatModifier("STR_TEMP")        { Bonus = new Bonus() { Name = "ANIMAL_GROWTH", Type = BonusType.Size, Value = 8        }}}},
             { "ARCHONS_AURA", new List<StatModifier>(){
                 new StatModifier("ATK_BONUS")       { Bonus = new Bonus() { Name = "ARCHONS_AURA", Type = BonusType.Penalty, Value = -2     }},
                 new StatModifier("ALL_SAVES")       { Bonus = new Bonus() { Name = "ARCHONS_AURA", Type = BonusType.Penalty, Value = -2     }},
@@ -369,6 +369,14 @@
                 new StatModifier("AC_BONUS")        { Bonus = new Bonus() { Name = "HASTE", Type = BonusType.Dodge, Value = 1        }},
                 new StatModifier("REF_BONUS")       { Bonus = new Bonus() { Name = "HASTE", Type = BonusType.Dodge, Value = 1        }},
                 new StatModifier("MOVE")            { Bonus = new Bonus() { Name = "HASTE", Type = BonusType.Enhancement, Value = 30 }}}},
+            { "HEROISM", new List<StatModifier>(){
+                new StatModifier("ATK_BONUS")       { Bonus = new Bonus() { Name = "HEROISM", Type = BonusType.Morale, Value = 2  }},
+                new StatModifier("SAVES_ALL")       { Bonus = new Bonus() { Name = "HEROISM", Type = BonusType.Morale, Value = 2  }},
+                new StatModifier("SK_ALL")          { Bonus = new Bonus() { Name = "HEROISM", Type = BonusType.Morale, Value = 2  }}}},
+            { "HEROISM_GREATER", new List<StatModifier>(){
+                new StatModifier("ATK_BONUS")       { Bonus = new Bonus() { Name = "HEROISM", Type = BonusType.Morale, Value = 4  }},
+                new StatModifier("SAVES_ALL")       { Bonus = new Bonus() { Name = "HEROISM", Type = BonusType.Morale, Value = 4  }},
+                new StatModifier("SK_ALL")          { Bonus = new Bonus() { Name = "HEROISM", Type = BonusType.Morale, Value = 4  }}}},
             { "INSPIRE_COURAGE_1", new List<StatModifier>(){
                 new StatModifier("ATK_BONUS")       { Bonus = new Bonus() { Name = "INSPIRE_COURAGE", Type = BonusType.Competence, Value = 1 }},
                 new StatModifier("DMG_BONUS")       { Bonus = new Bonus() { Name = "INSPIRE_COURAGE", Type = BonusType.Competence, Value = 1 }}}},

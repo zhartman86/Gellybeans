@@ -1,5 +1,6 @@
 ﻿using Gellybeans.Expressions;
 using System.Text;
+using System;
 
 namespace Gellybeans.Pathfinder
 {
@@ -265,6 +266,7 @@ namespace Gellybeans.Pathfinder
             OnValueChanged(statName);
             return value;    
         }
+    
 
         public static StatBlock DefaultPathfinder(string name)
         {
