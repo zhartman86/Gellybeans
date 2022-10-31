@@ -176,7 +176,7 @@
                 tokenizer.NextToken();
                 return node;
             }      
-
+            
             if(tokenizer.Token == TokenType.OpenPar)
             {
                 tokenizer.NextToken();

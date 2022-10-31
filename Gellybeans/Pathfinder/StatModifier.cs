@@ -368,14 +368,14 @@
                 new StatModifier("ATK_BONUS")       { Bonus = new Bonus() { Name = "HASTE", Type = BonusType.Typeless, Value = 1     }},
                 new StatModifier("AC_BONUS")        { Bonus = new Bonus() { Name = "HASTE", Type = BonusType.Dodge, Value = 1        }},
                 new StatModifier("REF_BONUS")       { Bonus = new Bonus() { Name = "HASTE", Type = BonusType.Dodge, Value = 1        }},
-                new StatModifier("MOVE")            { Bonus = new Bonus() { Name = "HASTE", Type = BonusType.Enhancement, Value = 30 }}}},
+                new StatModifier("MOVE_BONUS")      { Bonus = new Bonus() { Name = "HASTE", Type = BonusType.Enhancement, Value = 30 }}}},
             { "HEROISM", new List<StatModifier>(){
                 new StatModifier("ATK_BONUS")       { Bonus = new Bonus() { Name = "HEROISM", Type = BonusType.Morale, Value = 2  }},
-                new StatModifier("SAVES_ALL")       { Bonus = new Bonus() { Name = "HEROISM", Type = BonusType.Morale, Value = 2  }},
+                new StatModifier("SAVE_BONUS")      { Bonus = new Bonus() { Name = "HEROISM", Type = BonusType.Morale, Value = 2  }},
                 new StatModifier("SK_ALL")          { Bonus = new Bonus() { Name = "HEROISM", Type = BonusType.Morale, Value = 2  }}}},
             { "HEROISM_GREATER", new List<StatModifier>(){
                 new StatModifier("ATK_BONUS")       { Bonus = new Bonus() { Name = "HEROISM", Type = BonusType.Morale, Value = 4  }},
-                new StatModifier("SAVES_ALL")       { Bonus = new Bonus() { Name = "HEROISM", Type = BonusType.Morale, Value = 4  }},
+                new StatModifier("SAVE_BONUS")      { Bonus = new Bonus() { Name = "HEROISM", Type = BonusType.Morale, Value = 4  }},
                 new StatModifier("SK_ALL")          { Bonus = new Bonus() { Name = "HEROISM", Type = BonusType.Morale, Value = 4  }}}},
             { "INSPIRE_COURAGE_1", new List<StatModifier>(){
                 new StatModifier("ATK_BONUS")       { Bonus = new Bonus() { Name = "INSPIRE_COURAGE", Type = BonusType.Competence, Value = 1 }},
@@ -521,12 +521,12 @@
                 new StatModifier("ATK_BONUS")       { Bonus = new Bonus() { Name = "PRAYER", Type = BonusType.Luck, Value = 1   }},
                 new StatModifier("DMG_BONUS")       { Bonus = new Bonus() { Name = "PRAYER", Type = BonusType.Luck, Value = 1   }},
                 new StatModifier("SKL_ALL")         { Bonus = new Bonus() { Name = "PRAYER", Type = BonusType.Luck, Value = 1   }},
-                new StatModifier("SAVES_ALL")       { Bonus = new Bonus() { Name = "PRAYER", Type = BonusType.Luck, Value = 1   }}}},
+                new StatModifier("SAVE_BONUS")       { Bonus = new Bonus() { Name = "PRAYER", Type = BonusType.Luck, Value = 1   }}}},
             { "PRAYER_F", new List<StatModifier>(){
                 new StatModifier("ATK_BONUS")       { Bonus = new Bonus() { Name = "PRAYER", Type = BonusType.Penalty, Value = -1  }},
                 new StatModifier("DMG_BONUS")       { Bonus = new Bonus() { Name = "PRAYER", Type = BonusType.Penalty, Value = -1  }},
                 new StatModifier("SKL_ALL")         { Bonus = new Bonus() { Name = "PRAYER", Type = BonusType.Penalty, Value = -1  }},
-                new StatModifier("SAVES_ALL")       { Bonus = new Bonus() { Name = "PRAYER", Type = BonusType.Penalty, Value = -1  }}}},
+                new StatModifier("SAVE_BONUS")       { Bonus = new Bonus() { Name = "PRAYER", Type = BonusType.Penalty, Value = -1  }}}},
             { "PUP_SHAPE", new List<StatModifier>(){
                 new StatModifier("SIZE_MOD")        { Bonus = new Bonus() { Name = "PUP_SHAPE", Type = BonusType.Base, Value = 1      }},
                 new StatModifier("SIZE_SKL")        { Bonus = new Bonus() { Name = "PUP_SHAPE", Type = BonusType.Base, Value = 2      }},
@@ -667,11 +667,11 @@
                 new StatModifier("STR_TEMP")        { Bonus = new Bonus() { Name = "VERMIN_SHAPE", Type = BonusType.Size, Value = 4     }},
                 new StatModifier("DEX_SCORE")       { Bonus = new Bonus() { Name = "VERMIN_SHAPE", Type = BonusType.Penalty, Value = -2 }},
                 new StatModifier("AC_BONUS")        { Bonus = new Bonus() { Name = "VERMIN_SHAPE", Type = BonusType.Natural, Value = 5  }}}},
-            { "WRATHFUL_MANTLE_1", new List<StatModifier>()         { new StatModifier("SAVES_ALL")  { Bonus = new Bonus()   { Name = "WRATHFUL_MANTLE",     Type = BonusType.Resistance, Value = 1   }}}},
-            { "WRATHFUL_MANTLE_2", new List<StatModifier>()         { new StatModifier("SAVES_ALL")  { Bonus = new Bonus()   { Name = "WRATHFUL_MANTLE",     Type = BonusType.Resistance, Value = 2   }}}},
-            { "WRATHFUL_MANTLE_3", new List<StatModifier>()         { new StatModifier("SAVES_ALL")  { Bonus = new Bonus()   { Name = "WRATHFUL_MANTLE",     Type = BonusType.Resistance, Value = 3   }}}},
-            { "WRATHFUL_MANTLE_4", new List<StatModifier>()         { new StatModifier("SAVES_ALL")  { Bonus = new Bonus()   { Name = "WRATHFUL_MANTLE",     Type = BonusType.Resistance, Value = 4   }}}},
-            { "WRATHFUL_MANTLE_5", new List<StatModifier>()         { new StatModifier("SAVES_ALL")  { Bonus = new Bonus()   { Name = "WRATHFUL_MANTLE",     Type = BonusType.Resistance, Value = 5   }}}},
+            { "WRATHFUL_MANTLE_1", new List<StatModifier>()         { new StatModifier("SAVE_BONUS")  { Bonus = new Bonus()   { Name = "WRATHFUL_MANTLE",     Type = BonusType.Resistance, Value = 1   }}}},
+            { "WRATHFUL_MANTLE_2", new List<StatModifier>()         { new StatModifier("SAVE_BONUS")  { Bonus = new Bonus()   { Name = "WRATHFUL_MANTLE",     Type = BonusType.Resistance, Value = 2   }}}},
+            { "WRATHFUL_MANTLE_3", new List<StatModifier>()         { new StatModifier("SAVE_BONUS")  { Bonus = new Bonus()   { Name = "WRATHFUL_MANTLE",     Type = BonusType.Resistance, Value = 3   }}}},
+            { "WRATHFUL_MANTLE_4", new List<StatModifier>()         { new StatModifier("SAVE_BONUS")  { Bonus = new Bonus()   { Name = "WRATHFUL_MANTLE",     Type = BonusType.Resistance, Value = 4   }}}},
+            { "WRATHFUL_MANTLE_5", new List<StatModifier>()         { new StatModifier("SAVE_BONUS")  { Bonus = new Bonus()   { Name = "WRATHFUL_MANTLE",     Type = BonusType.Resistance, Value = 5   }}}},
 
             //conditions
             { "BLINDED", new List<StatModifier>(){
@@ -707,7 +707,7 @@
                 new StatModifier("DEX_SCORE")       { Bonus = new Bonus() { Name = "FATIGUED", Type = BonusType.Penalty, Value = -2  }}}},
             { "FRIGHTENED", new List<StatModifier>(){
                 new StatModifier("ATK_BONUS")       { Bonus = new Bonus() { Name = "FRIGHTENED", Type = BonusType.Penalty, Value = -2   }},
-                new StatModifier("SAVES_ALL")       { Bonus = new Bonus() { Name = "SHAKEN", Type = BonusType.Penalty, Value = -2       }},
+                new StatModifier("SAVE_BONUS")       { Bonus = new Bonus() { Name = "SHAKEN", Type = BonusType.Penalty, Value = -2       }},
                 new StatModifier("SK_ALL")          { Bonus = new Bonus() { Name = "SICKENED", Type = BonusType.Penalty, Value = -2     }}}},
             { "GRAPPLED", new List<StatModifier>(){
                 new StatModifier("DEX_SCORE")       { Bonus = new Bonus() { Name = "GRAPPLED", Type = BonusType.Penalty, Value = -4  }},
@@ -717,7 +717,7 @@
                 new StatModifier("DEX_SCORE")       { Bonus = new Bonus() { Name = "HELPLESS", Type = BonusType.Base, Value = 0 }}}},
             { "PANICKED", new List<StatModifier>(){
                 new StatModifier("ATK_BONUS")       { Bonus = new Bonus() { Name = "PANICKED", Type = BonusType.Penalty, Value = -2 }},
-                new StatModifier("SAVES_ALL")       { Bonus = new Bonus() { Name = "SHAKEN", Type = BonusType.Penalty, Value = -2   }},
+                new StatModifier("SAVE_BONUS")       { Bonus = new Bonus() { Name = "SHAKEN", Type = BonusType.Penalty, Value = -2   }},
                 new StatModifier("SK_ALL")          { Bonus = new Bonus() { Name = "SICKENED", Type = BonusType.Penalty, Value = -2 }}}},
             { "PARALYZED", new List<StatModifier>(){
                 new StatModifier("DEX_SCORE")       { Bonus = new Bonus() { Name = "PARALYZED", Type = BonusType.Base, Value = 0 }},
@@ -727,12 +727,12 @@
                 new StatModifier("AC_BONUS")        { Bonus = new Bonus() { Name = "PINNED", Type = BonusType.Penalty, Value = -4   }}}},
             { "SHAKEN", new List<StatModifier>(){
                 new StatModifier("ATK_BONUS")       { Bonus = new Bonus() { Name = "SHAKEN", Type = BonusType.Penalty, Value = -2   }},
-                new StatModifier("SAVES_ALL")       { Bonus = new Bonus() { Name = "SHAKEN", Type = BonusType.Penalty, Value = -2   }},
+                new StatModifier("SAVE_BONUS")       { Bonus = new Bonus() { Name = "SHAKEN", Type = BonusType.Penalty, Value = -2   }},
                 new StatModifier("SK_ALL")          { Bonus = new Bonus() { Name = "SICKENED", Type = BonusType.Penalty, Value = -2 }}}},
             { "SICKENED", new List<StatModifier>(){
                 new StatModifier("DMG_BONUS")       { Bonus = new Bonus() { Name = "SICKENED", Type = BonusType.Penalty, Value = -2  }},
                 new StatModifier("ATK_BONUS")       { Bonus = new Bonus() { Name = "SICKENED", Type = BonusType.Penalty, Value = -2  }},
-                new StatModifier("SAVES_ALL")       { Bonus = new Bonus() { Name = "SICKENED", Type = BonusType.Penalty, Value = -2  }},
+                new StatModifier("SAVE_BONUS")       { Bonus = new Bonus() { Name = "SICKENED", Type = BonusType.Penalty, Value = -2  }},
                 new StatModifier("SK_ALL")          { Bonus = new Bonus() { Name = "SICKENED", Type = BonusType.Penalty, Value = -2  }}}},
             { "STUNNED", new List<StatModifier>(){
                 new StatModifier("AC_BONUS")        { Bonus = new Bonus() { Name = "STUNNED", Type = BonusType.Penalty, Value = -2  }},

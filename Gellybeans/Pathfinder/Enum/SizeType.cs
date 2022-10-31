@@ -2,7 +2,6 @@
 {
     public enum SizeType
     {
-        None = -99,
         Fine = 8,
         Diminutive = 4,
         Tiny = 2,

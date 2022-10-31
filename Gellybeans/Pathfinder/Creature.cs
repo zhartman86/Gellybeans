@@ -11,7 +11,7 @@ namespace Gellybeans.Pathfinder
     {
         public string? Visual               { get; set; }
         public string? Name                 { get; set; }
-        public decimal? CR                  { get; set; }
+        public string? CR                   { get; set; }
         public string? XP                   { get; set; }
         public string? Alignment            { get; set; }
         public string? Size                 { get; set; }
@@ -23,9 +23,9 @@ namespace Gellybeans.Pathfinder
         public string? AC                   { get; set; }
         public string? HP                   { get; set; }
         public string? Regen                { get; set; }
-        public int? Fort                    { get; set; }
-        public int? Ref                     { get; set; }
-        public int? Will                    { get; set; }
+        public string? Fort                 { get; set; }
+        public string? Ref                  { get; set; }
+        public string? Will                 { get; set; }
         public string? SaveMods             { get; set; }       
         public string? Defensive            { get; set; }
         public string? Immune               { get; set; }
@@ -48,13 +48,13 @@ namespace Gellybeans.Pathfinder
         public string? SpellsKnown          { get; set; }
         public string? SpellsPrepared       { get; set; }
         public string? Domains              { get; set; }
-        public int? Str                     { get; set; }
-        public int? Dex                     { get; set; }
-        public int? Con                     { get; set; }
-        public int? Int                     { get; set; }
-        public int? Wis                     { get; set; }
-        public int? Cha                     { get; set; }
-        public int? BAB                     { get; set; }
+        public string? Str                  { get; set; }
+        public string? Dex                  { get; set; }
+        public string? Con                  { get; set; }
+        public string? Int                  { get; set; }
+        public string? Wis                  { get; set; }
+        public string? Cha                  { get; set; }
+        public string? BAB                  { get; set; }
         public string? CMB                  { get; set; }
         public string? CMD                  { get; set; }
         public string? Feats                { get; set; }
@@ -176,7 +176,7 @@ namespace Gellybeans.Pathfinder
             if(Weaknesses != "") sb.AppendLine($"**Weaknesses** {Weaknesses}");
             sb.AppendLine($"**Speed** {Speed}");
             sb.AppendLine($"**Str** {(Str == null ? "—" : Str)} **Dex** {(Dex == null ? "—" : Dex)} **Con** {(Con == null ? "—" : Con)} **Int** {(Int == null ? "—" : Int)} **Wis** {(Wis == null ? "—" : Wis)} **Cha** {(Cha == null ? "—" : Cha)}");
-            sb.AppendLine($"**BAB** +{BAB} **CMB** +{CMB} **CMD** +{CMD}");
+            sb.AppendLine($"**BAB** +{BAB} **CMB** +{CMB} **CMD** +{CMD}");            
             if(SpecialAttacks != "") sb.AppendLine($"**Special Attacks** {SpecialAttacks}");
             if(SpellLikeAbilities != "")
             {
@@ -220,24 +220,26 @@ namespace Gellybeans.Pathfinder
                     i++;
                 }
             }
-            return sb.ToString();
+            sb.AppendLine($"**Feats** {Feats}");
+            sb.Append($"**Skills** {Skills}");
+            return sb.ToString();         
         }
 
         public string GetSpecialAbilities()
         {
             StringBuilder sb = null;
-            if(SpecialAbilities != "" && SpecialAbilities!.Count() < 4000)
+            if(SpecialAbilities != "")
             {               
                 sb = new StringBuilder();
                 var split = Regex.Split(SpecialAbilities!, @"([^.]*[(][ExSuSp]{1,2}[)])");                      
                 sb.AppendLine("__**Special Abilities**__");
                 
-                    for(int i = 0; i < split.Length; i++)
-                        if(!string.IsNullOrWhiteSpace(split[i]))
-                        {
-                            sb.AppendLine($"**{split[i]}** {split[i + 1]}");
-                            i++;
-                        }                
+                for(int i = 0; i < split.Length; i++)
+                    if(!string.IsNullOrWhiteSpace(split[i]))
+                    {
+                        sb.AppendLine($"**{split[i]}** {split[i + 1]}");
+                        i++;
+                    }                
                 return sb.ToString();
             }
             else 

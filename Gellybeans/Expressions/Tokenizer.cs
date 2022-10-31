@@ -73,7 +73,7 @@ namespace Gellybeans.Expressions
                     {
                         NextChar();
                         currentToken = TokenType.LogicalOr;
-                    }
+                    }                  
                     else currentToken = TokenType.BitwiseOr;
                     return;
                 

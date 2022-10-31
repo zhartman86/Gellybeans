@@ -1,4 +1,6 @@
-﻿using System.Text;
+﻿using System.Data;
+using System;
+using System.Text;
 
 namespace Gellybeans.Pathfinder
 {
@@ -6,14 +8,18 @@ namespace Gellybeans.Pathfinder
     {
         public string?  Name            { get; set; }
         public decimal? Weight          { get; set; }
-        public decimal? Value           { get; set; }
+        public string?  Price           { get; set; }
         public string?  Type            { get; set; }
-        public string?  Aura            { get; set; }
-        public int?     CL              { get; set; }
+        public string?  Magic           { get; set; }
+        public string?  Offense         { get; set; }
+        public string?  Defense         { get; set; }
         public string?  Slot            { get; set; }
+        public string?  BaseItem        { get; set; }
+        public string?  Formulae        { get; set; }
         public string?  Description     { get; set; }
         public string?  Requirements    { get; set; }        
         public string?  Destruction     { get; set; }
+        public string?  Inscription     { get; set; }
         public string?  Source          { get; set; }
 
 
@@ -22,8 +28,29 @@ namespace Gellybeans.Pathfinder
             var sb = new StringBuilder();
             
             sb.AppendLine($"__**{Name.ToUpper()}**__");
-            if(Aura != "") sb.AppendLine($"**Aura** {Aura}; **CL** {Ordinal(CL)}");
-            sb.AppendLine($"**Slot** {Slot}; **Price** {Value}; **Weight** {Weight}");
+            if(Magic != "")
+            {
+                var split = Magic!.Split('/');
+                sb.AppendLine($"**Aura** {split[0]}; **CL** {Ordinal(int.Parse(split[1]!))}");
+            }
+                
+            sb.AppendLine($"**Slot** {Slot}; **Price** {Price}; **Weight** {Weight}");
+            if(Offense != "")
+            {
+                var split = Offense!.Split('/');
+                sb.AppendLine($"**Tiny** {split[2]}; **Small** {split[3]}; **Medium** {split[4]}; **Large** {split[5]}; **Huge** {split[6]}");
+                sb.AppendLine($" **Range** {split[11]}; **Type** {split[12]}; **Critical** {split[9]}/x{split[10]}");
+                if(split[13] != "—") sb.AppendLine($"**Special** {split[13].Replace('&',',')}");
+                sb.AppendLine($"**Category** {split[14].Replace('&', ',')}; **Proficiency** {split[15]}");
+            }
+
+            if(Defense != "")
+            {
+                var split = Defense!.Split('/');
+                sb.AppendLine($"{(split[0] != "0" ? $"**Armor Bonus** {split[0]}"  : $"**Shield Bonus** {split[1]}")}; **Max Dex** {(string.IsNullOrEmpty(split[2]) ? split[2] : "—")}; **Penalty** {split[3]}");
+                sb.AppendLine($"**Failure** {split[4]}; **Thirty** {split[5]}; **Twenty** {split[6]}");                
+            }
+
             sb.AppendLine();
             if(Description != "") sb.AppendLine(Description);
             sb.AppendLine();

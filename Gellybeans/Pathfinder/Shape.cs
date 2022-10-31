@@ -44,7 +44,7 @@ namespace Gellybeans.Pathfinder
 
             if(Other != "")
             {
-                var oSplit = Other.Split('/');
+                var oSplit = Other!.Split('/');
                 for(int i = 0; i < oSplit.Length; i++)
                 {
                     var split = oSplit[i].Split(':');
