@@ -1,9 +1,5 @@
 ﻿using Gellybeans.Expressions;
 using System.Text;
-using System;
-using System.IO;
-using System.Reflection;
-using System.Security.Claims;
 
 namespace Gellybeans.Pathfinder
 {
@@ -14,7 +10,7 @@ namespace Gellybeans.Pathfinder
 
         public ulong Owner { get; set; }
 
-        public event EventHandler<string> ValueChanged;
+        public event EventHandler<string>? ValueChanged;
         void OnValueChanged(string varChanged) { ValueChanged?.Invoke(this, varChanged); }
 
         public string CharacterName { get; set; } = "Name me";
@@ -73,47 +69,116 @@ namespace Gellybeans.Pathfinder
             {
                 if(Stats.ContainsKey(statName))
                     return Stats[statName].Value;
-
                 return 0;
             }
             set
             {
                 if(Stats.ContainsKey(statName)) Stats[statName].Base = value;
                 else Stats[statName] = value;
-                OnValueChanged(statName);
+                OnValueChanged($"stat:{statName}");
             }
+        }
+
+        public void RemoveStat(string statName)
+        {
+            if(Stats.Remove(statName))
+                OnValueChanged($"stat:{statName}");
+        }
+
+        public void AddExpr(string name, string expr)
+        {
+            Expressions[name] = expr;
+            OnValueChanged($"expr:{name}");
+        }
+
+        public void RemoveExpr(string name)
+        {
+            if(Expressions.Remove(name))
+                OnValueChanged($"expr:{name}");
+        }
+
+        public void AddExprRow(ExprRow row)
+        {
+            ExprRows[row.RowName] = row;
+            OnValueChanged($"row:{row.RowName}");
+        }
+
+        public void RemoveExprRow(string row)
+        {
+            if(ExprRows.Remove(row))
+                OnValueChanged($"row:{row}");
+        }
+
+        public void AddGrid(string name, List<string> grid)
+        {
+            Grids.Add(name, grid.ToArray());
+            OnValueChanged($"grid:{name}");
+        }
+
+        public void RemoveGrid(string name)
+        {
+            if(Grids.Remove(name))
+                OnValueChanged($"grid:{name}");
+        }
+
+        public void InventorySet(List<InvItem> inv)
+        {
+            Inventory = inv;
+            Inventory.Sort((x, y) => x.Name.CompareTo(y.Name));
+            OnValueChanged("inv");
+        }
+
+        public void InventoryAdd(InvItem item)
+        {
+            Inventory.Add(item);
+            Inventory.Sort((x, y) => x.Name.CompareTo(y.Name));
+            OnValueChanged("inv");
+        }
+
+        public void InventoryAdd(List<InvItem> items)
+        {
+            for(int i = 0; i < items.Count; i++)
+                Inventory.Add(items[i]);
+            Inventory.Sort((x, y) => x.Name.CompareTo(y.Name));
+            OnValueChanged("inv");
+        }
+
+        public void InventoryRemoveAt(int index)
+        {
+            Inventory.RemoveAt(index);
+            OnValueChanged("inv");
         }
 
         public string InventoryOut()
         {
             var sb = new StringBuilder();
 
-            sb.AppendLine("```");
             sb.AppendLine($"{CharacterName}'s Inventory");
             sb.AppendLine();
 
             decimal? wTotal = 0;
             decimal? vTotal = 0;
-            sb.AppendLine($"|{"#",-4}|{"NAME",-27} |{"WEIGHT",-10} |{"VALUE",-8}");
-            sb.AppendLine("------------------------------------------------------");
+            sb.AppendLine($"|{"#",-3}|{"NAME",-25} |{"QTY",-3} |{"VALUE",-7} |{"WT"}");
+            sb.AppendLine("-----------------------------------------------------------");
             for(int i = 0; i < Inventory.Count; i++)
             {
-                sb.AppendLine($"|{i,-4}|{Inventory[i].Name,-27} |{Inventory[i].Weight,-10} |{Inventory[i].Value,-8}");
-                wTotal += Inventory[i].Weight;
+                sb.AppendLine($"|{i,-3}|{Inventory[i].Name,-25} |{Inventory[i].Quantity,-3} |{Inventory[i].Value,-7} |{Inventory[i].Weight} {(Inventory[i].Quantity > 1 ? $"[{Inventory[i].Weight * Inventory[i].Quantity}]" : "")}");
+                wTotal += Inventory[i].Weight * Inventory[i].Quantity;
                 vTotal += Inventory[i].Value;
             }
 
             sb.AppendLine("______________________");
             sb.AppendLine($"{"ITEM COUNT",-15}|{Inventory.Count}\n{"WEIGHT TOTAL",-15}|{wTotal}\n{"VALUE TOTAL",-15}|{vTotal}");
-            sb.AppendLine("```");
-
             return sb.ToString();
         }
 
         public void AddBonuses(List<StatModifier> bonuses)
         {
             for(int i = 0; i < bonuses.Count; i++)
+            {
                 Stats[bonuses[i].StatName].AddBonus(bonuses[i].Bonus);
+                OnValueChanged($"stat:{bonuses[i].StatName}");
+            }      
         }
 
         public void ClearBonus(string bonusName)
@@ -121,15 +186,17 @@ namespace Gellybeans.Pathfinder
             var bonusToUpper = bonusName.ToUpper();
             foreach(var stat in Stats.Values)
                 stat.RemoveBonus(bonusToUpper);
+            OnValueChanged("stats");
         }
 
         public int ClearBonuses()
         {
             foreach(var stat in Stats.Values)
             {
-                stat.Override = null;
+                stat.Override = null!;
                 stat.Bonuses.Clear();
             }
+            OnValueChanged("stats");
             return 1;
         }
 
@@ -176,7 +243,7 @@ namespace Gellybeans.Pathfinder
 
         public int Assign(string statName, int assignment, TokenType assignType, StringBuilder sb)
         {
-            if(sb == null) sb = new StringBuilder();
+            sb ??= new StringBuilder();
             if(Stats.Count > 100)
             {
                 sb.AppendLine("stat count limited to 100");
@@ -223,8 +290,7 @@ namespace Gellybeans.Pathfinder
                     this[toUpper] %= assignment;
                     break;
             }
-            sb.AppendLine($"{toUpper} set to {Stats[toUpper].Base}");
-            OnValueChanged(statName);
+            sb.AppendLine($"{toUpper} set to {Stats[toUpper].Base}");;
             return Stats[toUpper];
         }
 
@@ -236,6 +302,14 @@ namespace Gellybeans.Pathfinder
                 return Stats[statName].GetBonus((BonusType)result);
             }
 
+            if(string.IsNullOrEmpty(statName) && assignType == TokenType.AssignSubBon)
+            {
+                ClearBonus(bonusName);
+                sb.AppendLine($"{bonusName} removed from all stats");
+                return 1;
+            }
+                
+
             if(Enum.GetName(typeof(BonusType), type) == null)
             {
                 sb.AppendLine("Invalid bonus type");
@@ -245,7 +319,7 @@ namespace Gellybeans.Pathfinder
             var toUpper = statName.ToUpper();
             if(Expressions.ContainsKey(toUpper))
             {
-                sb.AppendLine("Cannot assign bonus to expression");
+                sb.AppendLine("Cannot assign bonus to an expression");
                 return -99;
             }
 
@@ -265,9 +339,8 @@ namespace Gellybeans.Pathfinder
                     sb.AppendLine($"{bonusName} removed from {statName}");
                     break;
             }
-
-            sb.AppendLine($"{toUpper} set to {this[toUpper]}");
-            OnValueChanged(statName);
+            OnValueChanged($"stats");
+            sb.AppendLine($"{toUpper} set to {this[toUpper]}");            
             return value;
         }
 
@@ -437,13 +510,11 @@ namespace Gellybeans.Pathfinder
                     ["SUNDER"] = "CMB + CMB_SUNDER",
                     ["TRIP"] = "CMB + CMB_TRIP",
 
-                    ["MOVE"]    = "MOVE_BASE + MOVE_BONUS",
-                    ["BURROW"]  = "MOVE_BURROW  + MOVE_BONUS",
-                    ["CLIMB"]   = "MOVE_CLIMB + MOVE_BONUS",
-                    ["FLY"]     = "MOVE_FLY + MOVE_BONUS",
-                    ["SWIM"]    = "MOVE_SWIM + MOVE_BONUS",
-
-
+                    ["MOVE"]        = "MOVE_BASE + MOVE_BONUS",
+                    ["MOVE_BURROW"] = "MOVE_BURROW  + MOVE_BONUS",
+                    ["MOVE_CLIMB"]  = "MOVE_CLIMB + MOVE_BONUS",
+                    ["MOVE_FLY"]    = "MOVE_FLY + MOVE_BONUS",
+                    ["MOVE_SWIM"]   = "MOVE_SWIM + MOVE_BONUS",
 
                     ["CMD"] = "10 + BAB + STR + DEX + CMD_BONUS + ((AC_BONUS $ CIRCUMSTANCE) + (AC_BONUS $ DEFLECTION) + (AC_BONUS $ DODGE) + (AC_BONUS $ INSIGHT) + (AC_BONUS $ LUCK) + (AC_BONUS $ MORALE) + (AC_BONUS $ PROFANE) + (AC_BONUS $ SACRED))  - SIZE_MOD",
 

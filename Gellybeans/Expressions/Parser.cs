@@ -308,6 +308,18 @@
                 }             
             }
 
+            if(tokenizer.Token == TokenType.AssignSubBon)
+            {
+                var type = tokenizer.Token;
+                tokenizer.NextToken();
+                if(tokenizer.Token == TokenType.Var)
+                {
+                    tokenizer.NextToken();
+                    return new BonusNode(null!, tokenizer.Identifier, null!, null!, type);
+                }                    
+            }
+
+
             Console.WriteLine($"Unexpected symbol: {tokenizer.Token}");
             throw new Exception($"Unexpected symbol: {tokenizer.Token}");
         }
