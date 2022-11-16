@@ -16,8 +16,8 @@ namespace Gellybeans.Expressions
             var expr = ParseTernary();
             if(tokenizer.Token != TokenType.EOF)
             {
-                Console.WriteLine($"Unexpected character {tokenizer.CurrentChar} at end of expression. TOKEN:{tokenizer.Token}");
-                throw new Exception("Unexpected character at end of expression.");
+                Console.WriteLine($"Unexpected character `{tokenizer.CurrentChar}` at end of expression. TOKEN:{tokenizer.Token}");
+                return new VarNode($"%Unexpected character `{tokenizer.CurrentChar}`");
             }                      
             return expr;
         }               
@@ -312,7 +312,7 @@ namespace Gellybeans.Expressions
                     }
 
                     if(tokenizer.Token != TokenType.ClosePar)
-                        Console.WriteLine("Missing close parens.");
+                        return new VarNode("%Missing closed parenthesis `)`");
                     
                     tokenizer.NextToken();
 
@@ -331,9 +331,8 @@ namespace Gellybeans.Expressions
                 }                    
             }
 
-
-            Console.WriteLine($"Unexpected symbol: {tokenizer.Token}");
-            throw new Exception($"Unexpected symbol: {tokenizer.Token}");
+            Console.WriteLine($"Unexpected Token: {tokenizer.Token}");
+            return new VarNode($"%Unexpected Token: {tokenizer.Token}");
         }
      
         public static ExpressionNode Parse(string expr)

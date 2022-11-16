@@ -251,7 +251,8 @@ namespace Gellybeans.Expressions
                 return;
             }
 
-            throw new Exception($"Invalid data: {currentChar}");
+            Console.WriteLine($"Invalid data: {currentChar}");
+            return;
         }
     }
 }

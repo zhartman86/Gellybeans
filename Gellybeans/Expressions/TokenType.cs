@@ -8,7 +8,7 @@ namespace Gellybeans.Expressions
 {
     public enum TokenType
     {
-        Attack,
+        None,
         Ternary,
         GetBon,
         AssignBon,
