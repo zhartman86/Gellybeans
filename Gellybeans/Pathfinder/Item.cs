@@ -47,7 +47,7 @@ namespace Gellybeans.Pathfinder
             if(Defense != "")
             {
                 var split = Defense!.Split('/');
-                sb.AppendLine($"{(split[0] != "0" ? $"**Armor Bonus** {split[0]}"  : $"**Shield Bonus** {split[1]}")}; **Max Dex** {(string.IsNullOrEmpty(split[2]) ? split[2] : "—")}; **Penalty** {split[3]}");
+                sb.AppendLine($"{(split[0] != "0" ? $"**Armor Bonus** {split[0]}"  : $"**Shield Bonus** {split[1]}")}; **Max Dex** {(string.IsNullOrEmpty(split[2]) ? "—" : split[2])}; **Penalty** {split[3]}");
                 sb.AppendLine($"**Failure** {split[4]}; **Thirty** {split[5]}; **Twenty** {split[6]}");                
             }
 

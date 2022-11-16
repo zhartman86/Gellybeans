@@ -7,8 +7,8 @@ namespace Gellybeans.Pathfinder
         public Guid Id      { get; set; }
         public ulong Owner  { get; set; }
 
-        public string Name                          { get; set; }
-        public string Description                   { get; set; } = "This campaign has no description.";
+        public string Name                          { get; set; } = "Pathfinder";
+        public string Description                   { get; set; } = "Pathfinder Default";
         public Dictionary<ulong, string> players    { get; set; } = new Dictionary<ulong, string>();
 
         public List<Creature>                                Bestiary    { get; set; } = new List<Creature>();       
@@ -17,9 +17,6 @@ namespace Gellybeans.Pathfinder
         public List<Shape>                                   Shapes      { get; set; } = new List<Shape>();        
         public List<Spell>                                   Spells      { get; set; } = new List<Spell>();     
         public Dictionary<string, List<(string, string)>>    Modifiers   { get; set; } = new Dictionary<string, List<(string, string)>>();
-
-        public Dictionary<string, Stat>     Stats;
-        public Dictionary<string, string>   Expressions;
 
         public string ListBestiary()
         {
@@ -32,9 +29,9 @@ namespace Gellybeans.Pathfinder
         public string ListItems()
         {
             var sb = new StringBuilder();
-            sb.AppendLine($"{"#",-2} |{"NAME",-40} |{"TYPE"}");
+            sb.AppendLine($"{"#",-2} |{"NAME",-30} |{"TYPE", -19}");
             for(int i = 0; i < Items.Count; i++)
-                sb.AppendLine($"{i,-2} |{Items[i].Name,-40} |{Items[i].Type}");
+                sb.AppendLine($"{i,-2} |{Items[i].Name,-30} |{Items[i].Type, -19}");
             return sb.ToString();
         }
         public string ListMods()

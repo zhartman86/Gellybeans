@@ -35,7 +35,16 @@ namespace Gellybeans.Expressions
         public void NextToken()
         {
             while(char.IsWhiteSpace(currentChar) || currentChar == ':') { NextChar(); }
-        
+            
+            //comments
+            if(currentChar == '[')
+            {
+                while(currentChar != ']')
+                     NextChar();
+                NextChar();
+                NextChar();
+            }
+
             switch(currentChar)
             {
                 case '\0':
@@ -205,7 +214,7 @@ namespace Gellybeans.Expressions
                     builder.Append(currentChar);
                     hasD = currentChar == 'd';
                     NextChar();
-                    if(currentChar == 'r')
+                    if(currentChar == 'r' || currentChar == 'h' || currentChar == 'l')
                     {
                         builder.Append(currentChar);
                         NextChar();

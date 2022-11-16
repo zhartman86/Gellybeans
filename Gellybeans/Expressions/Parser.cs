@@ -1,8 +1,13 @@
-﻿namespace Gellybeans.Expressions
+﻿using System.Text;
+using System.Text.RegularExpressions;
+
+namespace Gellybeans.Expressions
 {
     public class Parser
     {
         Tokenizer tokenizer;
+        static readonly Regex dRegex = new Regex(@"([0-9]{1,3})d([0-9]{1,3})r?([0-9]{1,2})?((?:h|l)[0-9]{1,2})?");
+
 
         public Parser(Tokenizer tokenizer) => this.tokenizer = tokenizer;
 
@@ -191,31 +196,38 @@
 
             if(tokenizer.Token == TokenType.Dice)
             {
-                var rr = 0;
-                var splitRR = tokenizer.Identifier.Split('r');
-                string[] split;
-                if(splitRR.Length > 1)
+                var match   = dRegex.Match(tokenizer.Identifier);
+
+                if(match.Success)
                 {
-                    rr = int.Parse(splitRR[1]);
-                    split = splitRR[0].Split(new char[] { 'd', 'D' }, StringSplitOptions.RemoveEmptyEntries);
-                }
-                else split = tokenizer.Identifier.Split(new char[] { 'd', 'D' }, StringSplitOptions.RemoveEmptyEntries);
-                
+                    var count = int.Parse(match.Groups[1].Captures[0].Value);
+                    var sides = int.Parse(match.Groups[2].Captures[0].Value);
+                    var reroll = match.Groups[3].Captures.Count > 0 ? int.Parse(match.Groups[3].Captures[0].Value) : 0;
+                    var highOrLow = match.Groups[4].Captures.Count > 0 ? match.Groups[4].Captures[0].Value : "";
 
-                int count = split.Length > 1 ? int.Parse(split[0]) : 1; 
-                int sides = split.Length > 1 ? int.Parse(split[1]) : int.Parse(split[0]);                    
-                
-                tokenizer.NextToken();
-
-                var lhs = new DiceNode(count, sides) { Reroll = rr };
-
-                if(tokenizer.Token == TokenType.Mul)
-                {
+                    DiceNode lhs = new DiceNode(count, sides);
+                    if(highOrLow != "")
+                    {
+                        if(highOrLow[0] == 'h')
+                        {
+                            lhs.Highest = int.Parse(highOrLow.Remove(0, 1));
+                        }                                          
+                        else
+                        {
+                            lhs.Lowest = int.Parse(highOrLow.Remove(0, 1));
+                        }
+                                              
+                    }
+                    Console.WriteLine("TEST2");
                     tokenizer.NextToken();
-                    var rhs = ParseTernary();
-                    return new DiceMultiplierNode(lhs, rhs);
-                }
-                return lhs;
+                    if(tokenizer.Token == TokenType.Mul)
+                    {
+                        tokenizer.NextToken();
+                        var rhs = ParseTernary();
+                        return new DiceMultiplierNode(lhs, rhs);
+                    }
+                    return lhs;
+                }                
             }
 
             if(tokenizer.Token == TokenType.Var)

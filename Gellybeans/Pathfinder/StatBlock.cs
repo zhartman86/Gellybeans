@@ -201,25 +201,6 @@ namespace Gellybeans.Pathfinder
         }
 
 
-        //IContext
-        public int Call(string methodName, int[] args) => methodName switch
-        {
-            "abs" => Math.Abs(args[0]),
-            "clamp" => Math.Clamp(args[0], args[1], args[2]),
-            "clearmods" => ClearBonuses(),
-            "if" => args[0] == 1 ? args[1] : 0,
-            "max" => Math.Max(args[0], args[1]),
-            "min" => Math.Min(args[0], args[1]),
-            "mod" => Math.Max(-5, (args[0] - 10) / 2),
-            "rand" => new Random().Next(args[0], args[1] + 1),
-            "bad" => args[0] / 3,
-            "good" => 2 + (args[0] / 2),
-            "tq" => (args[0] + (args[0] / 2)) / 2,
-            "oh" => (args[0] / 2),
-            "th" => (args[0] + (args[0] / 2)),
-            _ => 0
-        };
-
         public int Resolve(string varName, StringBuilder sb)
         {
             var toUpper = varName.ToUpper();
@@ -501,14 +482,14 @@ namespace Gellybeans.Pathfinder
 
                     ["CMB"] = "1d20 + BAB + STR + CMB_BONUS - SIZE_MOD",
 
-                    ["BULLRUSH"] = "CMB + CMB_GRAPPLE",
-                    ["DIRTY"] = "CMB + CMB_DIRTY",
-                    ["DISARM"] = "CMB + CMB_DISARM",
-                    ["OVERRUN"] = "CMB + CMB_OVERRUN",
-                    ["REPOSITION"] = "CMB + CMB_REPOSITION",
-                    ["STEAL"] = "CMB + CMB_STEAL",
-                    ["SUNDER"] = "CMB + CMB_SUNDER",
-                    ["TRIP"] = "CMB + CMB_TRIP",
+                    ["BULLRUSH"]    = "CMB + CMB_GRAPPLE",
+                    ["DIRTY"]       = "CMB + CMB_DIRTY",
+                    ["DISARM"]      = "CMB + CMB_DISARM",
+                    ["OVERRUN"]     = "CMB + CMB_OVERRUN",
+                    ["REPOSITION"]  = "CMB + CMB_REPOSITION",
+                    ["STEAL"]       = "CMB + CMB_STEAL",
+                    ["SUNDER"]      = "CMB + CMB_SUNDER",
+                    ["TRIP"]        = "CMB + CMB_TRIP",                  
 
                     ["MOVE"]        = "MOVE_BASE + MOVE_BONUS",
                     ["MOVE_BURROW"] = "MOVE_BURROW  + MOVE_BONUS",
@@ -534,8 +515,8 @@ namespace Gellybeans.Pathfinder
                     ["DMG_WIS"] = "(WIS + (WIS_TEMP / 2)) - (min(WIS_SCORE $ ENHANCEMENT, WIS_TEMP $ ENHANCEMENT) / 2) + DMG_BONUS",
                     ["DMG_CHA"] = "(CHA + (CHA_TEMP / 2)) - (min(CHA_SCORE $ ENHANCEMENT, CHA_TEMP $ ENHANCEMENT) / 2) + DMG_BONUS",
 
-                    ["PA_ATK"] = "1 + BAB/4",
-                    ["PA_DMG"] = "2 + (BAB/4 * 2)",
+                    ["PA_ATK"] = "1 + BAB / 4",
+                    ["PA_DMG"] = "2 + (BAB / 4 * 2)",
 
                     //skills
                     ["ACR"] = "1d20 + DEX + SK_ALL + SK_ACR + AC_PENALTY",

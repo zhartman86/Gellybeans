@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Security.Cryptography;
+using System.Text;
 
 namespace Gellybeans.Expressions
 {
@@ -7,8 +8,9 @@ namespace Gellybeans.Expressions
         int count;
         int sides;
 
-        public int Reroll       { get; init; }  = 0;
-        public int Keep         { get; init; }  = 0;
+        public int Reroll       { get; set; } = 0;
+        public int Highest      { get; set; } = 0;
+        public int Lowest       { get; set; } = 0;
 
         public DiceNode(int count, int sides)
         {
@@ -41,14 +43,43 @@ namespace Gellybeans.Expressions
 
                 total += r;
                 results.Add(r);            
-            }             
+            }
+
+            
+
+            List<int> dropped = new List<int>();
+            if(Highest > 0)
+            {
+                var diff = results.Count - Highest;
+                for(int i = 0; i < diff; i++)
+                {
+                    var drp = results.Min();
+                    dropped.Add(drp);
+                    total -= drp;
+                    results.Remove(drp);
+                }                  
+            }
+            else if(Lowest > 0)
+            {
+                var diff = results.Count - Lowest;
+                for(int i = 0; i < diff; i++)
+                {
+                    var drp = results.Max();
+                    dropped.Add(drp);
+                    total -= drp;
+                    results.Remove(drp);
+                }
+            }
 
             if(sb != null)
             {
                 sb.Append(ToString() + ": ");
                 for(int i = 0; i < results.Count; i++)
                     sb.Append($"[{results[i]}]");
-                if(rerolled) sb.Append($" ({rerolledResults})");
+                for(int i = 0; i < dropped.Count; i++)
+                    sb.Append($"~~[{dropped[i]}]~~");
+                sb.Append($" = {total}");
+                if(rerolled) sb.Append($" <{rerolledResults}>");
                 sb.AppendLine();
             }
 
@@ -62,7 +93,7 @@ namespace Gellybeans.Expressions
         
         public static DiceNode operator *(DiceNode node, int multiplier)
         {
-            return new DiceNode(node.count * multiplier, node.sides) { Keep = node.Keep, Reroll = node.Reroll};
+            return new DiceNode(node.count * multiplier, node.sides) { Highest = node.Highest, Reroll = node.Reroll};
         }
     }
 }

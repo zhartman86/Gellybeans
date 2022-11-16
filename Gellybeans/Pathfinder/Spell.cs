@@ -1,4 +1,6 @@
-﻿using System.Text;
+﻿using Gellybeans.Expressions;
+using System.Text;
+using System.Text.RegularExpressions;
 
 namespace Gellybeans.Pathfinder
 {
@@ -22,13 +24,18 @@ namespace Gellybeans.Pathfinder
         public string? Domain           { get; set; }
         public string? Deity            { get; set; }
         public string? Description      { get; set; }
+        public string? DescriptionVar   { get; set; }
+        public string? Formulae         { get; set; }
         public string? Source           { get; set; }
 
+        static readonly Regex duration = new Regex(@"([0-9]{1,3})(.*)/level(.*)");
+        static readonly Regex brackets = new Regex(@"\{.*?\}");
 
         public override string ToString()
         {
             var sb = new StringBuilder();            
             sb.AppendLine($"__**{Name}**__");
+            sb.AppendLine($"*{Source}*");
             sb.AppendLine($"**School** {School} {Subschool} {Descriptor}");
             sb.AppendLine($"**Level** {Levels}");
             sb.AppendLine($"**Casting Time** {CastingTime}");
@@ -36,12 +43,62 @@ namespace Gellybeans.Pathfinder
             sb.AppendLine($"**Range** {Range}");
             if(Effect != "")    sb.AppendLine($"**Effect** {Effect}");
             if(Targets != "")   sb.AppendLine($"**Target** {Targets}");
+            if(Area != "")      sb.AppendLine($"**Area** {Area}");
             sb.AppendLine($"**Duration** {Duration}");
             sb.AppendLine($"**Saving Throw** {SavingThrow}; **Spell Resistance** {SpellResistance}");
             sb.AppendLine();
             sb.AppendLine(Description);
-            sb.AppendLine();
+            return sb.ToString();
+        }
+    
+        public string ToCasterLevel(int cl)
+        {
+            var sb = new StringBuilder();
+            sb.AppendLine($"__**{Name}**__");
             sb.AppendLine($"*{Source}*");
+            sb.AppendLine($"**Caster Level** {cl}");
+            sb.AppendLine($"**School** {School} {Subschool} {Descriptor}");
+            sb.AppendLine($"**Level** {Levels}");
+            sb.AppendLine($"**Casting Time** {CastingTime}");
+            sb.AppendLine($"**Components** {Components}");
+
+            sb.Append("**Range** ");
+            switch(Range)
+            {
+                case string range when range.Contains("close"):
+                    sb.AppendLine($"{25 + (cl*5/2)} ft.");
+                    break;
+                case string range when range.Contains("medium"):
+                    sb.AppendLine($"{100 + (cl*10)} ft.");
+                    break;
+                case string range when range.Contains("long"):
+                    sb.AppendLine($"{400 + (cl * 40)} ft.");
+                    break;
+                default:
+                    sb.AppendLine(Range);
+                    break;
+            }
+
+            if(Effect != "")    sb.AppendLine($"**Effect** {Effect}");
+            if(Targets != "")   sb.AppendLine($"**Target** {Targets}");
+            if(Area != "")      sb.AppendLine($"**Area** {Area}");
+
+            sb.Append($"**Duration** ");
+            var match = duration.Match(Duration!);           
+            if(match.Success && match.Groups.Count >= 3)
+                sb.AppendLine($"{int.Parse(match.Groups[1].Value) * cl} {match.Groups[2].Value}s");                          
+            else
+                sb.AppendLine($"{Duration}");
+
+            sb.AppendLine($"**Saving Throw** {SavingThrow}; **Spell Resistance** {SpellResistance}");
+            sb.AppendLine();
+            
+            //replace all bracketed statements
+            sb.AppendLine(brackets.Replace(DescriptionVar!, m =>{
+                var str = m.Value.Trim(new char[] { '{', '}' }).Replace("CL", cl.ToString());
+                return $"**{Parser.Parse(str).Eval(null!, new StringBuilder())}**";
+            }));
+                       
             return sb.ToString();
         }
     }
