@@ -9,7 +9,7 @@
 
         public static Dictionary<string, List<StatModifier>> Mods = new Dictionary<string, List<StatModifier>>()
         {
-            //spells and abailities
+            //spells and abACilities
             { "AID", new List<StatModifier>()       { new StatModifier("ATK_BONUS") { Bonus = new Bonus() {Name = "AID", Type = BonusType.Morale, Value = 1 }}}},
             { "ALTER_SELF_SMALL", new List<StatModifier>(){
                 new StatModifier("DEX_TEMP")        { Bonus = new Bonus() { Name = "ALTER_SELF", Type = BonusType.Base, Value = 2   }},
@@ -206,7 +206,7 @@
                 new StatModifier("SIZE_MOD")        { Bonus = new Bonus() { Name = "ELEMENTAL_BODY", Type = BonusType.Base, Value = 0       }},
                 new StatModifier("SIZE_SKL")        { Bonus = new Bonus() { Name = "ELEMENTAL_BODY", Type = BonusType.Base, Value = 0       }},
                 new StatModifier("STR_TEMP")        { Bonus = new Bonus() { Name = "ELEMENTAL_BODY", Type = BonusType.Size, Value = 4       }},
-                new StatModifier("CON_TEMP")        { Bonus = new Bonus() { Name = "ELEMENTAL_BODY", Type = BonusType.Size, Value = 3       }}}},
+                new StatModifier("CON_TEMP")        { Bonus = new Bonus() { Name = "ELEMENTAL_BODY", Type = BonusType.Size, Value = 4       }}}},
             { "ELEMENTAL_BODY_MEDIUM_EARTH", new List<StatModifier>(){
                 new StatModifier("SIZE_MOD")        { Bonus = new Bonus() { Name = "ELEMENTAL_BODY", Type = BonusType.Base, Value = 0       }},
                 new StatModifier("SIZE_SKL")        { Bonus = new Bonus() { Name = "ELEMENTAL_BODY", Type = BonusType.Base, Value = 0       }},

@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using System.Globalization;
+using System.Security;
 
 namespace Gellybeans.Expressions
 {
@@ -34,7 +35,7 @@ namespace Gellybeans.Expressions
 
         public void NextToken()
         {
-            while(char.IsWhiteSpace(currentChar) || currentChar == ':') { NextChar(); }
+            while(char.IsWhiteSpace(currentChar)) { NextChar(); }
             
             //comments
             if(currentChar == '[')
@@ -45,12 +46,19 @@ namespace Gellybeans.Expressions
                 NextChar();
             }
 
+           
+
             switch(currentChar)
             {
                 case '\0':
                     currentToken = TokenType.EOF;
                     return;
-
+                
+                case ':':
+                    NextChar();
+                    currentToken = TokenType.Separator;
+                    return;
+                                
                 case '~':
                     NextChar();
                     currentToken = TokenType.Comment;

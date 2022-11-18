@@ -14,6 +14,8 @@ namespace Gellybeans.Expressions
         public ExpressionNode ParseExpr()
         {
             var expr = ParseTernary();
+            
+
             if(tokenizer.Token != TokenType.EOF)
             {
                 Console.WriteLine($"Unexpected character `{tokenizer.CurrentChar}` at end of expression. TOKEN:{tokenizer.Token}");
@@ -22,8 +24,13 @@ namespace Gellybeans.Expressions
             return expr;
         }               
 
+
+
         ExpressionNode ParseTernary()
-        {                    
+        {                                
+            if(tokenizer.Token == TokenType.Separator)
+                tokenizer.NextToken();
+            
             var conditional = ParseLogicalAndOr();
 
             while(true)
@@ -162,6 +169,7 @@ namespace Gellybeans.Expressions
                     continue;
                 }
 
+
                 if(tokenizer.Token == TokenType.Sub)
                 {
                     tokenizer.NextToken();
@@ -175,6 +183,8 @@ namespace Gellybeans.Expressions
         
         ExpressionNode ParseLeaf()
         {
+                       
+            
             if(tokenizer.Token == TokenType.Number)
             {
                 var node = new NumberNode(tokenizer.Number);
@@ -200,25 +210,19 @@ namespace Gellybeans.Expressions
 
                 if(match.Success)
                 {
-                    var count = int.Parse(match.Groups[1].Captures[0].Value);
-                    var sides = int.Parse(match.Groups[2].Captures[0].Value);
-                    var reroll = match.Groups[3].Captures.Count > 0 ? int.Parse(match.Groups[3].Captures[0].Value) : 0;
-                    var highOrLow = match.Groups[4].Captures.Count > 0 ? match.Groups[4].Captures[0].Value : "";
+                    var count       = int.Parse(match.Groups[1].Captures[0].Value);
+                    var sides       = int.Parse(match.Groups[2].Captures[0].Value);
+                    var reroll      = match.Groups[3].Captures.Count > 0 ? int.Parse(match.Groups[3].Captures[0].Value) : 0;
+                    var highOrLow   = match.Groups[4].Captures.Count > 0 ? match.Groups[4].Captures[0].Value : "";
 
-                    DiceNode lhs = new DiceNode(count, sides);
+                    DiceNode lhs = new DiceNode(count, sides) { Reroll = reroll };
                     if(highOrLow != "")
                     {
                         if(highOrLow[0] == 'h')
-                        {
-                            lhs.Highest = int.Parse(highOrLow.Remove(0, 1));
-                        }                                          
+                            lhs.Highest = int.Parse(highOrLow.Remove(0, 1));                                        
                         else
-                        {
-                            lhs.Lowest = int.Parse(highOrLow.Remove(0, 1));
-                        }
-                                              
+                            lhs.Lowest = int.Parse(highOrLow.Remove(0, 1));                                             
                     }
-                    Console.WriteLine("TEST2");
                     tokenizer.NextToken();
                     if(tokenizer.Token == TokenType.Mul)
                     {
@@ -283,8 +287,10 @@ namespace Gellybeans.Expressions
                         }
 
                         var bType = ParseTernary();
+                        Console.WriteLine(bType.ToString());
                         var bVal = ParseTernary();
- 
+                        Console.WriteLine(bVal.ToString());
+
                         lh = new BonusNode(name, bName, bType, bVal, type);
                         return lh;
                     }                                 

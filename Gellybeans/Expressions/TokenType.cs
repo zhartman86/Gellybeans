@@ -44,6 +44,7 @@ namespace Gellybeans.Expressions
         Comment,
         Var,
         Dice,
+        Separator,
         EOF,       
     }
 }
