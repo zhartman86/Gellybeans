@@ -58,7 +58,12 @@ namespace Gellybeans.Expressions
                     NextChar();
                     currentToken = TokenType.Separator;
                     return;
-                                
+
+                case ';':
+                    NextChar();
+                    currentToken = TokenType.Semicolon;
+                    return;
+                
                 case '~':
                     NextChar();
                     currentToken = TokenType.Comment;
@@ -244,16 +249,26 @@ namespace Gellybeans.Expressions
                 }
             }
 
-            if(char.IsLetter(currentChar) || currentChar == '_' || currentChar == '@')
+            if(char.IsLetter(currentChar) || currentChar == '_' || currentChar == '"' || currentChar == '@')
             {
                 var sb = new StringBuilder();
 
-                while(char.IsLetterOrDigit(currentChar) || currentChar == '_' || currentChar == '@')
+                if(currentChar == '"')
                 {
-                    sb.Append(currentChar);
                     NextChar();
+                    while(currentChar != '"')
+                    {
+                        sb.Append(currentChar);
+                        NextChar();                       
+                    }                                          
                 }
-
+                else
+                    while(char.IsLetterOrDigit(currentChar) || currentChar == '_' || currentChar == '@')
+                    {
+                        sb.Append(currentChar);
+                        NextChar();
+                    }
+                
                 identifier = sb.ToString();
                 currentToken = TokenType.Var;
                 return;

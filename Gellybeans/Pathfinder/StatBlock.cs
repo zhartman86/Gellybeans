@@ -203,21 +203,21 @@ namespace Gellybeans.Pathfinder
 
         public int Resolve(string varName, StringBuilder sb)
         {
-            var toUpper = varName.ToUpper();
-            if(Constants.ContainsKey(toUpper))
-                return Constants[toUpper];
+            varName = varName.Replace(' ', '_').ToUpper();
+            if(Constants.ContainsKey(varName))
+                return Constants[varName];
 
-            if(toUpper[0] == '@')
+            if(varName[0] == '@')
             {
-                var replace = toUpper.Replace("@", "");
+                var replace = varName.Replace("@", "");
                 if(Stats.ContainsKey(replace))
                     return Stats[replace].Base;
             }
 
-            if(Stats.ContainsKey(toUpper))
-                return this[toUpper];
-            if(Expressions.ContainsKey(toUpper))
-                return Parser.Parse(Expressions[toUpper]).Eval(this, sb);
+            if(Stats.ContainsKey(varName))
+                return this[varName];
+            if(Expressions.ContainsKey(varName))
+                return Parser.Parse(Expressions[varName]).Eval(this, sb);
             if(sb != null) sb.AppendLine($"{varName} not found");
             return 0;
         }
@@ -231,48 +231,48 @@ namespace Gellybeans.Pathfinder
                 return -99;
             }
 
-            var toUpper = statName.ToUpper();
-            if(Expressions.ContainsKey(toUpper))
+            statName = statName.Replace(' ', '_').ToUpper();
+            if(Expressions.ContainsKey(statName))
             {
                 sb.AppendLine("Cannot assign value to an expression using /eval. Use /var Set-Expression instead");
                 return -99;
             }
-            if(Constants.ContainsKey(toUpper))
+            if(Constants.ContainsKey(statName))
             {
                 sb.AppendLine("Cannot change a constant value");
                 return -99;
             }
 
-            if(!Stats.ContainsKey(toUpper)) Stats[toUpper] = 0;
+            if(!Stats.ContainsKey(statName)) Stats[statName] = 0;
 
             switch(assignType)
             {
                 case TokenType.AssignEquals:
-                    this[toUpper] = assignment;
+                    this[statName] = assignment;
                     break;
 
                 case TokenType.AssignAdd:
-                    this[toUpper] += assignment;
+                    this[statName] += assignment;
                     break;
 
                 case TokenType.AssignSub:
-                    this[toUpper] -= assignment;
+                    this[statName] -= assignment;
                     break;
 
                 case TokenType.AssignMul:
-                    this[toUpper] *= assignment;
+                    this[statName] *= assignment;
                     break;
 
                 case TokenType.AssignDiv:
-                    this[toUpper] /= assignment;
+                    this[statName] /= assignment;
                     break;
 
                 case TokenType.AssignMod:
-                    this[toUpper] %= assignment;
+                    this[statName] %= assignment;
                     break;
             }
-            sb.AppendLine($"{toUpper} set to {Stats[toUpper].Base}");;
-            return Stats[toUpper];
+            sb.AppendLine($"{statName} set to {Stats[statName].Base}");;
+            return Stats[statName];
         }
 
         public int Bonus(string statName, string bonusName, int type, int value, TokenType assignType, StringBuilder sb)
@@ -285,8 +285,17 @@ namespace Gellybeans.Pathfinder
 
             if(string.IsNullOrEmpty(statName) && assignType == TokenType.AssignSubBon)
             {
-                ClearBonus(bonusName);
-                sb.AppendLine($"{bonusName} removed from all stats");
+                if(bonusName == "")
+                {
+                    ClearBonuses();
+                    sb.AppendLine("removed all bonuses from all stats");
+                }                   
+                else
+                {
+                    ClearBonus(bonusName);
+                    sb.AppendLine($"{bonusName} removed from all stats");
+                }
+            
                 return 1;
             }
                 
@@ -297,31 +306,35 @@ namespace Gellybeans.Pathfinder
                 return -99;
             }
 
-            var toUpper = statName.ToUpper();
-            if(Expressions.ContainsKey(toUpper))
+            statName = statName.Replace(' ', '_').ToUpper();
+            if(Expressions.ContainsKey(statName))
             {
                 sb.AppendLine("Cannot assign bonus to an expression");
                 return -99;
             }
 
-            if(!Stats.ContainsKey(toUpper)) Stats[toUpper] = 0;
+            if(!Stats.ContainsKey(statName)) Stats[statName] = 0;
 
 
             switch(assignType)
             {
                 case TokenType.AssignAddBon:
+                    if(bonusName[0] == '.')
+                    {
+
+                    }
                     var bonus = new Bonus { Name = bonusName, Type = (BonusType)type, Value = value };
-                    Stats[toUpper].AddBonus(bonus);
+                    Stats[statName].AddBonus(bonus);
                     sb.AppendLine(bonus.ToString());
                     break;
 
                 case TokenType.AssignSubBon:
-                    Stats[toUpper].RemoveBonus(bonusName);
+                    Stats[statName].RemoveBonus(bonusName);
                     sb.AppendLine($"{bonusName} removed from {statName}");
                     break;
             }
             OnValueChanged($"stats");
-            sb.AppendLine($"{toUpper} set to {this[toUpper]}");            
+            sb.AppendLine($"{statName} set to {this[statName]}");            
             return value;
         }
 

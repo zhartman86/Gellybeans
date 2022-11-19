@@ -9,7 +9,7 @@
 
         public static Dictionary<string, List<StatModifier>> Mods = new Dictionary<string, List<StatModifier>>()
         {
-            //spells and abACilities
+            //spells and abilities
             { "AID", new List<StatModifier>()       { new StatModifier("ATK_BONUS") { Bonus = new Bonus() {Name = "AID", Type = BonusType.Morale, Value = 1 }}}},
             { "ALTER_SELF_SMALL", new List<StatModifier>(){
                 new StatModifier("DEX_TEMP")        { Bonus = new Bonus() { Name = "ALTER_SELF", Type = BonusType.Base, Value = 2   }},
@@ -401,13 +401,13 @@
             { "MAGICAL_BEAST_SHAPE_TINY", new List<StatModifier>(){
                 new StatModifier("SIZE_MOD")        { Bonus = new Bonus() { Name = "MAGICAL_BEAST_SHAPE", Type = BonusType.Base, Value = 2      }},
                 new StatModifier("SIZE_SKL")        { Bonus = new Bonus() { Name = "MAGICAL_BEAST_SHAPE", Type = BonusType.Base, Value = 4      }},
-                new StatModifier("AC_BONUS")        { Bonus = new Bonus() { Name = "MAGICAL_BEAST_SHAPE", Type = BonusType.Natural, Value = 3   }},
+                new StatModifier("AC_BONUS")        { Bonus = new Bonus() { Name = "MAGICAL_BEAST_SHAPE", Type = BonusType.Natural, Value = 2   }},
                 new StatModifier("DEX_TEMP")        { Bonus = new Bonus() { Name = "MAGICAL_BEAST_SHAPE", Type = BonusType.Size, Value = 8      }},
                 new StatModifier("STR_SCORE")       { Bonus = new Bonus() { Name = "MAGICAL_BEAST_SHAPE", Type = BonusType.Penalty, Value = -2  }}}},
             { "MAGICAL_BEAST_SHAPE_SMALL", new List<StatModifier>(){
                 new StatModifier("SIZE_MOD")        { Bonus = new Bonus() { Name = "MAGICAL_BEAST_SHAPE", Type = BonusType.Base, Value = 1      }},
                 new StatModifier("SIZE_SKL")        { Bonus = new Bonus() { Name = "MAGICAL_BEAST_SHAPE", Type = BonusType.Base, Value = 2      }},
-                new StatModifier("AC_BONUS")        { Bonus = new Bonus() { Name = "MAGICAL_BEAST_SHAPE", Type = BonusType.Natural, Value = 2   }},
+                new StatModifier("AC_BONUS")        { Bonus = new Bonus() { Name = "MAGICAL_BEAST_SHAPE", Type = BonusType.Natural, Value = 3   }},
                 new StatModifier("DEX_TEMP")        { Bonus = new Bonus() { Name = "MAGICAL_BEAST_SHAPE", Type = BonusType.Size, Value = 4      }}}},
             { "MAGICAL_BEAST_SHAPE_MEDIUM", new List<StatModifier>(){
                 new StatModifier("SIZE_MOD")        { Bonus = new Bonus() { Name = "MAGICAL_BEAST_SHAPE", Type = BonusType.Base, Value = 0      }},

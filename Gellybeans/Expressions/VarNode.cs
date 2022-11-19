@@ -4,25 +4,24 @@ namespace Gellybeans.Expressions
 {
     public class VarNode : ExpressionNode
     {
-        string varName;
+        readonly string varName;
 
-        public VarNode(string varName)
-        {
+        public VarNode(string varName) =>
             this.varName = varName;
-        }
 
         public override int Eval(IContext ctx, StringBuilder sb) 
         {           
-            var result = 0;
-            if(varName[0] == '%')
-            {
-                sb.Clear();
-                sb.AppendLine(varName.Trim('%'));
-                return -99;
-            }
-                
+            var result = 0;          
             if(ctx != null)
+            {
+                if(varName[0] == '%')
+                {
+                    sb.Clear();
+                    sb.AppendLine(varName.Trim('%'));
+                    return -99;
+                }
                 result = ctx.Resolve(varName, sb);
+            }           
             return result;
         }
     }
