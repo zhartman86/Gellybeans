@@ -91,9 +91,9 @@ namespace Gellybeans.Expressions
             return count + "d" + sides;
         }
         
-        public static DiceNode operator *(DiceNode node, int multiplier)
-        {
-            return new DiceNode(node.count * multiplier, node.sides) { Highest = node.Highest, Reroll = node.Reroll};
-        }
+        public static DiceNode operator *(DiceNode node, int multiplier) =>
+            new DiceNode(node.count * multiplier, node.sides) { Highest = node.Highest, Reroll = node.Reroll};
+        public static DiceNode operator /(DiceNode node, int divisor) =>
+            new DiceNode(node.count / divisor, node.sides) { Highest = node.Highest, Reroll = node.Reroll };
     }
 }

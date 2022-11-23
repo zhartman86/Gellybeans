@@ -32,7 +32,7 @@ namespace Gellybeans.Expressions
 
 
         ExpressionNode ParseTernary()
-        {
+        {           
             if(tokenizer.Token == TokenType.Separator)
                 tokenizer.NextToken();
             
@@ -226,11 +226,12 @@ namespace Gellybeans.Expressions
                             lhs.Lowest = int.Parse(highOrLow.Remove(0, 1));                                             
                     }
                     tokenizer.NextToken();
-                    if(tokenizer.Token == TokenType.Mul)
+                    if(tokenizer.Token == TokenType.Mul || tokenizer.Token == TokenType.Div)
                     {
+                        var op = tokenizer.Token;
                         tokenizer.NextToken();
                         var rhs = ParseTernary();
-                        return new DiceMultiplierNode(lhs, rhs);
+                        return new DiceMultiplierNode(lhs, rhs, op);
                     }
                     return lhs;
                 }                
@@ -238,9 +239,9 @@ namespace Gellybeans.Expressions
 
             if(tokenizer.Token == TokenType.Var)
             {                             
-                var name = tokenizer.Identifier;             
-                tokenizer.NextToken();                            
-                
+                var name = tokenizer.Identifier;
+                tokenizer.NextToken();
+
                 if(tokenizer.Token == TokenType.AssignEquals || tokenizer.Token == TokenType.AssignAdd || tokenizer.Token == TokenType.AssignSub || tokenizer.Token == TokenType.AssignDiv || tokenizer.Token == TokenType.AssignMul || tokenizer.Token == TokenType.AssignMod)
                 {
                     var type = tokenizer.Token;
@@ -274,8 +275,6 @@ namespace Gellybeans.Expressions
                     {
                         var bName = tokenizer.Identifier;
                         tokenizer.NextToken();
-
-
 
                         BonusNode lh;
                         if(type == TokenType.GetBon)

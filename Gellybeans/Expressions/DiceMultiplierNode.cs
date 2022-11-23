@@ -10,11 +10,13 @@ namespace Gellybeans.Expressions
     {
         DiceNode        lhs;
         ExpressionNode  rhs;
+        TokenType       token;
 
-        public DiceMultiplierNode(DiceNode lhs, ExpressionNode rhs)
+        public DiceMultiplierNode(DiceNode lhs, ExpressionNode rhs, TokenType token)
         {
             this.lhs = lhs;
             this.rhs = rhs;
+            this.token = token;
         }
 
         public override int Eval(IContext ctx, StringBuilder sb)
@@ -25,7 +27,13 @@ namespace Gellybeans.Expressions
                 for(int i = 0; i < rhValue; i++)
                     lhValue += lhs.Eval(ctx, sb);
             else
-                lhValue = (lhs * rhValue).Eval(ctx, sb);
+            {
+                if(token == TokenType.Mul)
+                    lhValue = (lhs * rhValue).Eval(ctx, sb);
+                else if(token == TokenType.Div)
+                    lhValue = (lhs / rhValue).Eval(ctx, sb);
+            }
+                
             
             return lhValue;
         }

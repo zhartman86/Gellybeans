@@ -11,12 +11,12 @@ namespace Gellybeans.Pathfinder
         public string Description                   { get; set; } = "Pathfinder Default";
         public Dictionary<ulong, string> players    { get; set; } = new Dictionary<ulong, string>();
 
-        public List<Creature>                                Bestiary    { get; set; } = new List<Creature>();       
-        public List<StatBlock>                               StatBlocks  { get; set; } = new List<StatBlock>();
-        public List<Item>                                    Items       { get; set; } = new List<Item>();
-        public List<Shape>                                   Shapes      { get; set; } = new List<Shape>();        
-        public List<Spell>                                   Spells      { get; set; } = new List<Spell>();     
-        public Dictionary<string, List<(string, string)>>    Modifiers   { get; set; } = new Dictionary<string, List<(string, string)>>();
+        public List<Creature>   Bestiary    { get; set; } = new List<Creature>();       
+        public List<StatBlock>  StatBlocks  { get; set; } = new List<StatBlock>();
+        public List<Item>       Items       { get; set; } = new List<Item>();
+        public List<Shape>      Shapes      { get; set; } = new List<Shape>();        
+        public List<Spell>      Spells      { get; set; } = new List<Spell>();     
+        public List<Rule>       Rules       { get; set; } = new List<Rule>();              
 
         public string ListBestiary()
         {
@@ -34,11 +34,11 @@ namespace Gellybeans.Pathfinder
                 sb.AppendLine($"{i,-2} |{Items[i].Name,-30} |{Items[i].Type, -19}");
             return sb.ToString();
         }
-        public string ListMods()
+        public string ListRules()
         {
             var sb = new StringBuilder();
-            foreach(var mod in Modifiers)
-                sb.AppendLine(mod.Key);
+            for(int i = 0; i < Rules.Count; i++)
+                sb.AppendLine(Rules[i].Name);
             return sb.ToString();
         }
         public string ListShapes()

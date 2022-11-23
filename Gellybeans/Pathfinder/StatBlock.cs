@@ -203,6 +203,7 @@ namespace Gellybeans.Pathfinder
 
         public int Resolve(string varName, StringBuilder sb)
         {
+            Console.WriteLine($"TEST:{varName}");
             varName = varName.Replace(' ', '_').ToUpper();
             if(Constants.ContainsKey(varName))
                 return Constants[varName];

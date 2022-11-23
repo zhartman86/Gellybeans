@@ -15,10 +15,13 @@ namespace Gellybeans.Pathfinder
         public string? CastingTime      { get; set; }
         public string? Components       { get; set; }
         public string? Range            { get; set; }
+        public string? RangeVar         { get; set; }
         public string? Area             { get; set; }
-        public string? Effect           { get; set; }
+        public string? AreaVar          { get; set; }
         public string? Targets          { get; set; }
+        public string? TargetsVar       { get; set; }
         public string? Duration         { get; set; }
+        public string? DurationVar      { get; set; }
         public string? SavingThrow      { get; set; }
         public string? SpellResistance  { get; set; }
         public string? Domain           { get; set; }
@@ -41,7 +44,6 @@ namespace Gellybeans.Pathfinder
             sb.AppendLine($"**Casting Time** {CastingTime}");
             sb.AppendLine($"**Components** {Components}");
             sb.AppendLine($"**Range** {Range}");
-            if(Effect != "")    sb.AppendLine($"**Effect** {Effect}");
             if(Targets != "")   sb.AppendLine($"**Target** {Targets}");
             if(Area != "")      sb.AppendLine($"**Area** {Area}");
             sb.AppendLine($"**Duration** {Duration}");
@@ -63,32 +65,39 @@ namespace Gellybeans.Pathfinder
             sb.AppendLine($"**Components** {Components}");
 
             sb.Append("**Range** ");
-            switch(Range)
+            sb.AppendLine(brackets.Replace(RangeVar!, m =>
             {
-                case string range when range.Contains("close"):
-                    sb.AppendLine($"{25 + (cl*5/2)} ft.");
-                    break;
-                case string range when range.Contains("medium"):
-                    sb.AppendLine($"{100 + (cl*10)} ft.");
-                    break;
-                case string range when range.Contains("long"):
-                    sb.AppendLine($"{400 + (cl * 40)} ft.");
-                    break;
-                default:
-                    sb.AppendLine(Range);
-                    break;
+                var str = m.Value.Trim(new char[] { '{', '}' }).Replace("CL", cl.ToString());
+                return $"{Parser.Parse(str).Eval(null!, new StringBuilder())}";
+            }));
+
+            if(Targets != "")
+            {
+                sb.Append("**Target** ");
+                sb.AppendLine(brackets.Replace(TargetsVar!, m =>
+                {
+                    var str = m.Value.Trim(new char[] { '{', '}' }).Replace("CL", cl.ToString());
+                    return $"{Parser.Parse(str).Eval(null!, new StringBuilder())}";
+                }));
             }
+            
+            if(AreaVar != "")
+            {
+                sb.Append("**Area** ");
+                sb.AppendLine(brackets.Replace(AreaVar!, m =>
+                {
+                    var str = m.Value.Trim(new char[] { '{', '}' }).Replace("CL", cl.ToString());
+                    return $"{Parser.Parse(str).Eval(null!, new StringBuilder())}";
+                }));
+            }       
 
-            if(Effect != "")    sb.AppendLine($"**Effect** {Effect}");
-            if(Targets != "")   sb.AppendLine($"**Target** {Targets}");
-            if(Area != "")      sb.AppendLine($"**Area** {Area}");
-
-            sb.Append($"**Duration** ");
-            var match = duration.Match(Duration!);           
-            if(match.Success && match.Groups.Count >= 3)
-                sb.AppendLine($"{int.Parse(match.Groups[1].Value) * cl} {match.Groups[2].Value}s");                          
-            else
-                sb.AppendLine($"{Duration}");
+            sb.Append("**Duration** ");
+            sb.AppendLine(brackets.Replace(DurationVar!, m =>
+            {
+                var str = m.Value.Trim(new char[] { '{', '}' }).Replace("CL", cl.ToString());
+                return $"{Parser.Parse(str).Eval(null!, new StringBuilder())}";
+            }));
+        
 
             sb.AppendLine($"**Saving Throw** {SavingThrow}; **Spell Resistance** {SpellResistance}");
             sb.AppendLine();

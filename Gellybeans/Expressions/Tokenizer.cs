@@ -12,13 +12,15 @@ namespace Gellybeans.Expressions
         TokenType   currentToken;
         
         int     number;
-        string  identifier = "";
+        string  identifier  = "";
+        string  comment     = "";
 
 
         public TokenType    Token       { get { return currentToken; } }       
         public int          Number      { get { return number; } }
         public string       Identifier  { get { return identifier; } }
         public char         CurrentChar { get { return currentChar; } }
+        public string       Comment     { get { return comment; } }
         
         public Tokenizer(TextReader textReader)
         {
@@ -36,17 +38,22 @@ namespace Gellybeans.Expressions
         public void NextToken()
         {
             while(char.IsWhiteSpace(currentChar)) { NextChar(); }
-            
+
             //comments
             if(currentChar == '[')
             {
+                var sb = new StringBuilder();
+                sb.Append(currentChar);
                 while(currentChar != ']')
-                     NextChar();
-                NextChar();
+                {
+                    NextChar();
+                    sb.Append(currentChar);
+                }
+                comment = sb.ToString();   
                 NextChar();
             }
 
-           
+            while(char.IsWhiteSpace(currentChar)) { NextChar(); }                    
 
             switch(currentChar)
             {
@@ -62,12 +69,7 @@ namespace Gellybeans.Expressions
                 case ';':
                     NextChar();
                     currentToken = TokenType.Semicolon;
-                    return;
-                
-                case '~':
-                    NextChar();
-                    currentToken = TokenType.Comment;
-                    return;
+                    return;                
                 
                 case '=':
                     NextChar();
@@ -207,8 +209,8 @@ namespace Gellybeans.Expressions
                 case ')':
                     NextChar();
                     currentToken = TokenType.ClosePar;
-                    return;
-
+                    return;               
+                
                 case ',':
                     NextChar();
                     currentToken = TokenType.Comma;
@@ -260,7 +262,8 @@ namespace Gellybeans.Expressions
                     {
                         sb.Append(currentChar);
                         NextChar();                       
-                    }                                          
+                    }
+                    NextChar();
                 }
                 else
                     while(char.IsLetterOrDigit(currentChar) || currentChar == '_' || currentChar == '@')
