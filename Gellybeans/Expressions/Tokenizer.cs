@@ -1,26 +1,28 @@
 ﻿using System.Text;
 using System.Globalization;
-using System.Security;
 
 namespace Gellybeans.Expressions
 {
+    /// <summary>
+    /// The Tokenizer class walks through a string from beginning to end, stopping with each call of `NextToken()`. 
+    /// 
+    /// Tokenizers are meant to be consumed by a Parser in order to determine upcoming values in a given expression.
+    /// </summary>
+    
     public class Tokenizer
     {
-        private TextReader reader;
+        TextReader reader;
 
         char        currentChar;
         TokenType   currentToken;
         
         int     number;
         string  identifier  = "";
-        string  comment     = "";
-
 
         public TokenType    Token       { get { return currentToken; } }       
         public int          Number      { get { return number; } }
         public string       Identifier  { get { return identifier; } }
         public char         CurrentChar { get { return currentChar; } }
-        public string       Comment     { get { return comment; } }
         
         public Tokenizer(TextReader textReader)
         {
@@ -35,25 +37,15 @@ namespace Gellybeans.Expressions
             currentChar = chr < 0 ? '\0' : (char)chr;
         }
 
+        char Peek()
+        {
+            int chr = reader.Peek();
+            return chr < 0 ? '\0' : (char)chr;
+        }
+
         public void NextToken()
         {
-            while(char.IsWhiteSpace(currentChar)) { NextChar(); }
-
-            //comments
-            if(currentChar == '[')
-            {
-                var sb = new StringBuilder();
-                sb.Append(currentChar);
-                while(currentChar != ']')
-                {
-                    NextChar();
-                    sb.Append(currentChar);
-                }
-                comment = sb.ToString();   
-                NextChar();
-            }
-
-            while(char.IsWhiteSpace(currentChar)) { NextChar(); }                    
+            while(char.IsWhiteSpace(currentChar)) { NextChar(); }          
 
             switch(currentChar)
             {
@@ -141,6 +133,7 @@ namespace Gellybeans.Expressions
                     else currentToken = TokenType.Less;
                     return;              
                 
+                
                 case '+':
                     NextChar();
                     if(currentChar == '=')
@@ -153,6 +146,11 @@ namespace Gellybeans.Expressions
                         NextChar();
                         currentToken = TokenType.AssignAddBon;
                     }
+                    else if(currentChar == '#')
+                    {
+                        NextChar();
+                        currentToken = TokenType.AssignExpr;
+                    }                    
                     else currentToken = TokenType.Add;
                     return;
 
@@ -218,40 +216,44 @@ namespace Gellybeans.Expressions
             }       
             
             
-            if(char.IsDigit(currentChar))
+            if(char.IsDigit(currentChar) || currentChar == 'd')
             {
-                var builder = new StringBuilder();
-
-                bool hasD = false;
-
-                while(char.IsDigit(currentChar) || (!hasD && currentChar == 'd'))
-                {
-                    builder.Append(currentChar);
-                    hasD = currentChar == 'd';
+                var sb = new StringBuilder();
+                sb.Append(currentChar);
+                
+                //if the first two characters are a combination of 'd' and a number, treat as a dice expression.
+                //this allows for the omission of the first number, in which case it will be assumed to be 1.
+                if((currentChar == 'd' || Peek() == 'd') && (char.IsDigit(currentChar) || char.IsDigit(Peek())))
+                {                   
                     NextChar();
-                    if(currentChar == 'r' || currentChar == 'h' || currentChar == 'l')
+                    while(char.IsLetterOrDigit(currentChar))
                     {
-                        builder.Append(currentChar);
+                        sb.Append(currentChar);
                         NextChar();
                     }
-                }
-
-                var bts = builder.ToString();
-                if(bts.Contains('d'))
-                {
+                    
+                    identifier = sb.ToString();
                     currentToken = TokenType.Dice;
-                    identifier = builder.ToString();
-                    return;
-                }
+                    return;                   
+                }               
                 else
                 {
-                    number = int.Parse(builder.ToString(), CultureInfo.InvariantCulture);
+                    if(char.IsDigit(currentChar))
+                    {
+                        NextChar();
+                        while(char.IsDigit(currentChar))
+                        {
+                            sb.Append(currentChar);
+                            NextChar();
+                        }
+                    }
+                    number = int.Parse(sb.ToString(), CultureInfo.InvariantCulture);
                     currentToken = TokenType.Number;
                     return;
-                }
+                }           
             }
 
-            if(char.IsLetter(currentChar) || currentChar == '_' || currentChar == '"' || currentChar == '@')
+            if(char.IsLetter(currentChar) || !char.IsAscii(currentChar) || currentChar == '_' || currentChar == '"' || currentChar == '@')
             {
                 var sb = new StringBuilder();
 
@@ -266,7 +268,7 @@ namespace Gellybeans.Expressions
                     NextChar();
                 }
                 else
-                    while(char.IsLetterOrDigit(currentChar) || currentChar == '_' || currentChar == '@')
+                    while(char.IsLetterOrDigit(currentChar) || !char.IsAscii(currentChar) || currentChar == '_' || currentChar == '@')
                     {
                         sb.Append(currentChar);
                         NextChar();
@@ -275,6 +277,15 @@ namespace Gellybeans.Expressions
                 identifier = sb.ToString();
                 currentToken = TokenType.Var;
                 return;
+            }
+
+            //ignore square brackets and any enclosed characters.
+            if(currentChar == '[')
+            {
+                while(currentChar != ']')
+                    NextChar();
+                NextChar();
+                NextToken();
             }
 
             Console.WriteLine($"Invalid data: {currentChar}");

@@ -223,57 +223,64 @@ namespace Gellybeans.Pathfinder
             return 0;
         }
 
-        public int Assign(string statName, int assignment, TokenType assignType, StringBuilder sb)
+        public int Assign(string varName, string assignment, TokenType assignType, StringBuilder sb)
         {
             sb ??= new StringBuilder();
-            if(Stats.Count > 100)
-            {
-                sb.AppendLine("stat count limited to 100");
-                return -99;
-            }
 
-            statName = statName.Replace(' ', '_').ToUpper();
-            if(Expressions.ContainsKey(statName))
+            varName = varName.Replace(' ', '_').ToUpper();
+            
+            if(assignType == TokenType.AssignExpr)
+                if(Stats.ContainsKey(varName))
+                {
+                    sb.AppendLine($"{varName} already exists as a stat");
+                    return -99;
+                }
+            else if(Expressions.ContainsKey(varName))
             {
-                sb.AppendLine("Cannot assign value to an expression using /eval. Use /var Set-Expression instead");
+                sb.AppendLine($"{varName} already exists as an expression");
                 return -99;
             }
-            if(Constants.ContainsKey(statName))
+                             
+            if(Constants.ContainsKey(varName))
             {
                 sb.AppendLine("Cannot change a constant value");
                 return -99;
             }
 
-            if(!Stats.ContainsKey(statName)) Stats[statName] = 0;
+            if(assignType != TokenType.AssignExpr && !Stats.ContainsKey(varName)) Stats[varName] = 0;
 
             switch(assignType)
             {
+                case TokenType.AssignExpr:
+                    AddExpr(varName, assignment);
+                    break;
+                
                 case TokenType.AssignEquals:
-                    this[statName] = assignment;
+                    this[varName] = int.Parse(assignment);
                     break;
 
                 case TokenType.AssignAdd:
-                    this[statName] += assignment;
+                    this[varName] += int.Parse(assignment);
                     break;
 
                 case TokenType.AssignSub:
-                    this[statName] -= assignment;
+                    this[varName] -= int.Parse(assignment);
                     break;
 
                 case TokenType.AssignMul:
-                    this[statName] *= assignment;
+                    this[varName] *= int.Parse(assignment);
                     break;
 
                 case TokenType.AssignDiv:
-                    this[statName] /= assignment;
+                    this[varName] /= int.Parse(assignment);
                     break;
 
                 case TokenType.AssignMod:
-                    this[statName] %= assignment;
+                    this[varName] %= int.Parse(assignment);
                     break;
             }
-            sb.AppendLine($"{statName} set to {Stats[statName].Base}");;
-            return Stats[statName];
+            sb.AppendLine($"{varName} set to {(assignType != TokenType.AssignExpr ? Stats[varName].Base : Expressions[varName])}");;
+            return 1;
         }
 
         public int Bonus(string statName, string bonusName, int type, int value, TokenType assignType, StringBuilder sb)

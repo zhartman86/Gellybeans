@@ -31,8 +31,51 @@ namespace Gellybeans.Pathfinder
         public string? Formulae         { get; set; }
         public string? Source           { get; set; }
 
-        static readonly Regex duration = new Regex(@"([0-9]{1,3})(.*)/level(.*)");
+        
+        //these regex are used for formulae placed inside squiggle-brackets in a data-set created specifically for these purposes.
+        //anything inside these brackets are meant to be evaluated (and the brackets removed) before being displayed to the end-user.
+        static readonly Regex intensifiedDesc       = new Regex(@"(\{min\(.CL,)([0-9]*)(\)\}d)");
+        static readonly Regex intensifiedFormulae   = new Regex(@"([0-9]{1,2}d[0-9]{1,2}.*min\(.CL,)([0-9]*)");
+
+        static readonly Regex empoweredDesc         = new Regex(@"(\{.*\}?d[0-9]*.*?[ +]*[0-9]+?|[0-9]+d[0-9]+[ +]*[0-9]*)");
+        static readonly Regex empoweredFormulae     = new Regex(@"#([0-9]d.*)");
+
+        static readonly Regex doubled = new Regex(@"\{(.*)\}");
+
         static readonly Regex brackets = new Regex(@"\{.*?\}");
+
+        
+
+        public Spell Empowered()
+        {
+            Spell s = Copy();
+            s.DescriptionVar = empoweredDesc.Replace(s.DescriptionVar!, "($1)**+50%**");
+            s.Formulae = empoweredFormulae.Replace(s.Formulae!, "#th($1)");
+            return s;
+        }
+        
+        public Spell Enlarge()
+        {
+            Spell s = Copy();
+            s.RangeVar = doubled.Replace(s.RangeVar!, "{($1)*2}");
+            return s;
+        }
+        
+        public Spell Extend()
+        {
+            Spell s = Copy();
+            s.DurationVar = doubled.Replace(s.DurationVar!, "{($1)*2}");
+            return s;
+        }
+
+        public Spell Intensified()
+        {
+            Spell s = Copy();
+            s.DescriptionVar = intensifiedDesc.Replace(s.DescriptionVar!, "$1$2+5$3");
+            s.Formulae = intensifiedFormulae.Replace(s.Formulae!, "$1$2+5");
+            return s;
+        }
+
 
         public override string ToString()
         {
@@ -53,7 +96,7 @@ namespace Gellybeans.Pathfinder
             return sb.ToString();
         }
     
-        public string ToCasterLevel(int cl)
+        public string ToCasterLevel(uint cl)
         {
             var sb = new StringBuilder();
             sb.AppendLine($"__**{Name}**__");
@@ -67,7 +110,7 @@ namespace Gellybeans.Pathfinder
             sb.Append("**Range** ");
             sb.AppendLine(brackets.Replace(RangeVar!, m =>
             {
-                var str = m.Value.Trim(new char[] { '{', '}' }).Replace("CL", cl.ToString());
+                var str = m.Value.Trim(new char[] { '{', '}' }).Replace(".CL", cl.ToString());
                 return $"{Parser.Parse(str).Eval(null!, new StringBuilder())}";
             }));
 
@@ -76,7 +119,7 @@ namespace Gellybeans.Pathfinder
                 sb.Append("**Target** ");
                 sb.AppendLine(brackets.Replace(TargetsVar!, m =>
                 {
-                    var str = m.Value.Trim(new char[] { '{', '}' }).Replace("CL", cl.ToString());
+                    var str = m.Value.Trim(new char[] { '{', '}' }).Replace(".CL", cl.ToString());
                     return $"{Parser.Parse(str).Eval(null!, new StringBuilder())}";
                 }));
             }
@@ -86,7 +129,7 @@ namespace Gellybeans.Pathfinder
                 sb.Append("**Area** ");
                 sb.AppendLine(brackets.Replace(AreaVar!, m =>
                 {
-                    var str = m.Value.Trim(new char[] { '{', '}' }).Replace("CL", cl.ToString());
+                    var str = m.Value.Trim(new char[] { '{', '}' }).Replace(".CL", cl.ToString());
                     return $"{Parser.Parse(str).Eval(null!, new StringBuilder())}";
                 }));
             }       
@@ -94,21 +137,53 @@ namespace Gellybeans.Pathfinder
             sb.Append("**Duration** ");
             sb.AppendLine(brackets.Replace(DurationVar!, m =>
             {
-                var str = m.Value.Trim(new char[] { '{', '}' }).Replace("CL", cl.ToString());
+                var str = m.Value.Trim(new char[] { '{', '}' }).Replace(".CL", cl.ToString());
                 return $"{Parser.Parse(str).Eval(null!, new StringBuilder())}";
             }));
         
 
             sb.AppendLine($"**Saving Throw** {SavingThrow}; **Spell Resistance** {SpellResistance}");
             sb.AppendLine();
+             
             
-            //replace all bracketed statements
+
             sb.AppendLine(brackets.Replace(DescriptionVar!, m =>{
-                var str = m.Value.Trim(new char[] { '{', '}' }).Replace("CL", cl.ToString());
+                var str = m.Value.Trim(new char[] { '{', '}' }).Replace(".CL", cl.ToString());
                 return $"**{Parser.Parse(str).Eval(null!, new StringBuilder())}**";
             }));
                        
             return sb.ToString();
+        }
+
+        Spell Copy()
+        {
+            return new Spell()
+            {
+                Name = Name,
+                Properties = Properties,
+                Levels = Levels,
+                School = School,
+                Subschool = Subschool,
+                Descriptor = Descriptor,
+                CastingTime = CastingTime,
+                Components = Components,
+                Range = Range,
+                RangeVar = RangeVar,
+                Area = Area,
+                AreaVar = AreaVar,
+                Targets = Targets,
+                TargetsVar = TargetsVar,
+                Duration = Duration,
+                DurationVar = DurationVar,
+                SavingThrow = SavingThrow,
+                SpellResistance = SpellResistance,
+                Domain = Domain,
+                Deity = Deity,
+                Description = Description,
+                DescriptionVar = DescriptionVar,
+                Formulae = Formulae,
+                Source = Source
+            };
         }
     }
 }

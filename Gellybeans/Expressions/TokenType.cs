@@ -20,6 +20,7 @@ namespace Gellybeans.Expressions
         AssignSub,
         AssignAdd,
         AssignEquals,
+        AssignExpr,
         LogicalOr,
         LogicalAnd,
         BitwiseOr,

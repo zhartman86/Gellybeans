@@ -8,7 +8,7 @@
   
 
         public bool Equals(Bonus b) { return this == b; }
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             if(obj != null && obj.GetType() == typeof(Bonus)) 
                 return Equals((Bonus)obj); 
@@ -16,11 +16,10 @@
         }
         public override int GetHashCode() { unchecked { return Name.GetHashCode() + Type.GetHashCode(); } }
 
-        public int Compare(Bonus? a, Bonus? b) { return a.Value.CompareTo(b); }
+        public int Compare(Bonus? a, Bonus? b) =>
+            a.Value.CompareTo(b); 
 
-        public override string ToString()
-        {
-            return $"{Name}: {Value} {Enum.GetName(typeof(BonusType), Type)}";
-        }
+        public override string ToString() =>
+            $"{Name}: {Value} {Enum.GetName(typeof(BonusType), Type)}";
     }
 }

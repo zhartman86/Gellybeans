@@ -5,6 +5,8 @@ namespace Gellybeans.Expressions
     public class VarNode : ExpressionNode
     {
         readonly string varName;
+        
+        public string VarName { get { return varName; } }
 
         public VarNode(string varName) =>
             this.varName = varName;
