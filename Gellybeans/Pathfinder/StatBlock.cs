@@ -15,7 +15,6 @@ namespace Gellybeans.Pathfinder
 
         public string CharacterName { get; set; } = "Name me";
 
-
         public Dictionary<string, Stat> Stats { get; private set; } = new Dictionary<string, Stat>();
         public Dictionary<string, string> Expressions { get; private set; } = new Dictionary<string, string>();
         public Dictionary<string, Template> Templates { get; private set; } = new Dictionary<string, Template>();
@@ -235,7 +234,7 @@ namespace Gellybeans.Pathfinder
                     sb.AppendLine($"{varName} already exists as a stat");
                     return -99;
                 }
-            else if(Expressions.ContainsKey(varName))
+            else if(assignType != TokenType.AssignExpr && Expressions.ContainsKey(varName))
             {
                 sb.AppendLine($"{varName} already exists as an expression");
                 return -99;

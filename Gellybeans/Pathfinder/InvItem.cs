@@ -1,14 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Gellybeans.Pathfinder
+﻿namespace Gellybeans.Pathfinder
 {
     public class InvItem
     {
-        //identifier for any item added from the item database
+        //identifier for any item added from a preset
         public string Base { get; set; } = "";
 
         public string   Name        { get; set; } = "Name Me";

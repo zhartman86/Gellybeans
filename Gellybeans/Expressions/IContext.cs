@@ -3,7 +3,7 @@
 namespace Gellybeans.Expressions
 {
     /// <summary>
-    /// This interface is the optional context that can be provided to an evaluation, allowing for custom variables. 
+    /// This interface is passed through every expression node. It's primary use is providing context for assigned variables. 
     /// </summary>
     
     public interface IContext

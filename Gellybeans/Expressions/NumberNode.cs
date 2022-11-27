@@ -6,14 +6,10 @@ namespace Gellybeans.Expressions
     {
         int number;
 
-        public NumberNode(int number)
-        {
+        public NumberNode(int number) =>
             this.number = number;
-        }
 
-        public override int Eval(IContext ctx, StringBuilder sb) 
-        {          
-            return number; 
-        }
+        public override int Eval(IContext ctx, StringBuilder sb) => 
+            number; 
     }
 }

@@ -1,5 +1,4 @@
-﻿using System.Runtime.ExceptionServices;
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 
 namespace Gellybeans.Expressions
 {
@@ -21,17 +20,14 @@ namespace Gellybeans.Expressions
 
         public Parser(Tokenizer tokenizer) => 
             this.tokenizer = tokenizer;
-
-        
+       
         public ExpressionNode ParseExpr()
         {
             var expr = ParseTernary();
 
             if(tokenizer.Token != TokenType.EOF)
-            {
-                Console.WriteLine($"Unexpected character `{tokenizer.CurrentChar}` at end of expression. TOKEN:{tokenizer.Token}");
-                return new VarNode($"%Unexpected character `{tokenizer.CurrentChar}`");
-            }                      
+                return new VarNode($"%Unexpected character `{tokenizer.CurrentChar}` (TOKEN:{tokenizer.Token})");                  
+            
             return expr;
         }               
 
@@ -206,12 +202,13 @@ namespace Gellybeans.Expressions
 
             if(tokenizer.Token == TokenType.Dice)
             {
+                //^([0-9]{0,3})d([0-9]{1,3})((?:r|h|l)(?:[0-9]{1,3})){0,3}
                 var match   = dRegex.Match(tokenizer.Identifier);
 
                 if(match.Success)
                 {
-                    var count       = match.Groups[1].Captures.Count > 0 ? int.TryParse(match.Groups[1].Captures[0].Value, out int outVal) ? outVal : 1 : 1;
-                    var sides       = int.Parse(match.Groups[2].Captures[0].Value);
+                    var count = match.Groups[1].Captures.Count > 0 ? int.TryParse(match.Groups[1].Captures[0].Value, out int outVal) ? outVal : 1 : 1;
+                    var sides = int.Parse(match.Groups[2].Captures[0].Value);
 
                     var lhs = new DiceNode(count, sides);
 
@@ -257,8 +254,7 @@ namespace Gellybeans.Expressions
                         tokenizer.NextToken();
                         return new AssignNode(name, new VarNode(varName), type);
                     }    
-                        
-
+                    
                     var rhs = ParseTernary();
                     var lh = new AssignNode(name, rhs, type);
                     return lh;
@@ -270,14 +266,15 @@ namespace Gellybeans.Expressions
                     tokenizer.NextToken();
 
                     var bName = tokenizer.Token == TokenType.Var ? 
-                        tokenizer.Identifier : tokenizer.Token == TokenType.Number ? 
-                        tokenizer.Number.ToString() : "";
+                                    tokenizer.Identifier : 
+                                tokenizer.Token == TokenType.Number ? 
+                                    tokenizer.Number.ToString() : 
+                                    "";
 
                     tokenizer.NextToken();
 
                     if(bName != "")
                         return new BonusNode(name, bName, null, null, type);
-
                 }
 
                 if(tokenizer.Token == TokenType.GetBon || tokenizer.Token == TokenType.AssignAddBon || tokenizer.Token == TokenType.AssignSubBon)
@@ -291,35 +288,23 @@ namespace Gellybeans.Expressions
 
                         BonusNode lh;
                         if(type == TokenType.GetBon)
-                        {
+                            lh = new BonusNode(name, bName, null!, null!, type);                       
+                        else if(type == TokenType.AssignSubBon)
                             lh = new BonusNode(name, bName, null!, null!, type);
-                            return lh;
-                        }
-                        
-                        if(type == TokenType.AssignSubBon)
-                        {
+                        else if(tokenizer.Token != TokenType.Separator)
                             lh = new BonusNode(name, bName, null!, null!, type);
-                            return lh;
-                        }
-                        if(tokenizer.Token != TokenType.Separator)
+                        else
                         {
-                            lh = new BonusNode(name, bName, null!, null!, type);
-                            return lh;
-                        }
-
-                        var bType   = ParseTernary();
-                        var bVal    = ParseTernary();
-
-                        lh = new BonusNode(name, bName, bType, bVal, type);
+                            var bType = ParseTernary();
+                            var bVal = ParseTernary();
+                            lh = new BonusNode(name, bName, bType, bVal, type);
+                        }                  
                         return lh;
-                    }                                 
-                
+                    }                                                                  
                 }
 
                 if(tokenizer.Token != TokenType.OpenPar)
-                {
-                    return new VarNode(name);
-                }           
+                    return new VarNode(name);        
                 else
                 {
                     tokenizer.NextToken();
@@ -356,10 +341,9 @@ namespace Gellybeans.Expressions
                 {
                     tokenizer.NextToken();
                     return new BonusNode(null!, tokenizer.Identifier, null!, null!, type);
-                }                    
+                }
             }
 
-            Console.WriteLine($"Unexpected Token: {tokenizer.Token}");
             return new VarNode($"%Unexpected Token: {tokenizer.Token}");
         }
      

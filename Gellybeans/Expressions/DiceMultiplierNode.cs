@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Text;
 
 namespace Gellybeans.Expressions
 {
@@ -14,8 +10,8 @@ namespace Gellybeans.Expressions
 
         public DiceMultiplierNode(DiceNode lhs, ExpressionNode rhs, TokenType token)
         {
-            this.lhs = lhs;
-            this.rhs = rhs;
+            this.lhs   = lhs;
+            this.rhs   = rhs;
             this.token = token;
         }
 
@@ -33,8 +29,7 @@ namespace Gellybeans.Expressions
                 else if(token == TokenType.Div)
                     lhValue = (lhs / rhValue).Eval(ctx, sb);
             }
-                
-            
+           
             return lhValue;
         }
     }

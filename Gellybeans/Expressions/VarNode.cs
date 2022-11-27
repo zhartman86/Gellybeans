@@ -12,19 +12,18 @@ namespace Gellybeans.Expressions
             this.varName = varName;
 
         public override int Eval(IContext ctx, StringBuilder sb) 
-        {           
-            var result = 0;          
+        {                 
             if(ctx != null)
             {
+                //if var starts with this symbol, treat it like an error.
                 if(varName[0] == '%')
                 {
-                    sb.Clear();
                     sb.AppendLine(varName.Trim('%'));
                     return -99;
                 }
-                result = ctx.Resolve(varName, sb);
+                return ctx.Resolve(varName, sb);
             }           
-            return result;
+            return 0;
         }
     }
 }

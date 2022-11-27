@@ -1,6 +1,4 @@
-﻿using System.Data;
-using System;
-using System.Text;
+﻿using System.Text;
 
 namespace Gellybeans.Pathfinder
 {

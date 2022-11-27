@@ -55,6 +55,10 @@ namespace Gellybeans.Expressions
                 
                 case ':':
                     NextChar();
+                    if(currentChar == ':')
+                    {
+
+                    }
                     currentToken = TokenType.Separator;
                     return;
 

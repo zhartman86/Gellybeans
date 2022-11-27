@@ -11,7 +11,7 @@ namespace Gellybeans.Expressions
     public abstract class ExpressionNode 
     {
         //the goal is to allow usage of evaluation without requiring a context.
-        //the stringbuilder is a cheap (if not hacky) way for outside programs to return information/errors as an expression is passed through different nodes.
+        //the stringbuilder is a cheap an way for outside programs to return information/errors as an expression is passed through different nodes.
         //the omission of either value should not prevent the usage of this method. this means basic math should still work without a context or a stringbuilder for writing output.
         public abstract int Eval(IContext ctx = null!, StringBuilder sb = null!);
     }    
