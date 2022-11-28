@@ -3,7 +3,7 @@
     public enum TokenType
     {
         None,
-        Ternary,        // ?
+        Ternary,        // ?::
         Bonus,          // $        
         Assign,         // =
         AssignBon,      //

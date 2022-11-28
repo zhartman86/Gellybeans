@@ -87,6 +87,13 @@ namespace Gellybeans.Expressions
                     currentToken = TokenType.Bonus;
                     return;
 
+
+                case '#':
+                    NextChar();
+                    currentToken = TokenType.AssignExpr;
+                    return;
+                    
+                
                 case '|':
                     NextChar();
                     if(currentChar == '|')
@@ -149,12 +156,7 @@ namespace Gellybeans.Expressions
                     {
                         NextChar();
                         currentToken = TokenType.AssignAddBon;
-                    }
-                    else if(currentChar == '#')
-                    {
-                        NextChar();
-                        currentToken = TokenType.AssignExpr;
-                    }                    
+                    }                     
                     else currentToken = TokenType.Add;
                     return;
 
