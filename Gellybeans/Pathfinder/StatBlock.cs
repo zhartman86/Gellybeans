@@ -14,19 +14,13 @@ namespace Gellybeans.Pathfinder
         void OnValueChanged(string varChanged) { ValueChanged?.Invoke(this, varChanged); }
 
         public string CharacterName { get; set; } = "Name me";
-
-        public Dictionary<string, Stat> Stats { get; private set; } = new Dictionary<string, Stat>();
-        public Dictionary<string, string> Expressions { get; private set; } = new Dictionary<string, string>();
-        public Dictionary<string, Template> Templates { get; private set; } = new Dictionary<string, Template>();
-
-        public Dictionary<string, ExprRow> ExprRows { get; private set; } = new Dictionary<string, ExprRow>();
-        public Dictionary<string, string[]> Grids { get; private set; } = new Dictionary<string, string[]>();
-
-        public Dictionary<string, string> Info { get; private set; } = new Dictionary<string, string>();
-
-        public Dictionary<string, CraftItem> Crafts { get; private set; } = new Dictionary<string, CraftItem>();
-
-        public List<InvItem> Inventory { get; set; } = new List<InvItem>();
+        
+        public List<InvItem>                Inventory   { get; private set; } = new List<InvItem>();
+        public Dictionary<string, Stat>     Stats       { get; private set; } = new Dictionary<string, Stat>();
+        public Dictionary<string, string>   Expressions { get; private set; } = new Dictionary<string, string>();       
+        public Dictionary<string, ExprRow>  ExprRows    { get; private set; } = new Dictionary<string, ExprRow>();
+        
+        public Dictionary<string, string> Info          { get; private set; } = new Dictionary<string, string>();
 
         public Dictionary<string, int> Constants { get; private set; } = new Dictionary<string, int>()
         {
@@ -106,18 +100,6 @@ namespace Gellybeans.Pathfinder
         {
             if(ExprRows.Remove(row))
                 OnValueChanged($"row:{row}");
-        }
-
-        public void AddGrid(string name, List<string> grid)
-        {
-            Grids.Add(name, grid.ToArray());
-            OnValueChanged($"grid:{name}");
-        }
-
-        public void RemoveGrid(string name)
-        {
-            if(Grids.Remove(name))
-                OnValueChanged($"grid:{name}");
         }
 
         public void InventorySet(List<InvItem> inv)
@@ -679,11 +661,6 @@ namespace Gellybeans.Pathfinder
                             },
                         }
                     },
-                },
-
-                Grids = new Dictionary<string, string[]>()
-                {
-                    { "SK", new string[5] { "SK_ONE","SK_TWO","SK_THREE","SK_FOUR","SK_FIVE" } }
                 },
             };
 

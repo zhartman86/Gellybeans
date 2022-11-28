@@ -33,7 +33,10 @@ namespace Gellybeans.Expressions
 
 
         ExpressionNode ParseTernary()
-        {           
+        {
+            if(tokenizer.Token == TokenType.Error)
+                return new VarNode($"%Unexpected data. Char:{tokenizer.CurrentChar} Token:{tokenizer.Token}");
+
             if(tokenizer.Token == TokenType.Separator)
                 tokenizer.NextToken();
             

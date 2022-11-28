@@ -42,6 +42,7 @@
         Dice,           // 1d20
         Separator,      // :
         Preset,         // ::
+        Error,
         EOF,
     }
 }

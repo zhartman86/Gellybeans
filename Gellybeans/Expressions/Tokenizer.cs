@@ -294,6 +294,7 @@ namespace Gellybeans.Expressions
                 NextToken();
             }
 
+            currentToken = TokenType.Error;
             Console.WriteLine($"Invalid data: {currentChar}");
             return;
         }

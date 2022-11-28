@@ -4,12 +4,10 @@ namespace Gellybeans.Pathfinder
 {
     public class Campaign
     {              
-        public Guid Id      { get; set; }
-        public ulong Owner  { get; set; }
-
-        public string Name                          { get; set; } = "Pathfinder";
-        public string Description                   { get; set; } = "Pathfinder Default";
-        public Dictionary<ulong, string> players    { get; set; } = new Dictionary<ulong, string>();
+        public Guid Id            { get; set; }
+        public ulong Owner        { get; set; }
+        public string Name        { get; set; } = "Pathfinder";
+        public string Description { get; set; } = "Pathfinder Default";
 
         public List<Creature>   Bestiary    { get; set; } = new List<Creature>();       
         public List<StatBlock>  StatBlocks  { get; set; } = new List<StatBlock>();
