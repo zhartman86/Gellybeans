@@ -50,14 +50,14 @@ namespace Gellybeans.Pathfinder
             return s;
         }
         
-        public Spell Enlarge()
+        public Spell Enlarged()
         {
             Spell s = Copy();
             s.RangeVar = doubled.Replace(s.RangeVar!, "{($1)*2}");
             return s;
         }
         
-        public Spell Extend()
+        public Spell Extended()
         {
             Spell s = Copy();
             s.DurationVar = doubled.Replace(s.DurationVar!, "{($1)*2}");

@@ -254,7 +254,7 @@ namespace Gellybeans.Pathfinder
                     AddExpr(varName, assignment);
                     break;
                 
-                case TokenType.AssignEquals:
+                case TokenType.Assign:
                     this[varName] = int.Parse(assignment);
                     break;
 
@@ -284,7 +284,7 @@ namespace Gellybeans.Pathfinder
 
         public int Bonus(string statName, string bonusName, int type, int value, TokenType assignType, StringBuilder sb)
         {
-            if(assignType == TokenType.GetBon)
+            if(assignType == TokenType.Bonus)
             {
                 var result = Parser.Parse(bonusName).Eval(this, sb);
                 return Stats[statName].GetBonus((BonusType)result);
@@ -332,7 +332,7 @@ namespace Gellybeans.Pathfinder
                     }
                     var bonus = new Bonus { Name = bonusName, Type = (BonusType)type, Value = value };
                     Stats[statName].AddBonus(bonus);
-                    sb.AppendLine(bonus.ToString());
+                    sb.AppendLine($"{bonus} to {statName} (Total:{this[statName]})");
                     break;
 
                 case TokenType.AssignSubBon:
@@ -340,8 +340,7 @@ namespace Gellybeans.Pathfinder
                     sb.AppendLine($"{bonusName} removed from {statName}");
                     break;
             }
-            OnValueChanged($"stats");
-            sb.AppendLine($"{statName} set to {this[statName]}");            
+            OnValueChanged($"stats");      
             return value;
         }
 
@@ -495,10 +494,10 @@ namespace Gellybeans.Pathfinder
 
                     ["INIT"] = "1d20 + INIT_BONUS + DEX",
 
-                    ["MAXDEX"] = "max(0, AC_MAXDEX)",
-                    ["AC"] = "10 + AC_BONUS + min(DEX, MAXDEX) + SIZE_MOD",
-                    ["TOUCH"] = "AC - ((AC_BONUS $ ARMOR) + (AC_BONUS $ SHIELD) + (AC_BONUS $ NATURAL))",
-                    ["FLAT"] = "AC - ((AC_BONUS $ DODGE) + DEX)",
+                    ["MAXDEX"]  = "max(0, AC_MAXDEX)",
+                    ["AC"]      = "10 + AC_BONUS + min(DEX, MAXDEX) + SIZE_MOD",
+                    ["TOUCH"]   = "AC - ((AC_BONUS $ ARMOR) + (AC_BONUS $ SHIELD) + (AC_BONUS $ NATURAL))",
+                    ["FLAT"]    = "AC - ((AC_BONUS $ DODGE) + DEX)",
 
                     ["CMB"] = "1d20 + BAB + STR + CMB_BONUS - SIZE_MOD",
 

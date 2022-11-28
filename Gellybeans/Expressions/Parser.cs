@@ -243,7 +243,7 @@ namespace Gellybeans.Expressions
                 var name = tokenizer.Identifier;
                 tokenizer.NextToken();
 
-                if(tokenizer.Token == TokenType.AssignEquals || tokenizer.Token == TokenType.AssignAdd || tokenizer.Token == TokenType.AssignExpr || tokenizer.Token == TokenType.AssignSub || tokenizer.Token == TokenType.AssignDiv || tokenizer.Token == TokenType.AssignMul || tokenizer.Token == TokenType.AssignMod)
+                if(tokenizer.Token == TokenType.Assign || tokenizer.Token == TokenType.AssignAdd || tokenizer.Token == TokenType.AssignExpr || tokenizer.Token == TokenType.AssignSub || tokenizer.Token == TokenType.AssignDiv || tokenizer.Token == TokenType.AssignMul || tokenizer.Token == TokenType.AssignMod)
                 {
                     var type = tokenizer.Token;
                     tokenizer.NextToken();
@@ -260,7 +260,7 @@ namespace Gellybeans.Expressions
                     return lh;
                 }
 
-                if(tokenizer.Token == TokenType.GetBon)
+                if(tokenizer.Token == TokenType.Bonus)
                 {
                     var type = tokenizer.Token;
                     tokenizer.NextToken();
@@ -277,7 +277,7 @@ namespace Gellybeans.Expressions
                         return new BonusNode(name, bName, null, null, type);
                 }
 
-                if(tokenizer.Token == TokenType.GetBon || tokenizer.Token == TokenType.AssignAddBon || tokenizer.Token == TokenType.AssignSubBon)
+                if(tokenizer.Token == TokenType.Bonus || tokenizer.Token == TokenType.AssignAddBon || tokenizer.Token == TokenType.AssignSubBon)
                 {
                     var type = tokenizer.Token;
                     tokenizer.NextToken();
@@ -287,7 +287,7 @@ namespace Gellybeans.Expressions
                         tokenizer.NextToken();
 
                         BonusNode lh;
-                        if(type == TokenType.GetBon)
+                        if(type == TokenType.Bonus)
                             lh = new BonusNode(name, bName, null!, null!, type);                       
                         else if(type == TokenType.AssignSubBon)
                             lh = new BonusNode(name, bName, null!, null!, type);

@@ -74,7 +74,7 @@ namespace Gellybeans.Expressions
                         NextChar();
                         currentToken = TokenType.Equals;
                     }
-                    else currentToken = TokenType.AssignEquals;
+                    else currentToken = TokenType.Assign;
                     return;
 
                 case '?':
@@ -84,7 +84,7 @@ namespace Gellybeans.Expressions
 
                 case '$':
                     NextChar();
-                    currentToken = TokenType.GetBon;
+                    currentToken = TokenType.Bonus;
                     return;
 
                 case '|':

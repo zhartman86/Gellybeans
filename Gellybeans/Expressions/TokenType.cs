@@ -4,7 +4,8 @@
     {
         None,
         Ternary,        // ?
-        GetBon,         // $
+        Bonus,          // $        
+        Assign,         // =
         AssignBon,      //
         AssignAddBon,   // +$ 
         AssignSubBon,   // -$ 
@@ -12,8 +13,7 @@
         AssignDiv,      // /=
         AssignMul,      // *=
         AssignSub,      // -=
-        AssignAdd,      // +=
-        AssignEquals,   // =
+        AssignAdd,      // +=        
         AssignExpr,     // +#
         LogicalOr,      // ||
         LogicalAnd,     // &&
