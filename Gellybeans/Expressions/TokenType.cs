@@ -14,7 +14,7 @@
         AssignMul,      // *=
         AssignSub,      // -=
         AssignAdd,      // +=        
-        AssignExpr,     // +#
+        AssignExpr,     // used by the Parser
         LogicalOr,      // ||
         LogicalAnd,     // &&
         BitwiseOr,      //
@@ -39,6 +39,7 @@
         Quotes,         // "
         Semicolon,      // ;
         Var,            //
+        String,         // "abc"
         Dice,           // 1d20
         Separator,      // :
         Preset,         // ::

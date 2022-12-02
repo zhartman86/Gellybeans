@@ -17,9 +17,8 @@ namespace Gellybeans.Expressions
 
         public override int Eval(IContext ctx, StringBuilder sb)
         {
-            Console.WriteLine(Enum.GetName(typeof(TokenType), assignType));
             if(assignType == TokenType.AssignExpr)
-                return ctx.Assign(lhs, ((VarNode)rhs).VarName, assignType, sb);
+                return ctx.Assign(lhs, rhs != null ? ((StringNode)rhs).String : null!, assignType, sb);
             
             var rhValue = rhs.Eval(ctx, sb);
             var result  = ctx.Assign(lhs, rhValue.ToString(), assignType, sb);

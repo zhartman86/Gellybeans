@@ -86,14 +86,7 @@ namespace Gellybeans.Expressions
                     NextChar();
                     currentToken = TokenType.Bonus;
                     return;
-
-
-                case '#':
-                    NextChar();
-                    currentToken = TokenType.AssignExpr;
-                    return;
-                    
-                
+                                  
                 case '|':
                     NextChar();
                     if(currentChar == '|')
@@ -225,34 +218,21 @@ namespace Gellybeans.Expressions
             if(char.IsDigit(currentChar) || currentChar == 'd')
             {
                 var sb = new StringBuilder();
-                sb.Append(currentChar);
-                
-                //if the first two characters are a combination of 'd' and a number, treat as a dice expression.
-                //this allows for the omission of the first number, in which case it will be assumed to be 1.
-                if((currentChar == 'd' || Peek() == 'd') && (char.IsDigit(currentChar) || char.IsDigit(Peek())))
+
+                while(char.IsDigit(currentChar) || IsDice(currentChar))
                 {                   
+                    sb.Append(currentChar);
                     NextChar();
-                    while(char.IsLetterOrDigit(currentChar))
-                    {
-                        sb.Append(currentChar);
-                        NextChar();
-                    }
-                    
+                }
+
+                if(sb.ToString().Contains('d'))
+                {
                     identifier = sb.ToString();
                     currentToken = TokenType.Dice;
-                    return;                   
-                }               
+                    return;
+                }                            
                 else
-                {
-                    if(char.IsDigit(currentChar))
-                    {
-                        NextChar();
-                        while(char.IsDigit(currentChar))
-                        {
-                            sb.Append(currentChar);
-                            NextChar();
-                        }
-                    }
+                {                                    
                     number = int.Parse(sb.ToString(), CultureInfo.InvariantCulture);
                     currentToken = TokenType.Number;
                     return;
@@ -272,20 +252,26 @@ namespace Gellybeans.Expressions
                         NextChar();                       
                     }
                     NextChar();
+                    identifier = sb.ToString();
+                    currentToken = TokenType.String;
+                    return;
                 }
                 else
-                    while(char.IsLetterOrDigit(currentChar) || !char.IsAscii(currentChar) || currentChar == '_' || currentChar == '@')
+                {
+                    while(char.IsLetter(currentChar) || !char.IsAscii(currentChar) || currentChar == '_' || currentChar == '@')
                     {
                         sb.Append(currentChar);
                         NextChar();
+
                     }
-                
-                identifier = sb.ToString();
-                currentToken = TokenType.Var;
-                return;
+                    identifier = sb.ToString();
+                    currentToken = TokenType.Var;
+                    return;
+                }
+               
             }
 
-            //ignore square brackets and any enclosed characters.
+            //ignore square bracket enclosures.
             if(currentChar == '[')
             {
                 while(currentChar != ']')
@@ -298,5 +284,8 @@ namespace Gellybeans.Expressions
             Console.WriteLine($"Invalid data: {currentChar}");
             return;
         }
+    
+        public static bool IsDice(char c) =>
+            c == 'd' || c == 'r' || c == 'h' || c == 'l';
     }
 }

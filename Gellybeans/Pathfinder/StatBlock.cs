@@ -1,5 +1,6 @@
 ﻿using Gellybeans.Expressions;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace Gellybeans.Pathfinder
 {
@@ -55,6 +56,8 @@ namespace Gellybeans.Pathfinder
             ["ORCUS"] = 666,
         };
 
+        //im not sure where else to validate variable names, as expressions don't have the same limitations, which can contain variable names.
+        public static readonly Regex validVarName = new Regex(@"^[^\[\]<>(){}^@:+*/%=!&|;$#?\-.'""0-9]*$");
 
         public int this[string statName]
         {
@@ -66,8 +69,10 @@ namespace Gellybeans.Pathfinder
             }
             set
             {
-                if(Stats.ContainsKey(statName)) Stats[statName].Base = value;
-                else Stats[statName] = value;
+                if(Stats.ContainsKey(statName) && validVarName.IsMatch(statName)) 
+                    Stats[statName].Base = value;
+                else 
+                    Stats[statName] = value;
                 OnValueChanged($"stat:{statName}");
             }
         }
@@ -80,6 +85,12 @@ namespace Gellybeans.Pathfinder
 
         public void AddExpr(string name, string expr)
         {
+            if(expr == "")
+            {
+                OnValueChanged($"edit:{name}");
+                return;
+            }
+
             Expressions[name] = expr;
             OnValueChanged($"expr:{name}");
         }
@@ -151,16 +162,7 @@ namespace Gellybeans.Pathfinder
             sb.AppendLine("______________________");
             sb.AppendLine($"{"ITEM COUNT",-15}|{Inventory.Count}\n{"WEIGHT TOTAL",-15}|{wTotal}\n{"VALUE TOTAL",-15}|{vTotal}");
             return sb.ToString();
-        }
-
-        public void AddBonuses(List<StatModifier> bonuses)
-        {
-            for(int i = 0; i < bonuses.Count; i++)
-            {
-                Stats[bonuses[i].StatName].AddBonus(bonuses[i].Bonus);
-                OnValueChanged($"stat:{bonuses[i].StatName}");
-            }      
-        }
+        }   
 
         public void ClearBonus(string bonusName)
         {
@@ -181,10 +183,8 @@ namespace Gellybeans.Pathfinder
             return 1;
         }
 
-
         public int Resolve(string varName, StringBuilder sb)
         {
-            Console.WriteLine($"TEST:{varName}");
             varName = varName.Replace(' ', '_').ToUpper();
             if(Constants.ContainsKey(varName))
                 return Constants[varName];
@@ -210,17 +210,18 @@ namespace Gellybeans.Pathfinder
 
             varName = varName.Replace(' ', '_').ToUpper();
             
-            if(assignType == TokenType.AssignExpr)
-                if(Stats.ContainsKey(varName))
-                {
-                    sb.AppendLine($"{varName} already exists as a stat");
-                    return -99;
-                }
-            else if(assignType != TokenType.AssignExpr && Expressions.ContainsKey(varName))
+            if(!validVarName.IsMatch(varName))
             {
-                sb.AppendLine($"{varName} already exists as an expression");
+                sb.AppendLine($"Invalid variable name {varName}. No numbers or special characters.");
                 return -99;
             }
+
+            if(assignType == TokenType.AssignExpr)
+                if(Stats.ContainsKey(varName))
+                    RemoveStat(varName);
+                
+            if(assignType != TokenType.AssignExpr && Expressions.ContainsKey(varName))
+                RemoveExpr(varName);
                              
             if(Constants.ContainsKey(varName))
             {
@@ -234,28 +235,22 @@ namespace Gellybeans.Pathfinder
             {
                 case TokenType.AssignExpr:
                     AddExpr(varName, assignment);
-                    break;
-                
+                    break;                
                 case TokenType.Assign:
                     this[varName] = int.Parse(assignment);
                     break;
-
                 case TokenType.AssignAdd:
                     this[varName] += int.Parse(assignment);
                     break;
-
                 case TokenType.AssignSub:
                     this[varName] -= int.Parse(assignment);
                     break;
-
                 case TokenType.AssignMul:
                     this[varName] *= int.Parse(assignment);
                     break;
-
                 case TokenType.AssignDiv:
                     this[varName] /= int.Parse(assignment);
                     break;
-
                 case TokenType.AssignMod:
                     this[varName] %= int.Parse(assignment);
                     break;

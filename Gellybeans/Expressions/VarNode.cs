@@ -11,7 +11,7 @@ namespace Gellybeans.Expressions
         public VarNode(string varName) =>
             this.varName = varName;
 
-        public override int Eval(IContext ctx, StringBuilder sb) 
+        public override int Eval(IContext ctx = null, StringBuilder sb = null) 
         {                 
             if(ctx != null)
             {

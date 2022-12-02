@@ -25,7 +25,7 @@ namespace Gellybeans.Expressions
         {
             var expr = ParseTernary();
 
-            if(tokenizer.Token != TokenType.EOF)
+            if(tokenizer.Token != TokenType.EOF)       
                 return new VarNode($"%Unexpected character `{tokenizer.CurrentChar}` (TOKEN:{tokenizer.Token})");                  
             
             return expr;
@@ -238,7 +238,8 @@ namespace Gellybeans.Expressions
                         return new DiceMultiplierNode(lhs, rhs, op);
                     }
                     return lhs;
-                }                
+                }
+                return new VarNode($"%Invalid dice expression {tokenizer.Identifier}");
             }
 
             if(tokenizer.Token == TokenType.Var)
@@ -251,16 +252,19 @@ namespace Gellybeans.Expressions
                     var type = tokenizer.Token;
                     tokenizer.NextToken();
 
-                    if(type == TokenType.AssignExpr && tokenizer.Token == TokenType.Var)
+                    if(tokenizer.Token == TokenType.String)
                     {
-                        var varName = tokenizer.Identifier;
+                        var str = tokenizer.Identifier;
                         tokenizer.NextToken();
-                        return new AssignNode(name, new VarNode(varName), type);
-                    }    
-                    
-                    var rhs = ParseTernary();
-                    var lh = new AssignNode(name, rhs, type);
-                    return lh;
+                        return new AssignNode(name, new StringNode(str), TokenType.AssignExpr);
+                    }
+                    else
+                    {
+                        var rhs = ParseTernary();
+                        var lh = new AssignNode(name, rhs, type);
+                        return lh;
+                    }
+                   
                 }
 
                 if(tokenizer.Token == TokenType.Bonus)
