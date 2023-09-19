@@ -17,7 +17,7 @@ namespace Gellybeans.Expressions
 
         public override int Eval(IContext ctx, StringBuilder sb)
         {
-            if(assignType == TokenType.AssignExpr)
+            if(assignType == TokenType.AssignExpr || assignType == TokenType.AssignAddExpr)
                 return ctx.Assign(lhs, rhs != null ? ((StringNode)rhs).String : null!, assignType, sb);
             
             var rhValue = rhs.Eval(ctx, sb);

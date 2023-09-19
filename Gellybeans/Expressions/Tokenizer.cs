@@ -19,11 +19,12 @@ namespace Gellybeans.Expressions
         int     number;
         string  identifier  = "";
 
-        public TokenType    Token       { get { return currentToken; } }       
+        public TokenType    Token       { get { return currentToken; } set { currentToken = value; } }       
         public int          Number      { get { return number; } }
         public string       Identifier  { get { return identifier; } }
         public char         CurrentChar { get { return currentChar; } }
         
+
         public Tokenizer(TextReader textReader)
         {
             reader = textReader;
@@ -57,9 +58,15 @@ namespace Gellybeans.Expressions
                     NextChar();
                     if(currentChar == ':')
                     {
-
+                        NextChar();
+                        currentToken = TokenType.Flag;
                     }
-                    currentToken = TokenType.Separator;
+                    else if(currentChar == '?')
+                    {
+                        NextChar();
+                        currentToken = TokenType.HasFlag;
+                    }
+                    else currentToken = TokenType.Separator;
                     return;
 
                 case ';':
@@ -212,37 +219,36 @@ namespace Gellybeans.Expressions
                     NextChar();
                     currentToken = TokenType.Comma;
                     return;
-            }       
-            
-            
-            if(char.IsDigit(currentChar) || currentChar == 'd')
-            {
-                var sb = new StringBuilder();
+            }
+
+            var sb = new StringBuilder();
+            if((currentChar >= '0' && currentChar <= '9')  || currentChar == 'd')
+            {                
+                sb.Append(currentChar);
+                NextChar();
 
                 while(char.IsDigit(currentChar) || IsDice(currentChar))
-                {                   
+                {
                     sb.Append(currentChar);
-                    NextChar();
+                    NextChar();                                   
                 }
 
-                if(sb.ToString().Contains('d'))
+                if(sb.ToString().Where(x => x == 'd').Count() == 1 && sb.ToString().Any(x => x>= '0' && x<= '9'))
                 {
                     identifier = sb.ToString();
                     currentToken = TokenType.Dice;
                     return;
                 }                            
-                else
-                {                                    
+                else if(sb.ToString().All(x => x >= '0' && x <= '9'))
+                {
                     number = int.Parse(sb.ToString(), CultureInfo.InvariantCulture);
                     currentToken = TokenType.Number;
                     return;
                 }           
             }
 
-            if(char.IsLetter(currentChar) || !char.IsAscii(currentChar) || currentChar == '_' || currentChar == '"' || currentChar == '@')
+            if(char.IsLetter(currentChar) || !char.IsAscii(currentChar) || currentChar == '_' || currentChar == '"' || currentChar == '@' || char.IsDigit(currentChar))
             {
-                var sb = new StringBuilder();
-
                 if(currentChar == '"')
                 {
                     NextChar();
@@ -258,7 +264,7 @@ namespace Gellybeans.Expressions
                 }
                 else
                 {
-                    while(char.IsLetter(currentChar) || !char.IsAscii(currentChar) || currentChar == '_' || currentChar == '@')
+                    while(char.IsLetter(currentChar) || !char.IsAscii(currentChar) || currentChar == '_' || currentChar == '@' || char.IsDigit(currentChar))
                     {
                         sb.Append(currentChar);
                         NextChar();

@@ -15,8 +15,8 @@ namespace Gellybeans.Expressions
     {
         Tokenizer tokenizer;
         
-        //dice expression. 0-3 number(s) => d => 1-3 number(s) => 0-3 instances of ('r' or 'h' or 'l' paired with 1-3 number(s))
-        static readonly Regex dRegex = new Regex(@"^([0-9]{0,3})d([0-9]{1,3})((?:r|h|l)(?:[0-9]{1,3})){0,3}");
+        //dice expression. 0-3 number(s) => d => 1-5 number(s) => 0-3 instances of ('r' or 'h' or 'l' paired with 1-3 number(s))
+        static readonly Regex dRegex = new Regex(@"^([0-9]{0,4})d([0-9]{1,4})((?:r|h|l)(?:[0-9]{1,3})){0,2}$");
 
         public Parser(Tokenizer tokenizer) => 
             this.tokenizer = tokenizer;
@@ -26,7 +26,7 @@ namespace Gellybeans.Expressions
             var expr = ParseTernary();
 
             if(tokenizer.Token != TokenType.EOF)       
-                return new VarNode($"%Unexpected character `{tokenizer.CurrentChar}` (TOKEN:{tokenizer.Token})");                  
+                return new VarNode($"%Invalid expression.");                  
             
             return expr;
         }               
@@ -35,7 +35,7 @@ namespace Gellybeans.Expressions
         ExpressionNode ParseTernary()
         {
             if(tokenizer.Token == TokenType.Error)
-                return new VarNode($"%Unexpected data. Char:{tokenizer.CurrentChar} Token:{tokenizer.Token}");
+                return new VarNode($"%Invalid expression.");
 
             if(tokenizer.Token == TokenType.Separator)
                 tokenizer.NextToken();
@@ -89,6 +89,7 @@ namespace Gellybeans.Expressions
                 
                 if(tokenizer.Token == TokenType.Equals)         { op = (a, b) => a == b ? 1 : 0; }
                 else if(tokenizer.Token == TokenType.NotEquals) { op = (a, b) => a != b ? 1 : 0; }
+                else if(tokenizer.Token == TokenType.HasFlag)   { op = (a, b) => (a & (1<<b)) != 0 ? 1 : 0; }
 
                 if(op == null) return lhs;
 
@@ -205,7 +206,7 @@ namespace Gellybeans.Expressions
 
             if(tokenizer.Token == TokenType.Dice)
             {
-                //^([0-9]{0,3})d([0-9]{1,3})((?:r|h|l)(?:[0-9]{1,3})){0,3}
+                //^([0-9]{0,3})d([0-9]{1,3})((?:r|h|l)(?:[0-9]{1,3})){0,3}$
                 var match   = dRegex.Match(tokenizer.Identifier);
 
                 if(match.Success)
@@ -239,7 +240,7 @@ namespace Gellybeans.Expressions
                     }
                     return lhs;
                 }
-                return new VarNode($"%Invalid dice expression {tokenizer.Identifier}");
+                return new VarNode(tokenizer.Identifier);
             }
 
             if(tokenizer.Token == TokenType.Var)
@@ -247,7 +248,7 @@ namespace Gellybeans.Expressions
                 var name = tokenizer.Identifier;
                 tokenizer.NextToken();
 
-                if(tokenizer.Token == TokenType.Assign || tokenizer.Token == TokenType.AssignAdd || tokenizer.Token == TokenType.AssignExpr || tokenizer.Token == TokenType.AssignSub || tokenizer.Token == TokenType.AssignDiv || tokenizer.Token == TokenType.AssignMul || tokenizer.Token == TokenType.AssignMod)
+                if(tokenizer.Token == TokenType.Assign || tokenizer.Token == TokenType.AssignAdd || tokenizer.Token == TokenType.Flag || tokenizer.Token == TokenType.AssignSub || tokenizer.Token == TokenType.AssignDiv || tokenizer.Token == TokenType.AssignMul || tokenizer.Token == TokenType.AssignMod)
                 {
                     var type = tokenizer.Token;
                     tokenizer.NextToken();
@@ -256,7 +257,15 @@ namespace Gellybeans.Expressions
                     {
                         var str = tokenizer.Identifier;
                         tokenizer.NextToken();
-                        return new AssignNode(name, new StringNode(str), TokenType.AssignExpr);
+                        if(type == TokenType.Assign)
+                        {
+                            return new AssignNode(name, new StringNode(str), TokenType.AssignExpr);
+                        }
+                        else if(type == TokenType.AssignAdd)
+                        {
+                            return new AssignNode(name, new StringNode(str), TokenType.AssignAddExpr);
+                        }
+                        
                     }
                     else
                     {
@@ -350,8 +359,8 @@ namespace Gellybeans.Expressions
                     return new BonusNode(null!, tokenizer.Identifier, null!, null!, type);
                 }
             }
-
-            return new VarNode($"%Unexpected Token: {tokenizer.Token}");
+            tokenizer.Token = TokenType.Error;
+            return new StringNode("");
         }
      
         public static ExpressionNode Parse(string expr) => 

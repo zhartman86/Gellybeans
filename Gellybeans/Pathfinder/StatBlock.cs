@@ -57,7 +57,7 @@ namespace Gellybeans.Pathfinder
         };
 
         //im not sure where else to validate variable names, as expressions don't have the same limitations, which can contain variable names.
-        public static readonly Regex validVarName = new Regex(@"^[^\[\]<>(){}^@:+*/%=!&|;$#?\-.'""0-9]*$");
+        public static readonly Regex validVarName = new Regex(@"^[^0-9][^\[\]<>(){}^@:+*/%=!&|;$#?\-.'""]*$");
 
         public int this[string statName]
         {
@@ -212,15 +212,13 @@ namespace Gellybeans.Pathfinder
             
             if(!validVarName.IsMatch(varName))
             {
-                sb.AppendLine($"Invalid variable name {varName}. No numbers or special characters.");
+                sb.AppendLine($"Invalid variable name {varName}. No leading numbers or any special characters.");
                 return -99;
             }
 
-            if(assignType == TokenType.AssignExpr)
-                if(Stats.ContainsKey(varName))
-                    RemoveStat(varName);
-                
-            if(assignType != TokenType.AssignExpr && Expressions.ContainsKey(varName))
+            if(assignType == TokenType.AssignExpr && Stats.ContainsKey(varName))
+                RemoveStat(varName);             
+            else if(assignType != TokenType.AssignExpr && Expressions.ContainsKey(varName))
                 RemoveExpr(varName);
                              
             if(Constants.ContainsKey(varName))
@@ -235,7 +233,7 @@ namespace Gellybeans.Pathfinder
             {
                 case TokenType.AssignExpr:
                     AddExpr(varName, assignment);
-                    break;                
+                    break;
                 case TokenType.Assign:
                     this[varName] = int.Parse(assignment);
                     break;
@@ -253,6 +251,14 @@ namespace Gellybeans.Pathfinder
                     break;
                 case TokenType.AssignMod:
                     this[varName] %= int.Parse(assignment);
+                    break;
+                case TokenType.Flag: //::
+                    var val = int.TryParse(assignment, out int outVal) && outVal < 64 && outVal > -64 ? outVal : 0;
+                    Console.WriteLine(val);
+                    if(Math.Sign(val) > 0)
+                        this[varName] |= 1 << val;          
+                    else
+                        this[varName] &= ~(1 << Math.Abs(val));
                     break;
             }
             sb.AppendLine($"{varName} set to {(assignType != TokenType.AssignExpr ? Stats[varName].Base : Expressions[varName])}");;

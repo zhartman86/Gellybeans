@@ -13,8 +13,9 @@
         AssignDiv,      // /=
         AssignMul,      // *=
         AssignSub,      // -=
-        AssignAdd,      // +=        
+        AssignAdd,      // +=       
         AssignExpr,     // used by the Parser
+        AssignAddExpr,  // ** 
         LogicalOr,      // ||
         LogicalAnd,     // &&
         BitwiseOr,      //
@@ -42,7 +43,8 @@
         String,         // "abc"
         Dice,           // 1d20
         Separator,      // :
-        Preset,         // ::
+        Flag,           // ::
+        HasFlag,        // :?
         Error,
         EOF,
     }
