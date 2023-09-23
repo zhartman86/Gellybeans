@@ -183,7 +183,7 @@ namespace Gellybeans.Pathfinder
             return 1;
         }
 
-        public int Resolve(string varName, StringBuilder sb)
+        public int Resolve(string varName, StringBuilder sb = null!)
         {
             varName = varName.Replace(' ', '_').ToUpper();
             if(Constants.ContainsKey(varName))
@@ -406,7 +406,7 @@ namespace Gellybeans.Pathfinder
                     ["CMD_SUNDER"] = 0,
                     ["CMD_TRIP"] = 0,
 
-                    ["AC_BONUS"] = 0,
+                    ["AC_BONUS"] = 10,
                     ["AC_MAXDEX"] = 99,
                     ["AC_PENALTY"] = 0,
 
@@ -471,44 +471,44 @@ namespace Gellybeans.Pathfinder
                     ["WIS"] = "mod(WIS_SCORE)",
                     ["CHA"] = "mod(CHA_SCORE)",
 
-                    ["FORT"] = "1d20 + FORT_BONUS + SAVE_BONUS + CON",
-                    ["REF"] = "1d20 + REF_BONUS + SAVE_BONUS + DEX",
-                    ["WILL"] = "1d20 + WILL_BONUS + SAVE_BONUS + WIS",
+                    ["FORT"] = "FORT_BONUS + SAVE_BONUS + CON",
+                    ["REF"] = "REF_BONUS + SAVE_BONUS + DEX",
+                    ["WILL"] = "WILL_BONUS + SAVE_BONUS + WIS",
 
-                    ["INIT"] = "1d20 + INIT_BONUS + DEX",
+                    ["INIT"] = "INIT_BONUS + DEX",
 
-                    ["MAXDEX"]  = "max(0, AC_MAXDEX)",
-                    ["AC"]      = "10 + AC_BONUS + min(DEX, MAXDEX) + SIZE_MOD",
-                    ["TOUCH"]   = "AC - ((AC_BONUS $ ARMOR) + (AC_BONUS $ SHIELD) + (AC_BONUS $ NATURAL))",
-                    ["FLAT"]    = "AC - ((AC_BONUS $ DODGE) + DEX)",
+                    ["MAXDEX"] = "max(0, AC_MAXDEX)",
+                    ["AC"] = "10 + AC_BONUS + min(DEX, MAXDEX) + SIZE_MOD",
+                    ["TOUCH"] = "AC - ((AC_BONUS $ ARMOR) + (AC_BONUS $ SHIELD) + (AC_BONUS $ NATURAL))",
+                    ["FLAT"] = "AC - ((AC_BONUS $ DODGE) + DEX)",
 
-                    ["CMB"] = "1d20 + BAB + STR + CMB_BONUS - SIZE_MOD",
+                    ["CMB"] = "BAB + STR + CMB_BONUS - SIZE_MOD",
 
-                    ["BULLRUSH"]    = "CMB + CMB_GRAPPLE",
-                    ["DIRTY"]       = "CMB + CMB_DIRTY",
-                    ["DISARM"]      = "CMB + CMB_DISARM",
-                    ["OVERRUN"]     = "CMB + CMB_OVERRUN",
-                    ["REPOSITION"]  = "CMB + CMB_REPOSITION",
-                    ["STEAL"]       = "CMB + CMB_STEAL",
-                    ["SUNDER"]      = "CMB + CMB_SUNDER",
-                    ["TRIP"]        = "CMB + CMB_TRIP",                  
+                    ["BULLRUSH"] = "CMB + CMB_GRAPPLE",
+                    ["DIRTY"] = "CMB + CMB_DIRTY",
+                    ["DISARM"] = "CMB + CMB_DISARM",
+                    ["OVERRUN"] = "CMB + CMB_OVERRUN",
+                    ["REPOSITION"] = "CMB + CMB_REPOSITION",
+                    ["STEAL"] = "CMB + CMB_STEAL",
+                    ["SUNDER"] = "CMB + CMB_SUNDER",
+                    ["TRIP"] = "CMB + CMB_TRIP",
 
-                    ["MOVE"]        = "MOVE_BASE + MOVE_BONUS",
+                    ["MOVE"] = "MOVE_BASE + MOVE_BONUS",
                     ["MOVE_BURROW"] = "MOVE_BURROW  + MOVE_BONUS",
-                    ["MOVE_CLIMB"]  = "MOVE_CLIMB + MOVE_BONUS",
-                    ["MOVE_FLY"]    = "MOVE_FLY + MOVE_BONUS",
-                    ["MOVE_SWIM"]   = "MOVE_SWIM + MOVE_BONUS",
+                    ["MOVE_CLIMB"] = "MOVE_CLIMB + MOVE_BONUS",
+                    ["MOVE_FLY"] = "MOVE_FLY + MOVE_BONUS",
+                    ["MOVE_SWIM"] = "MOVE_SWIM + MOVE_BONUS",
 
                     ["CMD"] = "10 + BAB + STR + DEX + CMD_BONUS + ((AC_BONUS $ CIRCUMSTANCE) + (AC_BONUS $ DEFLECTION) + (AC_BONUS $ DODGE) + (AC_BONUS $ INSIGHT) + (AC_BONUS $ LUCK) + (AC_BONUS $ MORALE) + (AC_BONUS $ PROFANE) + (AC_BONUS $ SACRED))  - SIZE_MOD",
 
                     ["ATK"] = "BAB + SIZE_MOD + ATK_BONUS",
 
-                    ["ATK_STR"] = "1d20 + (STR + (STR_TEMP / 2)) - (min(STR_SCORE $ ENHANCEMENT, STR_TEMP $ ENHANCEMENT) / 2) + ATK",
-                    ["ATK_DEX"] = "1d20 + (DEX + (DEX_TEMP / 2)) - (min(DEX_SCORE $ ENHANCEMENT, DEX_TEMP $ ENHANCEMENT) / 2) + ATK",
-                    ["ATK_CON"] = "1d20 + (CON + (CON_TEMP / 2)) - (min(CON_SCORE $ ENHANCEMENT, CON_TEMP $ ENHANCEMENT) / 2) + ATK",
-                    ["ATK_INT"] = "1d20 + (INT + (INT_TEMP / 2)) - (min(INT_SCORE $ ENHANCEMENT, INT_TEMP $ ENHANCEMENT) / 2) + ATK",
-                    ["ATK_WIS"] = "1d20 + (WIS + (WIS_TEMP / 2)) - (min(WIS_SCORE $ ENHANCEMENT, WIS_TEMP $ ENHANCEMENT) / 2) + ATK",
-                    ["ATK_CHA"] = "1d20 + (CHA + (CHA_TEMP / 2)) - (min(CHA_SCORE $ ENHANCEMENT, CHA_TEMP $ ENHANCEMENT) / 2) + ATK",
+                    ["ATK_STR"] = "(STR + (STR_TEMP / 2)) - (min(STR_SCORE $ ENHANCEMENT, STR_TEMP $ ENHANCEMENT) / 2) + ATK",
+                    ["ATK_DEX"] = "(DEX + (DEX_TEMP / 2)) - (min(DEX_SCORE $ ENHANCEMENT, DEX_TEMP $ ENHANCEMENT) / 2) + ATK",
+                    ["ATK_CON"] = "(CON + (CON_TEMP / 2)) - (min(CON_SCORE $ ENHANCEMENT, CON_TEMP $ ENHANCEMENT) / 2) + ATK",
+                    ["ATK_INT"] = "(INT + (INT_TEMP / 2)) - (min(INT_SCORE $ ENHANCEMENT, INT_TEMP $ ENHANCEMENT) / 2) + ATK",
+                    ["ATK_WIS"] = "(WIS + (WIS_TEMP / 2)) - (min(WIS_SCORE $ ENHANCEMENT, WIS_TEMP $ ENHANCEMENT) / 2) + ATK",
+                    ["ATK_CHA"] = "(CHA + (CHA_TEMP / 2)) - (min(CHA_SCORE $ ENHANCEMENT, CHA_TEMP $ ENHANCEMENT) / 2) + ATK",
 
                     ["DMG_STR"] = "(STR + (STR_TEMP / 2)) - (min(STR_SCORE $ ENHANCEMENT, STR_TEMP $ ENHANCEMENT) / 2) + DMG_BONUS",
                     ["DMG_DEX"] = "(DEX + (DEX_TEMP / 2)) - (min(DEX_SCORE $ ENHANCEMENT, DEX_TEMP $ ENHANCEMENT) / 2) + DMG_BONUS",
@@ -521,148 +521,43 @@ namespace Gellybeans.Pathfinder
                     ["PA_DMG"] = "2 + (BAB / 4 * 2)",
 
                     //skills
-                    ["ACR"] = "1d20 + DEX + SK_ALL + SK_ACR + AC_PENALTY",
-                    ["APR"] = "1d20 + INT + SK_ALL + SK_APR",
-                    ["BLF"] = "1d20 + CHA + SK_ALL + SK_BLF",
-                    ["CLM"] = "1d20 + STR + SK_ALL + SK_CLM + AC_PENALTY",
-                    ["DIP"] = "1d20 + CHA + SK_ALL + SK_DIP",
-                    ["DSA"] = "1d20 + DEX + SK_ALL + SK_DSA + AC_PENALTY",
-                    ["DSG"] = "1d20 + CHA + SK_ALL + SK_DSG",
-                    ["ESC"] = "1d20 + DEX + SK_ALL + SK_ESC + AC_PENALTY",
-                    ["FLY"] = "1d20 + DEX + SK_ALL + SK_FLY + AC_PENALTY + SIZE_SKL",
-                    ["HND"] = "1d20 + DEX + SK_ALL + SK_HND",
-                    ["HEA"] = "1d20 + WIS + SK_ALL + SK_HEA",
-                    ["ITM"] = "1d20 + CHA + SK_ALL + SK_ITM",
-                    ["LNG"] = "1d20 + INT + SK_ALL + SK_LNG",
-                    ["PRC"] = "1d20 + WIS + SK_ALL + SK_PRC",
-                    ["RDE"] = "1d20 + DEX + SK_ALL + SK_RDE + AC_PENALTY",
-                    ["SNS"] = "1d20 + WIS + SK_ALL + SK_SNS",
-                    ["SLT"] = "1d20 + DEX + SK_ALL + SK_SLT + AC_PENALTY",
-                    ["SPL"] = "1d20 + INT + SK_ALL + SK_SPL",
-                    ["STL"] = "1d20 + DEX + SK_ALL + SK_STL + AC_PENALTY + (SIZE_SKL * 2)",
-                    ["SUR"] = "1d20 + WIS + SK_ALL + SK_SUR",
-                    ["SWM"] = "1d20 + STR + SK_ALL + SK_SWM + AC_PENALTY",
-                    ["UMD"] = "1d20 + CHA + SK_ALL + SK_UMD",
+                    ["ACR"] = "DEX + SK_ALL + SK_ACR + AC_PENALTY",
+                    ["APR"] = "INT + SK_ALL + SK_APR",
+                    ["BLF"] = "CHA + SK_ALL + SK_BLF",
+                    ["CLM"] = "STR + SK_ALL + SK_CLM + AC_PENALTY",
+                    ["DIP"] = "CHA + SK_ALL + SK_DIP",
+                    ["DSA"] = "DEX + SK_ALL + SK_DSA + AC_PENALTY",
+                    ["DSG"] = "CHA + SK_ALL + SK_DSG",
+                    ["ESC"] = "DEX + SK_ALL + SK_ESC + AC_PENALTY",
+                    ["FLY"] = "DEX + SK_ALL + SK_FLY + AC_PENALTY + SIZE_SKL",
+                    ["HND"] = "DEX + SK_ALL + SK_HND",
+                    ["HEA"] = "WIS + SK_ALL + SK_HEA",
+                    ["ITM"] = "CHA + SK_ALL + SK_ITM",
+                    ["LNG"] = "INT + SK_ALL + SK_LNG",
+                    ["PRC"] = "WIS + SK_ALL + SK_PRC",
+                    ["RDE"] = "DEX + SK_ALL + SK_RDE + AC_PENALTY",
+                    ["SNS"] = "WIS + SK_ALL + SK_SNS",
+                    ["SLT"] = "DEX + SK_ALL + SK_SLT + AC_PENALTY",
+                    ["SPL"] = "INT + SK_ALL + SK_SPL",
+                    ["STL"] = "DEX + SK_ALL + SK_STL + AC_PENALTY + (SIZE_SKL * 2)",
+                    ["SUR"] = "WIS + SK_ALL + SK_SUR",
+                    ["SWM"] = "STR + SK_ALL + SK_SWM + AC_PENALTY",
+                    ["UMD"] = "CHA + SK_ALL + SK_UMD",
 
-                    ["ARC"] = "1d20 + INT + SK_ALL + SK_ARC",
-                    ["DUN"] = "1d20 + INT + SK_ALL + SK_DUN",
-                    ["ENG"] = "1d20 + INT + SK_ALL + SK_ENG",
-                    ["GEO"] = "1d20 + INT + SK_ALL + SK_GEO",
-                    ["HIS"] = "1d20 + INT + SK_ALL + SK_HIS",
-                    ["LCL"] = "1d20 + INT + SK_ALL + SK_LCL",
-                    ["NTR"] = "1d20 + INT + SK_ALL + SK_NTR",
-                    ["NBL"] = "1d20 + INT + SK_ALL + SK_NBL",
-                    ["PLN"] = "1d20 + INT + SK_ALL + SK_PLN",
-                    ["RLG"] = "1d20 + INT + SK_ALL + SK_RLG",
+                    ["ARC"] = "INT + SK_ALL + SK_ARC",
+                    ["DUN"] = "INT + SK_ALL + SK_DUN",
+                    ["ENG"] = "INT + SK_ALL + SK_ENG",
+                    ["GEO"] = "INT + SK_ALL + SK_GEO",
+                    ["HIS"] = "INT + SK_ALL + SK_HIS",
+                    ["LCL"] = "INT + SK_ALL + SK_LCL",
+                    ["NTR"] = "INT + SK_ALL + SK_NTR",
+                    ["NBL"] = "INT + SK_ALL + SK_NBL",
+                    ["PLN"] = "INT + SK_ALL + SK_PLN",
+                    ["RLG"] = "INT + SK_ALL + SK_RLG",
 
                 },
 
-                ExprRows = new Dictionary<string, ExprRow>()
-                {
-                    {
-                        "SV", new ExprRow()
-                        {
-                            RowName = "SAVES",
-
-                            Set = new List<Expr>()
-                            {
-                                new Expr("FORT",    "FORT"),
-                                new Expr("REF",     "REF"),
-                                new Expr("WILL",    "WILL"),
-                            },
-                        }
-                    },
-                    {
-                        "SK_ONE", new ExprRow()
-                        {
-                            RowName = "SKILLS ONE",
-
-                            Set = new List<Expr>()
-                            {
-                                new Expr("ACRO",    "ACR"),
-                                new Expr("APPR",    "APR"),
-                                new Expr("BLFF",    "BLF"),
-                                new Expr("CLMB",    "CLM"),
-                                new Expr("DIPL",    "DIP"),
-                            },
-                        }
-                    },
-                    {
-                        "SK_TWO", new ExprRow()
-                        {
-                            RowName = "SKILLS TWO",
-
-                            Set = new List<Expr>()
-                            {
-                                new Expr("DSBL",    "DSA"),
-                                new Expr("ESC",     "ESC"),
-                                new Expr("ANIM",    "HND"),
-                                new Expr("HEAL",    "HEA"),
-                                new Expr("INTI",    "ITM"),
-                            },
-                        }
-                    },
-                    {
-                        "SK_THREE", new ExprRow()
-                        {
-                            RowName = "SKILLS THREE",
-
-                            Set = new List<Expr>()
-                            {
-                                new Expr("ARC",     "ARC"),
-                                new Expr("DNG",     "DUN"),
-                                new Expr("ENG",     "ENG"),
-                                new Expr("GEO",     "GEO"),
-                                new Expr("HIS",     "HIS"),
-                            },
-                        }
-                    },
-                    {
-                        "SK_FOUR", new ExprRow()
-                        {
-                            RowName = "SKILLS FOUR",
-
-                            Set = new List<Expr>()
-                            {
-                                new Expr("LOCL",    "LCL"),
-                                new Expr("NAT",     "NTR"),
-                                new Expr("NOBL",    "NBL"),
-                                new Expr("PLNS",    "PLN"),
-                                new Expr("RLGN",    "RLG"),
-                            },
-                        }
-                    },
-                    {
-                        "SK_FIVE", new ExprRow()
-                        {
-                            RowName = "SKILLS FIVE",
-
-                            Set = new List<Expr>()
-                            {
-                                new Expr("PERC",    "PRC"),
-                                new Expr("SENS",    "SNS"),
-                                new Expr("SPEL",    "SPL"),
-                                new Expr("STEL",    "STL"),
-                                new Expr("SURV",    "SUR"),
-                            },
-                        }
-                    },
-                    {
-                        "SK_SIX", new ExprRow()
-                        {
-                            RowName = "SKILLS SIX",
-
-                            Set = new List<Expr>()
-                            {
-                                new Expr("DISG",    "DSG"),
-                                new Expr("LING",    "LNG"),
-                                new Expr("RIDE",    "RDE"),
-                                new Expr("SLGT",    "SLT"),
-                                new Expr("SWIM",    "SWM"),
-                            },
-                        }
-                    },
-                },
+                ExprRows = new Dictionary<string, ExprRow>(),
             };
 
             return stats;
