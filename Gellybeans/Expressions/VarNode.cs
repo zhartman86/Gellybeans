@@ -13,17 +13,21 @@ namespace Gellybeans.Expressions
 
         public override int Eval(IContext ctx = null, StringBuilder sb = null) 
         {                 
+            int result = 0;
+
             if(ctx != null)
             {
                 //if var starts with this symbol, treat it like an error.
                 if(varName[0] == '%')
                 {
-                    sb.AppendLine(varName.Trim('%'));
+                    sb?.AppendLine(varName.Trim('%'));
                     return -99;
                 }
-                return ctx.Resolve(varName, sb);
+                result = ctx.Resolve(varName, sb);
+
+                return result;
             }           
-            return 0;
+            return result;
         }
     }
 }

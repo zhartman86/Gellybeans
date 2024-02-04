@@ -27,7 +27,7 @@ namespace Gellybeans.Expressions
             string rerolledResults = "";
             for(int i = 0; i < count; i++)
             {
-                var r = sides == 0 ? 0:  random.Next(1, sides + 1);
+                var r = sides == 0 ? 0 : random.Next(1, sides + 1);
                 
                 if(Reroll > 0 && r <= Reroll)
                 {

@@ -32,7 +32,7 @@ namespace Gellybeans.Pathfinder
             if(Bonuses.Count == 0)
                 return 0;
             
-            if(Bonuses.Count > 2)
+            if(Bonuses.Count > 1)
                 Bonuses.Sort((x, y) => y.Value.CompareTo(x.Value));
 
             if(Bonuses.Any(x => x.Type == type))

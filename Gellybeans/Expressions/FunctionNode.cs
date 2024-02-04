@@ -29,7 +29,7 @@ namespace Gellybeans.Expressions
             "if"    => args[0] == 1 ? args[1] : 0,
             "max"   => Math.Max(args[0], args[1]),
             "min"   => Math.Min(args[0], args[1]),
-            "mod"   => Math.Max(-5, (args[0] - 10) / 2),
+            "mod"   => Math.Max(-5, args[0] >= 10 ? (args[0] - 10) / 2 : (args[0] - 11) / 2),
             "rand"  => new Random().Next(args[0], args[1] + 1),
             "bad"   => args[0] / 3,
             "good"  => 2 + (args[0] / 2),

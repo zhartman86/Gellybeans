@@ -199,8 +199,10 @@ namespace Gellybeans.Pathfinder
             if(Stats.ContainsKey(varName))
                 return this[varName];
             if(Expressions.ContainsKey(varName))
-                return Parser.Parse(Expressions[varName]).Eval(this, sb);
-            if(sb != null) sb.AppendLine($"{varName} not found");
+                return Parser.Parse(Expressions[varName]).Eval(this);
+            
+            sb?.AppendLine($"*{varName}?*");
+            
             return 0;
         }
 
@@ -269,7 +271,7 @@ namespace Gellybeans.Pathfinder
         {
             if(assignType == TokenType.Bonus)
             {
-                var result = Parser.Parse(bonusName).Eval(this, sb);
+                var result = Parser.Parse(bonusName).Eval(this);
                 return Stats[statName].GetBonus((BonusType)result);
             }
 
@@ -362,25 +364,24 @@ namespace Gellybeans.Pathfinder
                     ["WIS_SCORE"] = 10,
                     ["CHA_SCORE"] = 10,
 
-                    //since damage and temporary bonuses apply symmetrical effects, the same field can be used for both.
-                    ["STR_TEMP"] = 0,
-                    ["DEX_TEMP"] = 0,
-                    ["CON_TEMP"] = 0,
-                    ["INT_TEMP"] = 0,
-                    ["WIS_TEMP"] = 0,
-                    ["CHA_TEMP"] = 0,
+
+                    ["STR_DAMAGE"] = 0,
+                    ["DEX_DAMAGE"] = 0,
+                    ["CON_DAMAGE"] = 0,
+                    ["INT_DAMAGE"] = 0,
+                    ["WIS_DAMAGE"] = 0,
+                    ["CHA_DAMAGE"] = 0,
 
                     ["SAVE_BONUS"] = 0,
                     ["FORT_BONUS"] = 0,
                     ["REF_BONUS"] = 0,
                     ["WILL_BONUS"] = 0,
-
-                    ["MOVE_BONUS"] = 0,
-                    ["MOVE_BASE"] = 0,
-                    ["MOVE_BURROW"] = 0,
-                    ["MOVE_CLIMB"] = 0,
-                    ["MOVE_FLY"] = 0,
-                    ["MOVE_SWIM"] = 0,
+                   
+                    ["SPEED"] = 0,
+                    ["SPEED_BURROW"] = 0,
+                    ["SPEED_CLIMB"] = 0,
+                    ["SPEED_FLY"] = 0,
+                    ["SPEED_SWIM"] = 0,
 
                     ["BAB"] = 0,
 
@@ -406,16 +407,10 @@ namespace Gellybeans.Pathfinder
                     ["CMD_SUNDER"] = 0,
                     ["CMD_TRIP"] = 0,
 
-                    ["AC_BONUS"] = 10,
+                    ["AC_BONUS"] = 0,
                     ["AC_MAXDEX"] = 99,
                     ["AC_PENALTY"] = 0,
 
-                    ["ATK_BONUS"] = 0,
-                    ["ATK_BONUS_MELEE"] = 0,
-                    ["ATK_BONUS_RANGED"] = 0,
-                    ["DMG_BONUS"] = 0,
-                    ["DMG_BONUS_MELEE"] = 0,
-                    ["DMG_BONUS_RANGED"] = 0,
 
                     ["CL_BONUS"] = 0,
 
@@ -471,7 +466,14 @@ namespace Gellybeans.Pathfinder
                     ["WIS"] = "mod(WIS_SCORE)",
                     ["CHA"] = "mod(CHA_SCORE)",
 
-                    ["FORT"] = "FORT_BONUS + SAVE_BONUS + CON",
+					["D_STR"] = "STR - (STR_DAMAGE / 2)",
+					["D_DEX"] = "DEX - (DEX_DAMAGE / 2)",
+					["D_CON"] = "CON - (CON_DAMAGE / 2)",
+					["D_INT"] = "INT - (INT_DAMAGE / 2)",
+					["D_WIS"] = "WIS - (WIS_DAMAGE / 2)",
+					["D_CHA"] = "CHA - (CHA_DAMAGE / 2)",
+
+					["FORT"] = "FORT_BONUS + SAVE_BONUS + CON",
                     ["REF"] = "REF_BONUS + SAVE_BONUS + DEX",
                     ["WILL"] = "WILL_BONUS + SAVE_BONUS + WIS",
 
@@ -482,78 +484,53 @@ namespace Gellybeans.Pathfinder
                     ["TOUCH"] = "AC - ((AC_BONUS $ ARMOR) + (AC_BONUS $ SHIELD) + (AC_BONUS $ NATURAL))",
                     ["FLAT"] = "AC - ((AC_BONUS $ DODGE) + DEX)",
 
-                    ["CMB"] = "BAB + STR + CMB_BONUS - SIZE_MOD",
+                    ["CMB"] = "BAB + STR - SIZE_MOD",
+                    ["CMD"] = "10 + BAB + STR + DEX + CMD_BONUS + ((AC_BONUS $ CIRCUMSTANCE) + (AC_BONUS $ DEFLECTION) + (AC_BONUS $ DODGE) + (AC_BONUS $ INSIGHT) + (AC_BONUS $ LUCK) + (AC_BONUS $ MORALE) + (AC_BONUS $ PROFANE) + (AC_BONUS $ SACRED)) - SIZE_MOD",
+					
+                    ["ATK"] = "BAB + SIZE_MOD",
 
-                    ["BULLRUSH"] = "CMB + CMB_GRAPPLE",
-                    ["DIRTY"] = "CMB + CMB_DIRTY",
-                    ["DISARM"] = "CMB + CMB_DISARM",
-                    ["OVERRUN"] = "CMB + CMB_OVERRUN",
-                    ["REPOSITION"] = "CMB + CMB_REPOSITION",
-                    ["STEAL"] = "CMB + CMB_STEAL",
-                    ["SUNDER"] = "CMB + CMB_SUNDER",
-                    ["TRIP"] = "CMB + CMB_TRIP",
+					["A_STR"] = "D_STR + ATK",
+					["A_DEX"] = "D_DEX + ATK",
+					["A_CON"] = "D_CON + ATK",
+					["A_INT"] = "D_INT + ATK",
+					["A_WIS"] = "D_WIS + ATK",
+					["A_CHA"] = "D_CHA + ATK",
 
-                    ["MOVE"] = "MOVE_BASE + MOVE_BONUS",
-                    ["MOVE_BURROW"] = "MOVE_BURROW  + MOVE_BONUS",
-                    ["MOVE_CLIMB"] = "MOVE_CLIMB + MOVE_BONUS",
-                    ["MOVE_FLY"] = "MOVE_FLY + MOVE_BONUS",
-                    ["MOVE_SWIM"] = "MOVE_SWIM + MOVE_BONUS",
 
-                    ["CMD"] = "10 + BAB + STR + DEX + CMD_BONUS + ((AC_BONUS $ CIRCUMSTANCE) + (AC_BONUS $ DEFLECTION) + (AC_BONUS $ DODGE) + (AC_BONUS $ INSIGHT) + (AC_BONUS $ LUCK) + (AC_BONUS $ MORALE) + (AC_BONUS $ PROFANE) + (AC_BONUS $ SACRED))  - SIZE_MOD",
+					//skills
+					["ACR"] = "D_DEX + SK_ALL + SK_ACR + AC_PENALTY",
+                    ["APR"] = "D_INT + SK_ALL + SK_APR",
+                    ["BLF"] = "D_CHA + SK_ALL + SK_BLF",
+                    ["CLM"] = "D_STR + SK_ALL + SK_CLM + AC_PENALTY",
+                    ["DIP"] = "D_CHA + SK_ALL + SK_DIP",
+                    ["DSA"] = "D_DEX + SK_ALL + SK_DSA + AC_PENALTY",
+                    ["DSG"] = "D_CHA + SK_ALL + SK_DSG",
+                    ["ESC"] = "D_DEX + SK_ALL + SK_ESC + AC_PENALTY",
+                    ["FLY"] = "D_DEX + SK_ALL + SK_FLY + AC_PENALTY + SIZE_SKL",
+                    ["HND"] = "D_DEX + SK_ALL + SK_HND",
+                    ["HEA"] = "D_WIS + SK_ALL + SK_HEA",
+                    ["ITM"] = "D_CHA + SK_ALL + SK_ITM",
+                    ["LNG"] = "D_INT + SK_ALL + SK_LNG",
+                    ["PRC"] = "D_WIS + SK_ALL + SK_PRC",
+                    ["RDE"] = "D_DEX + SK_ALL + SK_RDE + AC_PENALTY",
+                    ["SNS"] = "D_WIS + SK_ALL + SK_SNS",
+                    ["SLT"] = "D_DEX + SK_ALL + SK_SLT + AC_PENALTY",
+                    ["SPL"] = "D_INT + SK_ALL + SK_SPL",
+                    ["STL"] = "D_DEX + SK_ALL + SK_STL + AC_PENALTY + (SIZE_SKL * 2)",
+                    ["SUR"] = "D_WIS + SK_ALL + SK_SUR",
+                    ["SWM"] = "D_STR + SK_ALL + SK_SWM + AC_PENALTY",
+                    ["UMD"] = "D_CHA + SK_ALL + SK_UMD",
 
-                    ["ATK"] = "BAB + SIZE_MOD + ATK_BONUS",
-
-                    ["ATK_STR"] = "(STR + (STR_TEMP / 2)) - (min(STR_SCORE $ ENHANCEMENT, STR_TEMP $ ENHANCEMENT) / 2) + ATK",
-                    ["ATK_DEX"] = "(DEX + (DEX_TEMP / 2)) - (min(DEX_SCORE $ ENHANCEMENT, DEX_TEMP $ ENHANCEMENT) / 2) + ATK",
-                    ["ATK_CON"] = "(CON + (CON_TEMP / 2)) - (min(CON_SCORE $ ENHANCEMENT, CON_TEMP $ ENHANCEMENT) / 2) + ATK",
-                    ["ATK_INT"] = "(INT + (INT_TEMP / 2)) - (min(INT_SCORE $ ENHANCEMENT, INT_TEMP $ ENHANCEMENT) / 2) + ATK",
-                    ["ATK_WIS"] = "(WIS + (WIS_TEMP / 2)) - (min(WIS_SCORE $ ENHANCEMENT, WIS_TEMP $ ENHANCEMENT) / 2) + ATK",
-                    ["ATK_CHA"] = "(CHA + (CHA_TEMP / 2)) - (min(CHA_SCORE $ ENHANCEMENT, CHA_TEMP $ ENHANCEMENT) / 2) + ATK",
-
-                    ["DMG_STR"] = "(STR + (STR_TEMP / 2)) - (min(STR_SCORE $ ENHANCEMENT, STR_TEMP $ ENHANCEMENT) / 2) + DMG_BONUS",
-                    ["DMG_DEX"] = "(DEX + (DEX_TEMP / 2)) - (min(DEX_SCORE $ ENHANCEMENT, DEX_TEMP $ ENHANCEMENT) / 2) + DMG_BONUS",
-                    ["DMG_CON"] = "(CON + (CON_TEMP / 2)) - (min(CON_SCORE $ ENHANCEMENT, CON_TEMP $ ENHANCEMENT) / 2) + DMG_BONUS",
-                    ["DMG_INT"] = "(INT + (INT_TEMP / 2)) - (min(INT_SCORE $ ENHANCEMENT, INT_TEMP $ ENHANCEMENT) / 2) + DMG_BONUS",
-                    ["DMG_WIS"] = "(WIS + (WIS_TEMP / 2)) - (min(WIS_SCORE $ ENHANCEMENT, WIS_TEMP $ ENHANCEMENT) / 2) + DMG_BONUS",
-                    ["DMG_CHA"] = "(CHA + (CHA_TEMP / 2)) - (min(CHA_SCORE $ ENHANCEMENT, CHA_TEMP $ ENHANCEMENT) / 2) + DMG_BONUS",
-
-                    ["PA_ATK"] = "1 + BAB / 4",
-                    ["PA_DMG"] = "2 + (BAB / 4 * 2)",
-
-                    //skills
-                    ["ACR"] = "DEX + SK_ALL + SK_ACR + AC_PENALTY",
-                    ["APR"] = "INT + SK_ALL + SK_APR",
-                    ["BLF"] = "CHA + SK_ALL + SK_BLF",
-                    ["CLM"] = "STR + SK_ALL + SK_CLM + AC_PENALTY",
-                    ["DIP"] = "CHA + SK_ALL + SK_DIP",
-                    ["DSA"] = "DEX + SK_ALL + SK_DSA + AC_PENALTY",
-                    ["DSG"] = "CHA + SK_ALL + SK_DSG",
-                    ["ESC"] = "DEX + SK_ALL + SK_ESC + AC_PENALTY",
-                    ["FLY"] = "DEX + SK_ALL + SK_FLY + AC_PENALTY + SIZE_SKL",
-                    ["HND"] = "DEX + SK_ALL + SK_HND",
-                    ["HEA"] = "WIS + SK_ALL + SK_HEA",
-                    ["ITM"] = "CHA + SK_ALL + SK_ITM",
-                    ["LNG"] = "INT + SK_ALL + SK_LNG",
-                    ["PRC"] = "WIS + SK_ALL + SK_PRC",
-                    ["RDE"] = "DEX + SK_ALL + SK_RDE + AC_PENALTY",
-                    ["SNS"] = "WIS + SK_ALL + SK_SNS",
-                    ["SLT"] = "DEX + SK_ALL + SK_SLT + AC_PENALTY",
-                    ["SPL"] = "INT + SK_ALL + SK_SPL",
-                    ["STL"] = "DEX + SK_ALL + SK_STL + AC_PENALTY + (SIZE_SKL * 2)",
-                    ["SUR"] = "WIS + SK_ALL + SK_SUR",
-                    ["SWM"] = "STR + SK_ALL + SK_SWM + AC_PENALTY",
-                    ["UMD"] = "CHA + SK_ALL + SK_UMD",
-
-                    ["ARC"] = "INT + SK_ALL + SK_ARC",
-                    ["DUN"] = "INT + SK_ALL + SK_DUN",
-                    ["ENG"] = "INT + SK_ALL + SK_ENG",
-                    ["GEO"] = "INT + SK_ALL + SK_GEO",
-                    ["HIS"] = "INT + SK_ALL + SK_HIS",
-                    ["LCL"] = "INT + SK_ALL + SK_LCL",
-                    ["NTR"] = "INT + SK_ALL + SK_NTR",
-                    ["NBL"] = "INT + SK_ALL + SK_NBL",
-                    ["PLN"] = "INT + SK_ALL + SK_PLN",
-                    ["RLG"] = "INT + SK_ALL + SK_RLG",
+                    ["ARC"] = "D_INT + SK_ALL + SK_ARC",
+                    ["DUN"] = "D_INT + SK_ALL + SK_DUN",
+                    ["ENG"] = "D_INT + SK_ALL + SK_ENG",
+                    ["GEO"] = "D_INT + SK_ALL + SK_GEO",
+                    ["HIS"] = "D_INT + SK_ALL + SK_HIS",
+                    ["LCL"] = "D_INT + SK_ALL + SK_LCL",
+                    ["NTR"] = "D_INT + SK_ALL + SK_NTR",
+                    ["NBL"] = "D_INT + SK_ALL + SK_NBL",
+                    ["PLN"] = "D_INT + SK_ALL + SK_PLN",
+                    ["RLG"] = "D_INT + SK_ALL + SK_RLG",
 
                 },
 

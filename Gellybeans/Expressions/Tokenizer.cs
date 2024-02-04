@@ -53,7 +53,12 @@ namespace Gellybeans.Expressions
                 case '\0':
                     currentToken = TokenType.EOF;
                     return;
-                
+
+                case ';':
+                    NextChar();
+                    currentToken = TokenType.Semicolon;
+                    return;
+
                 case ':':
                     NextChar();
                     if(currentChar == ':')
@@ -67,12 +72,7 @@ namespace Gellybeans.Expressions
                         currentToken = TokenType.HasFlag;
                     }
                     else currentToken = TokenType.Separator;
-                    return;
-
-                case ';':
-                    NextChar();
-                    currentToken = TokenType.Semicolon;
-                    return;                
+                    return;                         
                 
                 case '=':
                     NextChar();

@@ -1,4 +1,6 @@
-﻿using System.Text.RegularExpressions;
+﻿using Gellybeans.Pathfinder;
+using System.Text.RegularExpressions;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Gellybeans.Expressions
 {
@@ -18,24 +20,39 @@ namespace Gellybeans.Expressions
         //dice expression. 0-3 number(s) => d => 1-5 number(s) => 0-3 instances of ('r' or 'h' or 'l' paired with 1-3 number(s))
         static readonly Regex dRegex = new Regex(@"^([0-9]{0,4})d([0-9]{1,4})((?:r|h|l)(?:[0-9]{1,3})){0,2}$");
 
+
+
         public Parser(Tokenizer tokenizer) => 
             this.tokenizer = tokenizer;
        
         public ExpressionNode ParseExpr()
         {
+            var exprList = new List<ExpressionNode>();
             var expr = ParseTernary();
+            exprList.Add(expr);
+            while(tokenizer.Token == TokenType.Semicolon)
+            {
+                Console.WriteLine("Semicolon");
+                tokenizer.NextToken();
+                if(tokenizer.Token != TokenType.EOF)
+                {
+                    expr = ParseTernary();
+                    exprList.Add(expr);
+                }
+            }
 
             if(tokenizer.Token != TokenType.EOF)       
                 return new VarNode($"%Invalid expression.");                  
             
-            return expr;
+            return new ExpressionListNode(exprList);
         }               
+
 
 
         ExpressionNode ParseTernary()
         {
             if(tokenizer.Token == TokenType.Error)
-                return new VarNode($"%Invalid expression.");
+                return new VarNode($"%Invalid expression.");  
 
             if(tokenizer.Token == TokenType.Separator)
                 tokenizer.NextToken();
@@ -127,9 +144,11 @@ namespace Gellybeans.Expressions
             var lhs = ParseMulDivMod();
 
             while(true)
-            {
+            {              
                 Func<int, int, int> op = null!;
                 
+                var token = tokenizer.Token;
+
                 if(tokenizer.Token == TokenType.Add)        { op = (a, b) => a + b; }
                 else if(tokenizer.Token == TokenType.Sub)   { op = (a, b) => a - b; }
 
@@ -138,7 +157,7 @@ namespace Gellybeans.Expressions
                 tokenizer.NextToken();
                 var rhs = ParseMulDivMod();
                 
-                lhs = new BinaryNode(lhs, rhs, op);
+                lhs = new BinaryNode(lhs, rhs, op, token);
             }
         }
 
@@ -339,10 +358,9 @@ namespace Gellybeans.Expressions
                     }
 
                     if(tokenizer.Token != TokenType.ClosePar)
-                        return new VarNode("%Missing closed parenthesis `)`");
+                        return new VarNode("%Missing closed parenthesis `)`");                 
                     
                     tokenizer.NextToken();
-
                     return new FunctionNode(name, args.ToArray());
                 }             
             }
