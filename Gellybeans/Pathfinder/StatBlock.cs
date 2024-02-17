@@ -77,6 +77,22 @@ namespace Gellybeans.Pathfinder
             }
         }
 
+        public void SetInfo(string infoName, string description)
+        {
+            Info[infoName] = description;
+            OnValueChanged("info");
+        }
+
+        public bool RemoveInfo(string infoName)
+        {
+            if(Info.Remove(infoName))
+            {
+                OnValueChanged("info");
+                return true;
+            }
+            return false;
+        }
+
         public void RemoveStat(string statName)
         {
             if(Stats.Remove(statName))
@@ -189,6 +205,8 @@ namespace Gellybeans.Pathfinder
             if(Constants.ContainsKey(varName))
                 return Constants[varName];
 
+
+
             if(varName[0] == '@')
             {
                 var replace = varName.Replace("@", "");
@@ -199,10 +217,32 @@ namespace Gellybeans.Pathfinder
             if(Stats.ContainsKey(varName))
                 return this[varName];
             if(Expressions.ContainsKey(varName))
-                return Parser.Parse(Expressions[varName]).Eval(this);
-            
+                return Parser.Parse(Expressions[varName]).Eval(this, sb);
+
+                          
             sb?.AppendLine($"*{varName}?*");
             
+            return 0;
+        }
+        
+        public int ResolveMacro(string identifier, string modifier, StringBuilder sb = null!)
+        {
+            identifier = identifier.Replace(' ', '_').ToUpper();
+
+            if(Expressions.ContainsKey(identifier))
+            {
+                var expressions = Expressions[identifier].Split(';');
+
+                var results = new int[expressions.Length];
+                for(int i = 0; i < expressions.Length; i++)
+                {
+                    sb.AppendLine($"__*{expressions[i] + modifier}*__");
+                    results[i] = Parser.Parse(expressions[i] + modifier).Eval(this, sb);
+                    sb.AppendLine($"**Total:** {results[i]}");
+                    sb.AppendLine();
+                }                  
+            }
+
             return 0;
         }
 
@@ -256,7 +296,6 @@ namespace Gellybeans.Pathfinder
                     break;
                 case TokenType.Flag: //::
                     var val = int.TryParse(assignment, out int outVal) && outVal < 64 && outVal > -64 ? outVal : 0;
-                    Console.WriteLine(val);
                     if(Math.Sign(val) > 0)
                         this[varName] |= 1 << val;          
                     else
@@ -473,19 +512,19 @@ namespace Gellybeans.Pathfinder
 					["D_WIS"] = "WIS - (WIS_DAMAGE / 2)",
 					["D_CHA"] = "CHA - (CHA_DAMAGE / 2)",
 
-					["FORT"] = "FORT_BONUS + SAVE_BONUS + CON",
-                    ["REF"] = "REF_BONUS + SAVE_BONUS + DEX",
-                    ["WILL"] = "WILL_BONUS + SAVE_BONUS + WIS",
+					["FORT"] = "FORT_BONUS + SAVE_BONUS + D_CON",
+                    ["REF"] = "REF_BONUS + SAVE_BONUS + D_DEX",
+                    ["WILL"] = "WILL_BONUS + SAVE_BONUS + D_WIS",
 
                     ["INIT"] = "INIT_BONUS + DEX",
 
                     ["MAXDEX"] = "max(0, AC_MAXDEX)",
-                    ["AC"] = "10 + AC_BONUS + min(DEX, MAXDEX) + SIZE_MOD",
+                    ["AC"] = "10 + AC_BONUS + min(D_DEX, MAXDEX) + SIZE_MOD",
                     ["TOUCH"] = "AC - ((AC_BONUS $ ARMOR) + (AC_BONUS $ SHIELD) + (AC_BONUS $ NATURAL))",
-                    ["FLAT"] = "AC - ((AC_BONUS $ DODGE) + DEX)",
+                    ["FLAT"] = "AC - ((AC_BONUS $ DODGE) + D_DEX)",
 
                     ["CMB"] = "BAB + STR - SIZE_MOD",
-                    ["CMD"] = "10 + BAB + STR + DEX + CMD_BONUS + ((AC_BONUS $ CIRCUMSTANCE) + (AC_BONUS $ DEFLECTION) + (AC_BONUS $ DODGE) + (AC_BONUS $ INSIGHT) + (AC_BONUS $ LUCK) + (AC_BONUS $ MORALE) + (AC_BONUS $ PROFANE) + (AC_BONUS $ SACRED)) - SIZE_MOD",
+                    ["CMD"] = "10 + BAB + STR + D_DEX + CMD_BONUS + ((AC_BONUS $ CIRCUMSTANCE) + (AC_BONUS $ DEFLECTION) + (AC_BONUS $ DODGE) + (AC_BONUS $ INSIGHT) + (AC_BONUS $ LUCK) + (AC_BONUS $ MORALE) + (AC_BONUS $ PROFANE) + (AC_BONUS $ SACRED)) - SIZE_MOD",
 					
                     ["ATK"] = "BAB + SIZE_MOD",
 

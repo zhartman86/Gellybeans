@@ -37,14 +37,15 @@
         OpenPar,        // (
         ClosePar,       // )
         Comma,          // ,
-        Quotes,         // "
+        Quotes,         // " or '
         Semicolon,      // ;
         Var,            //
-        String,         // "abc"
+        String,         // "abc" or 'abc'
         Dice,           // 1d20
         Separator,      // :
         Flag,           // ::
         HasFlag,        // :?
+        Macro,          // [abc;abc] + x
         Error,
         EOF,
     }
