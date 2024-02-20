@@ -251,7 +251,8 @@ namespace Gellybeans.Pathfinder
             sb ??= new StringBuilder();
 
             varName = varName.Replace(' ', '_').ToUpper();
-            
+            //assignment = assignment.Replace(" ", "_").ToUpper();
+
             if(!validVarName.IsMatch(varName))
             {
                 sb.AppendLine($"Invalid variable name {varName}. No leading numbers or any special characters.");
@@ -294,12 +295,8 @@ namespace Gellybeans.Pathfinder
                 case TokenType.AssignMod:
                     this[varName] %= int.Parse(assignment);
                     break;
-                case TokenType.Flag: //::
-                    var val = int.TryParse(assignment, out int outVal) && outVal < 64 && outVal > -64 ? outVal : 0;
-                    if(Math.Sign(val) > 0)
-                        this[varName] |= 1 << val;          
-                    else
-                        this[varName] &= ~(1 << Math.Abs(val));
+                case TokenType.AssignFlag:            
+                    this[varName] |= this[varName] | int.Parse(assignment);
                     break;
             }
             sb.AppendLine($"{varName} set to {(assignType != TokenType.AssignExpr ? Stats[varName].Base : Expressions[varName])}");;
@@ -316,6 +313,7 @@ namespace Gellybeans.Pathfinder
 
             if(string.IsNullOrEmpty(statName) && assignType == TokenType.AssignSubBon)
             {
+                Console.WriteLine($"Bonus removed:{statName}");
                 if(bonusName == "")
                 {
                     ClearBonuses();
@@ -350,13 +348,9 @@ namespace Gellybeans.Pathfinder
             switch(assignType)
             {
                 case TokenType.AssignAddBon:
-                    if(bonusName[0] == '.')
-                    {
-
-                    }
                     var bonus = new Bonus { Name = bonusName, Type = (BonusType)type, Value = value };
                     Stats[statName].AddBonus(bonus);
-                    sb.AppendLine($"{bonus} to {statName} (Total:{this[statName]})");
+                    sb.AppendLine($"{bonus} to {statName} (Base:{Stats[statName].Base}, Total:{this[statName]})");
                     break;
 
                 case TokenType.AssignSubBon:
@@ -367,7 +361,6 @@ namespace Gellybeans.Pathfinder
             OnValueChanged($"stats");      
             return value;
         }
-
 
         public static StatBlock DefaultPathfinder(string name)
         {

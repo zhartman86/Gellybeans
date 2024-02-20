@@ -16,6 +16,7 @@
         AssignAdd,      // +=       
         AssignExpr,     // used by the Parser
         AssignAddExpr,  // ** 
+        AssignFlag,     // |=
         LogicalOr,      // ||
         LogicalAnd,     // &&
         BitwiseOr,      //
@@ -43,7 +44,6 @@
         String,         // "abc" or 'abc'
         Dice,           // 1d20
         Separator,      // :
-        Flag,           // ::
         HasFlag,        // :?
         Macro,          // [abc;abc] + x
         Error,

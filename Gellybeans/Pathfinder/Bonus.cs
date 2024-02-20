@@ -20,6 +20,6 @@
             a.Value.CompareTo(b); 
 
         public override string ToString() =>
-            $" {(Math.Sign(Value) > 0 ? "+" : "-")}{Value} {Enum.GetName(typeof(BonusType), Type)!.ToLower()} bonus";
+            $" {(Math.Sign(Value) > 0 ? "+" : "")}{Value} {Enum.GetName(typeof(BonusType), Type)!.ToLower()} {(Math.Sign(Value) > 0 ? "bonus" : "penalty")}";
     }
 }

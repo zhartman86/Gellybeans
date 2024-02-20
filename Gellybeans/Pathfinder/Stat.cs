@@ -49,7 +49,7 @@ namespace Gellybeans.Pathfinder
                     dict[b.Type].Add(b);
 
                     //this is imporant. sort the highest bonus to the top so that checking for bonuses that don't stack is easier.
-                    dict[b.Type].Sort((x, y) => y.Value.CompareTo(x.Value));           
+                    dict[b.Type].Sort((x,y) => y.Value.CompareTo(x.Value));           
             }
             return GetTotal(dict);
         }

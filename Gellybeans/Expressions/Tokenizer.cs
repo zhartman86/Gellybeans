@@ -115,13 +115,7 @@ namespace Gellybeans.Expressions
 
                 case ':':
                     NextChar();
-                    if(currentChar == ':')
-                    {
-                        NextChar();
-                        currentToken = TokenType.Flag;
-                        Tokens.Add(new Token(TokenType.Flag, "::"));
-                    }
-                    else if(currentChar == '?')
+                    if(currentChar == '?')
                     {
                         NextChar();
                         currentToken = TokenType.HasFlag;
@@ -169,6 +163,12 @@ namespace Gellybeans.Expressions
                         currentToken = TokenType.LogicalOr;
                         Tokens.Add(new Token(TokenType.LogicalOr, "||"));
                     }                  
+                    else if(currentChar == '=')
+                    {
+                        NextChar();
+                        currentToken = TokenType.AssignFlag;
+                        Tokens.Add(new Token(TokenType.AssignFlag, "|="));
+                    }              
                     else
                     {
                         currentToken = TokenType.BitwiseOr;
@@ -438,7 +438,7 @@ namespace Gellybeans.Expressions
             }
 
             //var
-            if(char.IsLetter(currentChar) || !char.IsAscii(currentChar) || currentChar == '_' || currentChar == '@' || currentChar == '^' || char.IsDigit(currentChar))
+            if(char.IsLetter(currentChar) || !char.IsAscii(currentChar) || currentChar == '_' || currentChar == '@' || currentChar == '^' || currentChar == '.' || char.IsDigit(currentChar))
             {
                 sb.Append(currentChar);
                 NextChar();

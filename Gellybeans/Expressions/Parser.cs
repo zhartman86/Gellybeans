@@ -1,4 +1,5 @@
-﻿using System.Text.RegularExpressions;
+﻿using Gellybeans.Pathfinder;
+using System.Text.RegularExpressions;
 
 namespace Gellybeans.Expressions
 {
@@ -34,14 +35,29 @@ namespace Gellybeans.Expressions
         {
             var expr = ParseTernary();
 
-            if(tokens[index].TokenType == TokenType.Error)
-                return new VarNode($"%ERROR: {tokens[index].Value}");
+            switch(tokens[index].TokenType)
+            {
+                case TokenType.Error:
+                    return new VarNode($"%ERROR: {tokens[index].Value}");
+                case TokenType.EOF:
+                    return expr;
+                default:
+                    return new VarNode($"%Invalid expression.");
+            }       
 
-            if(tokens[index].TokenType != TokenType.EOF)       
-                return new VarNode($"%Invalid expression.");
+            
+        }               
+
+        ExpressionNode ParseTermination()
+        {
+            var expr = ParseTernary();
+            
+            if(tokens[index].TokenType == TokenType.Semicolon)
+                return new MultiExpressionNode(expr, ParseTermination());
 
             return expr;
-        }               
+        }
+
 
         ExpressionNode ParseTernary()
         {
@@ -69,7 +85,7 @@ namespace Gellybeans.Expressions
         
         ExpressionNode ParseLogicalAndOr()
         {
-            var lhs = ParseEquals();
+            var lhs = ParseBitwiseAndOr();
 
             while(true)
             {
@@ -81,12 +97,32 @@ namespace Gellybeans.Expressions
                 if(op == null) return lhs;
 
                 index++;
-                var rhs = ParseEquals();
+                var rhs = ParseBitwiseAndOr();
 
                 lhs = new BinaryNode(lhs, rhs, op);
             }
         }
         
+        ExpressionNode ParseBitwiseAndOr()
+        {
+            var lhs = ParseEquals();
+
+            while(true)
+            {
+                Func<int, int, int> op = null!;
+
+                if(tokens[index].TokenType == TokenType.BitwiseOr) { op = (a, b) => a | b; }
+                else if(tokens[index].TokenType == TokenType.BitwiseAnd) { op = (a, b) => a & b; }
+
+                if(op == null) return lhs;
+                
+                index++;
+                var rhs = ParseEquals();
+
+                lhs = new BinaryNode(lhs, rhs, op);
+            }
+        }
+
         ExpressionNode ParseEquals()
         {
             var lhs = ParseGreaterLess();
@@ -97,7 +133,7 @@ namespace Gellybeans.Expressions
                 
                 if(tokens[index].TokenType == TokenType.Equals)         { op = (a, b) => a == b ? 1 : 0; }
                 else if(tokens[index].TokenType == TokenType.NotEquals) { op = (a, b) => a != b ? 1 : 0; }
-                else if(tokens[index].TokenType == TokenType.HasFlag)   { op = (a, b) => (a & (1<<b)) != 0 ? 1 : 0; }
+                else if(tokens[index].TokenType == TokenType.HasFlag)   { op = (a, b) => (a & b) != 0 ? 1 : 0; }
 
                 if(op == null) return lhs;
 
@@ -253,9 +289,10 @@ namespace Gellybeans.Expressions
 
 
             if(tokens[index].TokenType == TokenType.Macro)
-            {               
+            {              
+                var macro = new MacroNode(tokens[index].Value, Tokenizer.Output(tokens, index+1));
                 index = tokens.Count - 1;
-                return new MacroNode(tokens[index].Value, Tokenizer.Output(tokens, index));
+                return macro;
             }
 
             if(tokens[index].TokenType == TokenType.Var)
@@ -264,7 +301,7 @@ namespace Gellybeans.Expressions
                 
 
                 index++;
-                if(tokens[index].TokenType == TokenType.Assign || tokens[index].TokenType == TokenType.AssignAdd || tokens[index].TokenType == TokenType.Flag || tokens[index].TokenType == TokenType.AssignSub || tokens[index].TokenType == TokenType.AssignDiv || tokens[index].TokenType == TokenType.AssignMul || tokens[index].TokenType == TokenType.AssignMod)
+                if(tokens[index].TokenType == TokenType.Assign || tokens[index].TokenType == TokenType.AssignAdd || tokens[index].TokenType == TokenType.AssignFlag || tokens[index].TokenType == TokenType.AssignSub || tokens[index].TokenType == TokenType.AssignDiv || tokens[index].TokenType == TokenType.AssignMul || tokens[index].TokenType == TokenType.AssignMod)
                 {
                     var type = tokens[index].TokenType;
                     index++;
@@ -276,12 +313,7 @@ namespace Gellybeans.Expressions
                         if(type == TokenType.Assign)
                         {
                             return new AssignNode(name, new StringNode(str), TokenType.AssignExpr);
-                        }
-                        else if(type == TokenType.AssignAdd)
-                        {
-                            return new AssignNode(name, new StringNode(str), TokenType.AssignAddExpr);
-                        }
-                        
+                        }                       
                     }
                     else
                     {
@@ -291,10 +323,7 @@ namespace Gellybeans.Expressions
                     }
                    
                 }
-
-                if(name[0] == '^')
-                    return new MacroNode(name, Tokenizer.Output(tokens, index));
-
+             
                 if(tokens[index].TokenType == TokenType.Bonus)
                 {
                     var type = tokens[index].TokenType;
@@ -337,8 +366,6 @@ namespace Gellybeans.Expressions
 
                 if(tokens[index].TokenType != TokenType.OpenPar)
                 {
-                    
-
                     return new VarNode(name);
                 }                 
                 else
@@ -366,6 +393,7 @@ namespace Gellybeans.Expressions
                 }             
             }
 
+
             if(tokens[index].TokenType == TokenType.AssignSubBon)
             {
                 var type = tokens[index].TokenType;
@@ -375,9 +403,11 @@ namespace Gellybeans.Expressions
                 if(tokens[index].TokenType == TokenType.Var)
                 {
                     index++;
-                    return new BonusNode(null!, tokens[index].Value, null!, null!, type);
+                    return new BonusNode(null!, tokens[index-1].Value, null!, null!, type);
                 }
             }
+
+
             tokens[index].TokenType = TokenType.Error;
             return new StringNode("");
         }
