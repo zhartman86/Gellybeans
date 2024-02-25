@@ -4,26 +4,22 @@ namespace Gellybeans.Expressions
 {
     public class AssignNode : ExpressionNode
     {
-        string          lhs;
-        ExpressionNode  rhs;
-        TokenType       assignType;
+        readonly string          lhs;
+        readonly ExpressionNode  rhs;
+        readonly string          assignType;
+        readonly IContext        ctx;
+        StringBuilder   sb;
 
-        public AssignNode(string lhs, ExpressionNode rhs, TokenType assignType)
+        public AssignNode(string lhs, ExpressionNode rhs, string assignType, IContext ctx, StringBuilder sb = null!)
         {
             this.lhs        = lhs;
             this.rhs        = rhs;
             this.assignType = assignType;
+            this.ctx        = ctx;
+            this.sb         = sb;
         }
 
-        public override int Eval(IContext ctx, StringBuilder sb)
-        {
-            if(assignType == TokenType.AssignExpr || assignType == TokenType.AssignAddExpr)
-                return ctx.Assign(lhs, rhs != null ? ((StringNode)rhs).String : null!, assignType, sb);
-            
-            var rhValue = rhs.Eval(ctx, sb);
-            var result  = ctx.Assign(lhs, rhValue.ToString(), assignType, sb);
-            
-            return result;
-        }
+        public override int Eval() =>                
+            ctx.AssignValue(lhs, rhs, assignType, sb);
     }
 }

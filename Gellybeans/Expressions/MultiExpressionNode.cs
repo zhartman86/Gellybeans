@@ -13,10 +13,9 @@ namespace Gellybeans.Expressions
             this.next = next;
         }
 
-        public override int Eval(IContext ctx = null, StringBuilder sb = null)
+        public override int Eval()
         {
-            node.Eval(ctx, sb);
-            next.Eval(ctx, sb);
+            next.Eval();
             return 0;
         }
     }

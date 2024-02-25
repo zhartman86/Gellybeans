@@ -9,7 +9,7 @@ namespace Gellybeans.Expressions
         public NumberNode(int number) =>
             this.number = number;
 
-        public override int Eval(IContext ctx, StringBuilder sb)
+        public override int Eval()
         {
             return number;
         }

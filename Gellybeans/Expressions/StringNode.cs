@@ -1,16 +1,50 @@
 ﻿using System.Text;
+using System.Text.RegularExpressions;
 
 namespace Gellybeans.Expressions
 {
     public class StringNode : ExpressionNode
     {
-        readonly string str;
+        string str;
+        readonly StringBuilder sb;
+        IContext ctx;
 
         public string String { get { return str; } }
 
-        public StringNode(string str) =>
-            this.str = str;
+        static readonly Regex brackets = new Regex(@"\{.*?\}", RegexOptions.Compiled);
 
-        public override int Eval(IContext ctx, StringBuilder sb) => 1;
+        public StringNode(string str, IContext ctx = null!, StringBuilder sb = null!)
+        {
+            this.str = str;
+            this.ctx = ctx;
+            this.sb = sb;
+            
+        }
+           
+
+        public override int Eval()
+        {
+            int? result = null;
+            
+            str = brackets.Replace(str!, m =>
+            {
+                var str = m.Value.Trim(new char[] { '{', '}' });
+                var p = Parser.Parse(str, ctx).Eval();
+                result ??= p;
+                if(result != null && result == -999)
+                {
+                    result = null;
+                    return "";
+                }
+                    
+                
+                return p.ToString();
+            });
+
+            if(!string.IsNullOrEmpty(str) && str[0] == '%')
+                sb?.AppendLine(str.Trim('%'));
+
+            return result != null ? result.Value : 0;
+        }
     }
 }

@@ -1,5 +1,10 @@
 ﻿using Gellybeans.Pathfinder;
+using Microsoft.VisualBasic;
+using System.ComponentModel.Design;
+using System.Runtime.CompilerServices;
+using System.Text;
 using System.Text.RegularExpressions;
+using System.Xml.Linq;
 
 namespace Gellybeans.Expressions
 {
@@ -15,74 +20,140 @@ namespace Gellybeans.Expressions
     public class Parser
     {
         List<Token> tokens;
+        IContext ctx;
+        int index;
+        StringBuilder sb;
 
         //dice expression. 0-3 number(s) => d => 1-5 number(s) => 0-3 instances of ('r' or 'h' or 'l' paired with 1-3 number(s))
         static readonly Regex dRegex = new Regex(@"^([0-9]{0,4})d([0-9]{1,4})((?:r|h|l)(?:[0-9]{1,3})){0,2}$");
 
+        Token Current { get { return tokens[index]; } }
 
-
-        public Parser(List<Token> tokens, int index = 0)
+        public Parser(List<Token> tokens, IContext ctx = null!, StringBuilder sb = null!, int index = 0)
         {
             this.tokens = tokens;
+            this.ctx = ctx;
             this.index = index;
+            this.sb = sb;
         }
-            
 
-        int index;
+        Token Look(int i = 1)
+        {
+            if((index + i) < tokens.Count - 1 && (index + 1) > 0)
+                return tokens[index + i];
+            return Current;
+        }
+
+        void Move(int count) =>
+            index = Math.Clamp(index + count, 0, tokens.Count - 1);
+
+        Token Next()
+        {
+            if(index < tokens.Count - 1)
+                index++;
+            return Current;
+        }
+
 
 
         public ExpressionNode ParseExpr()
         {
-            var expr = ParseTernary();
+            var expr = ParseTermination();
 
-            switch(tokens[index].TokenType)
-            {
-                case TokenType.Error:
-                    return new VarNode($"%ERROR: {tokens[index].Value}");
-                case TokenType.EOF:
-                    return expr;
-                default:
-                    return new VarNode($"%Invalid expression.");
-            }       
+            if(Current.TokenType == TokenType.EOF)
+                return expr;
 
-            
-        }               
+            return new StringNode($"%Invalid expression. Error on token `{Current.Value}`", ctx, sb);
+        }
 
         ExpressionNode ParseTermination()
         {
-            var expr = ParseTernary();
-            
-            if(tokens[index].TokenType == TokenType.Semicolon)
-                return new MultiExpressionNode(expr, ParseTermination());
+            var expr = ParseAssignment();
 
+            if(Current.TokenType == TokenType.Semicolon)
+            {
+                Next();
+                expr.Eval();
+                return ParseTermination();
+            }
             return expr;
         }
 
+        ExpressionNode ParseAssignment()
+        {
+            var node = ParseTernary();
+            
+            if(node is VarNode varNode && Current.TokenType == TokenType.Assign)
+            {
+                var identifier = varNode.VarName;
+                var assingnment = Current.Value;
+
+
+                if(assingnment.Contains('='))
+                {
+                    Next();
+                    var rhs = ParseTernary();
+                    return new AssignNode(identifier, rhs, rhs is StringNode ? "e=" : assingnment, ctx, sb);
+                }
+                else if(assingnment.Contains('$'))
+                {
+                    //syntax: bName:bType:bVal
+                    Next();
+                    var bName = Current.TokenType == TokenType.Var ? Current.Value : "";
+                    if(Next().TokenType == TokenType.Separator)
+                    {
+                        Next();
+                        var bType = ParseTernary();
+                        if(Current.TokenType == TokenType.Separator)
+                        {
+                            Next();
+                            var bVal = ParseTernary();
+                            return new AssignNode(identifier, new BonusNode(bName, bType, bVal), assingnment, ctx, sb);
+                        }
+                        else return new StringNode("%Invalid bonus assignment.", ctx, sb);
+                    }
+                    else return new AssignNode(identifier, new BonusNode(bName), assingnment, ctx, sb);
+                }
+                
+            }
+            else if(Current.TokenType == TokenType.Assign)
+            {
+                var assingnment = Current.Value;
+                Next();
+                
+                var bName = Current.TokenType == TokenType.Var ? Current.Value : "";
+
+                Next();
+                return new AssignNode("", new BonusNode(bName), assingnment, ctx, sb);
+
+            }
+            return node;
+        }
 
         ExpressionNode ParseTernary()
-        {
-            if(tokens[index].TokenType == TokenType.Separator)
-                index++;
-            
+        {           
             var conditional = ParseLogicalAndOr();
 
             while(true)
             {
                 Func<int, int, int, int> op = null!;
 
-                if(tokens[index].TokenType == TokenType.Ternary) { op = (a, b, c) => a == 1 ? b : c; }
+                if(Current.TokenType == TokenType.Ternary) { op = (a, b, c) => a == 1 ? b : c; }
 
                 if(op == null) return conditional;
 
-                index++;
-                var lhs = ParseLogicalAndOr();
-                var rhs = ParseTernary();
+                Next();
+                var lhs = ParseAssignment();
+                if(Current.TokenType == TokenType.Separator)
+                {
+                    Next();
+                    var rhs = ParseAssignment();
+                    conditional = new TernaryNode(conditional, lhs, rhs, op);
+                }                          
+            }
+        }
 
-                conditional = new TernaryNode(conditional, lhs, rhs, op);
-            }          
-        }                 
-             
-        
+
         ExpressionNode ParseLogicalAndOr()
         {
             var lhs = ParseBitwiseAndOr();
@@ -91,18 +162,18 @@ namespace Gellybeans.Expressions
             {
                 Func<int, int, int> op = null!;
 
-                if(tokens[index].TokenType == TokenType.LogicalOr)          { op = (a, b) => (a == 1 || b == 1) ? 1 : 0; }
-                else if(tokens[index].TokenType == TokenType.LogicalAnd)    { op = (a, b) => (a == 1 && b == 1) ? 1 : 0; }
+                if(Current.TokenType == TokenType.LogicalOr) { op = (a, b) => (a == 1 || b == 1) ? 1 : 0; }
+                else if(Current.TokenType == TokenType.LogicalAnd) { op = (a, b) => (a == 1 && b == 1) ? 1 : 0; }
 
                 if(op == null) return lhs;
 
-                index++;
+                Next();
                 var rhs = ParseBitwiseAndOr();
 
                 lhs = new BinaryNode(lhs, rhs, op);
             }
         }
-        
+
         ExpressionNode ParseBitwiseAndOr()
         {
             var lhs = ParseEquals();
@@ -111,12 +182,12 @@ namespace Gellybeans.Expressions
             {
                 Func<int, int, int> op = null!;
 
-                if(tokens[index].TokenType == TokenType.BitwiseOr) { op = (a, b) => a | b; }
-                else if(tokens[index].TokenType == TokenType.BitwiseAnd) { op = (a, b) => a & b; }
+                if(Current.TokenType == TokenType.BitwiseOr) { op = (a, b) => a | b; }
+                else if(Current.TokenType == TokenType.BitwiseAnd) { op = (a, b) => a & b; }
 
                 if(op == null) return lhs;
-                
-                index++;
+
+                Next();
                 var rhs = ParseEquals();
 
                 lhs = new BinaryNode(lhs, rhs, op);
@@ -130,20 +201,20 @@ namespace Gellybeans.Expressions
             while(true)
             {
                 Func<int, int, int> op = null!;
-                
-                if(tokens[index].TokenType == TokenType.Equals)         { op = (a, b) => a == b ? 1 : 0; }
-                else if(tokens[index].TokenType == TokenType.NotEquals) { op = (a, b) => a != b ? 1 : 0; }
-                else if(tokens[index].TokenType == TokenType.HasFlag)   { op = (a, b) => (a & b) != 0 ? 1 : 0; }
+
+                if(Current.TokenType == TokenType.Equals) { op = (a, b) => a == b ? 1 : 0; }
+                else if(Current.TokenType == TokenType.NotEquals) { op = (a, b) => a != b ? 1 : 0; }
+                else if(Current.TokenType == TokenType.HasFlag) { op = (a, b) => (a & b) != 0 ? 1 : 0; }
 
                 if(op == null) return lhs;
 
-                index++;
+                Next();
                 var rhs = ParseGreaterLess();
 
                 lhs = new BinaryNode(lhs, rhs, op);
             }
         }
-        
+
         ExpressionNode ParseGreaterLess()
         {
             var lhs = ParseAddSub();
@@ -152,36 +223,36 @@ namespace Gellybeans.Expressions
             {
                 Func<int, int, int> op = null!;
 
-                if(tokens[index].TokenType == TokenType.Greater)            { op = (a, b) => a > b ? 1 : 0; }
-                else if(tokens[index].TokenType == TokenType.GreaterEquals) { op = (a, b) => a >= b ? 1 : 0; }
-                else if(tokens[index].TokenType == TokenType.Less)          { op = (a, b) => a < b ? 1 : 0; }
-                else if(tokens[index].TokenType == TokenType.LessEquals)    { op = (a, b) => a <= b ? 1 : 0; }
+                if(Current.TokenType == TokenType.Greater) { op = (a, b) => a > b ? 1 : 0; }
+                else if(Current.TokenType == TokenType.GreaterEquals) { op = (a, b) => a >= b ? 1 : 0; }
+                else if(Current.TokenType == TokenType.Less) { op = (a, b) => a < b ? 1 : 0; }
+                else if(Current.TokenType == TokenType.LessEquals) { op = (a, b) => a <= b ? 1 : 0; }
 
                 if(op == null) return lhs;
 
-                index++;
+                Next();
                 var rhs = ParseAddSub();
 
                 lhs = new BinaryNode(lhs, rhs, op);
             }
         }
-        
+
         ExpressionNode ParseAddSub()
         {
             var lhs = ParseMulDivMod();
 
             while(true)
-            {              
+            {
                 Func<int, int, int> op = null!;
-                
-                if(tokens[index].TokenType == TokenType.Add)        { op = (a, b) => a + b; }
-                else if(tokens[index].TokenType == TokenType.Sub)   { op = (a, b) => a - b; }
+
+                if(Current.TokenType == TokenType.Add) { op = (a, b) => a + b; }
+                else if(Current.TokenType == TokenType.Sub) { op = (a, b) => a - b; }
 
                 if(op == null) return lhs;
 
-                index++;
+                Next();
                 var rhs = ParseMulDivMod();
-                
+
                 lhs = new BinaryNode(lhs, rhs, op);
             }
         }
@@ -194,13 +265,13 @@ namespace Gellybeans.Expressions
             {
                 Func<int, int, int> op = null!;
 
-                if(tokens[index].TokenType == TokenType.Mul)            { op = (a, b) => a * b; }
-                else if(tokens[index].TokenType == TokenType.Div)       { op = (a, b) => a / b; }
-                else if(tokens[index].TokenType == TokenType.Modulo)    { op = (a, b) => a % b; }
+                if(Current.TokenType == TokenType.Mul) { op = (a, b) => a * b; }
+                else if(Current.TokenType == TokenType.Div) { op = (a, b) => a / b; }
+                else if(Current.TokenType == TokenType.Modulo) { op = (a, b) => a % b; }
 
                 if(op == null) return lhs;
 
-                index++;
+                Next();
                 var rhs = ParseUnary();
 
                 lhs = new BinaryNode(lhs, rhs, op);
@@ -209,56 +280,50 @@ namespace Gellybeans.Expressions
 
         ExpressionNode ParseUnary()
         {
-            while(true)
-            {                   
-                if(tokens[index].TokenType == TokenType.Add)
-                {
-                    index++;
-                    continue;
-                }
+                if(Current.TokenType == TokenType.Add)
+                    Next();
 
-                if(tokens[index].TokenType == TokenType.Sub)
+                if(Current.TokenType == TokenType.Sub)
                 {
-                    index++;                   
-                    var rhs = ParseUnary();                  
+                    Next();
+                    var rhs = ParseUnary();
                     return new UnaryNode(rhs, (a) => -a);
                 }
                 return ParseLeaf();
-            }                      
         }
-        
+
         ExpressionNode ParseLeaf()
         {
-            if(tokens[index].TokenType == TokenType.Number)
+            if(Current.TokenType == TokenType.Number)
             {
-                var node = new NumberNode(int.Parse(tokens[index].Value));
-                index++;
-                return node;
-            }      
-            
-            if(tokens[index].TokenType == TokenType.OpenPar)
-            {
-                index++;
-                var node = ParseTernary();
-
-                if(tokens[index].TokenType != TokenType.ClosePar) 
-                    return new VarNode("%Missing closed parenthesis `)`.");
-                
-                index++;
+                var node = new NumberNode(int.Parse(Current.Value));
+                Next();
                 return node;
             }
 
-            if(tokens[index].TokenType == TokenType.Dice)
+            if(Current.TokenType == TokenType.OpenPar)
+            {
+                Next();
+                var node = ParseTernary();
+
+                if(Current.TokenType != TokenType.ClosePar)
+                    return new StringNode("%Expected`)`", ctx, sb);
+
+                Next();
+                return node;
+            }
+
+            if(Current.TokenType == TokenType.Dice)
             {
                 //^([0-9]{0,3})d([0-9]{1,3})((?:r|h|l)(?:[0-9]{1,3})){0,3}$
-                var match = dRegex.Match(tokens[index].Value);
+                var match = dRegex.Match(Current.Value);
 
                 if(match.Success)
                 {
                     var count = match.Groups[1].Captures.Count > 0 ? int.TryParse(match.Groups[1].Captures[0].Value, out int outVal) ? outVal : 1 : 1;
                     var sides = int.Parse(match.Groups[2].Captures[0].Value);
 
-                    var lhs = new DiceNode(count, sides);
+                    var lhs = new DiceNode(count, sides, sb);
 
                     for(int i = 0; i < match.Groups[3].Captures.Count; i++)
                     {
@@ -273,152 +338,129 @@ namespace Gellybeans.Expressions
                         if(letter == 'l')
                             lhs.Lowest = number;
                     }
-                                                         
-                    index++;
-                    if(tokens[index].TokenType == TokenType.Mul || tokens[index].TokenType == TokenType.Div)
+
+                    Next();
+                    if(Current.TokenType == TokenType.Mul || Current.TokenType == TokenType.Div)
                     {
-                        var op = tokens[index].TokenType;
-                        index++;
+                        var op = Current.TokenType;
+                        Next();
                         var rhs = ParseTernary();
                         return new DiceMultiplierNode(lhs, rhs, op);
                     }
                     return lhs;
                 }
-                return new VarNode(tokens[index].Value);
+                Console.WriteLine("found var in dice");
+                return new VarNode(Current.Value, ctx, sb);
             }
 
 
-            if(tokens[index].TokenType == TokenType.Macro)
-            {              
-                var macro = new MacroNode(tokens[index].Value, Tokenizer.Output(tokens, index+1));
-                index = tokens.Count - 1;
-                return macro;
-            }
+            if(Current.TokenType == TokenType.BeginMacro)
+            {
+                Next();
 
-            if(tokens[index].TokenType == TokenType.Var)
-            {                             
-                var name = tokens[index].Value;
+                List<List<Token>> macro = new List<List<Token>>();
+
+
+                var sub = new List<Token>();
+                while(Current.TokenType != TokenType.EndMacro)
+                {
+                    if(Current.TokenType == TokenType.EOF)
+                        return new StringNode("%Expected `]`.", ctx, sb);
+
+                    if(Current.TokenType == TokenType.Semicolon)
+                    {
+                        Next();
+                        macro.Add(sub);
+                        sub = new List<Token>();
+                    }
+                    sub.Add(Current);
+                    Next();
+                }
+                macro.Add(sub);
+                Next();
                 
+                var exprs = new List<ExpressionNode>();
 
-                index++;
-                if(tokens[index].TokenType == TokenType.Assign || tokens[index].TokenType == TokenType.AssignAdd || tokens[index].TokenType == TokenType.AssignFlag || tokens[index].TokenType == TokenType.AssignSub || tokens[index].TokenType == TokenType.AssignDiv || tokens[index].TokenType == TokenType.AssignMul || tokens[index].TokenType == TokenType.AssignMod)
+                for(int i = 0; i < macro.Count;i++)
                 {
-                    var type = tokens[index].TokenType;
-                    index++;
-
-                    if(tokens[index].TokenType == TokenType.String)
+                    if(Current.TokenType != TokenType.EOF)
                     {
-                        var str = tokens[index].Value;
-                        index++;
-                        if(type == TokenType.Assign)
-                        {
-                            return new AssignNode(name, new StringNode(str), TokenType.AssignExpr);
-                        }                       
+                        var tks = tokens.GetRange(index, tokens.Count - index);
+                        macro[i].AddRange(tks);
                     }
-                    else
-                    {
-                        var rhs = ParseTernary();
-                        var lh = new AssignNode(name, rhs, type);
-                        return lh;
-                    }
-                   
+                    
+                    //tag end with EOF
+                    if(macro[i][^1].TokenType != TokenType.EOF)
+                        macro[i].Add(new Token(TokenType.EOF, "EOF"));
+                    
+                    var node = Parse(macro[i], ctx, sb);
+                    exprs.Add(node);
                 }
-             
-                if(tokens[index].TokenType == TokenType.Bonus)
+                index = tokens.Count - 1;
+                return new ListNode(exprs, sb);
+            }
+
+            if(Current.TokenType == TokenType.Var)
+            {
+                var identifier = Current.Value;
+               
+                if(Look().TokenType == TokenType.OpenPar)
                 {
-                    var type = tokens[index].TokenType;
-                    index++;
-
-                    var bName = tokens[index].Value != string.Empty ? 
-                                    tokens[index].Value : "";
-
-                    index++;
-
-                    if(bName != "")
-                        return new BonusNode(name, bName, null, null, type);
-                }
-
-                if(tokens[index].TokenType == TokenType.Bonus || tokens[index].TokenType == TokenType.AssignAddBon || tokens[index].TokenType == TokenType.AssignSubBon)
-                {
-                    var type = tokens[index].TokenType;
-                    index++;
-                    if(tokens[index].TokenType == TokenType.Var)
-                    {
-                        var bName = tokens[index].Value;
-                        index++;
-
-                        BonusNode lh;
-                        if(type == TokenType.Bonus)
-                            lh = new BonusNode(name, bName, null!, null!, type);                       
-                        else if(type == TokenType.AssignSubBon)
-                            lh = new BonusNode(name, bName, null!, null!, type);
-                        else if(tokens[index].TokenType != TokenType.Separator)
-                            lh = new BonusNode(name, bName, null!, null!, type);
-                        else
-                        {
-                            var bType = ParseTernary();
-                            var bVal = ParseTernary();
-                            lh = new BonusNode(name, bName, bType, bVal, type);
-                        }                  
-                        return lh;
-                    }                                                                  
-                }
-
-                if(tokens[index].TokenType != TokenType.OpenPar)
-                {
-                    return new VarNode(name);
-                }                 
-                else
-                {
-                    index++;
-
+                    Move(2);
                     var args = new List<ExpressionNode>();
                     while(true)
                     {
                         args.Add(ParseTernary());
 
-                        if(tokens[index].TokenType == TokenType.Comma)
+                        if(Current.TokenType == TokenType.Comma)
                         {
-                            index++;
+                            Next();
                             continue;
                         }
                         break;
                     }
 
-                    if(tokens[index].TokenType != TokenType.ClosePar)
-                        return new VarNode("%Missing closed parenthesis `)`");                 
-                    
-                    index++;
-                    return new FunctionNode(name, args.ToArray());
-                }             
-            }
+                    if(Current.TokenType != TokenType.ClosePar)
+                        return new StringNode("%Expected `)`.", ctx, sb);
 
-
-            if(tokens[index].TokenType == TokenType.AssignSubBon)
-            {
-                var type = tokens[index].TokenType;
-                index++;
-                if(tokens[index].TokenType == TokenType.EOF)
-                    return new BonusNode(null!, "", null!, null!, type);
-                if(tokens[index].TokenType == TokenType.Var)
-                {
-                    index++;
-                    return new BonusNode(null!, tokens[index-1].Value, null!, null!, type);
+                    Next();
+                    return new FunctionNode(identifier, args.ToArray());
                 }
+                if(Look().TokenType == TokenType.GetBonus)
+                {
+                    Move(2);
+                    var bType = ParseTernary();
+                    return new MemberNode(identifier, bType, ctx);
+                }
+
+                Next();
+                return new VarNode(identifier, ctx, sb);
+                
             }
+            
+            if(Current.TokenType == TokenType.String)
+            {
+                Next();              
+                return new StringNode(Look(-1).Value, ctx, sb);
+            }
+                
 
-
-            tokens[index].TokenType = TokenType.Error;
-            return new StringNode("");
+            return new StringNode("%?", ctx, sb);
         }
-     
-        public static ExpressionNode Parse(string expr) => 
-            Parse(new Tokenizer(new StringReader(expr)).Tokens);
-    
-        public static ExpressionNode Parse(List<Token> tokens)
+
+        void ParseMacro()
         {
-            var parser = new Parser(tokens);
-            return parser.ParseExpr();
+
         }
-    }
-}
+
+        public static ExpressionNode Parse(string expr, IContext ctx = null!, StringBuilder sb = null!) =>
+            Parse(new Tokenizer(new StringReader(expr)).Tokens, ctx, sb);
+       
+        public static ExpressionNode Parse(List<Token> tokens, IContext ctx = null!, StringBuilder sb = null!)
+        {
+            var parser = new Parser(tokens, ctx, sb);
+            return parser.ParseExpr();
+        }       
+    }                 
+}   
+

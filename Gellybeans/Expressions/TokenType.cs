@@ -4,16 +4,9 @@
     {
         None,
         Ternary,        // ?::
-        Bonus,          // $        
-        Assign,         // =
-        AssignBon,      //
-        AssignAddBon,   // +$ 
-        AssignSubBon,   // -$ 
-        AssignMod,      // %=
-        AssignDiv,      // /=
-        AssignMul,      // *=
-        AssignSub,      // -=
-        AssignAdd,      // +=       
+        GetBonus,       // $?        
+        Assign,         // = += -= *= /= %= |= +$ -$ 
+        AssignBon,      // $ +$ -$ 
         AssignExpr,     // used by the Parser
         AssignAddExpr,  // ** 
         AssignFlag,     // |=
@@ -38,14 +31,16 @@
         OpenPar,        // (
         ClosePar,       // )
         Comma,          // ,
-        Quotes,         // " or '
+        DoubleQuote,    // "
+        SingleQuote,    // '
         Semicolon,      // ;
         Var,            //
         String,         // "abc" or 'abc'
         Dice,           // 1d20
         Separator,      // :
         HasFlag,        // :?
-        Macro,          // [abc;abc] + x
+        BeginMacro,     // [
+        EndMacro,       // ]
         Error,
         EOF,
     }

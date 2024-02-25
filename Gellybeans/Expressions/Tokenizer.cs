@@ -48,18 +48,10 @@ namespace Gellybeans.Expressions
             currentChar = chr < 0 ? '\0' : (char)chr;
         }
 
-        char Peek()
-        {
-            int chr = reader.Peek();
-            return chr < 0 ? '\0' : (char)chr;
-        }
-
-
         void Tokenize()
         {
             while(currentToken != TokenType.EOF && currentToken != TokenType.Error)
             {
-                Console.WriteLine(currentToken);
                 NextToken();
             }
         }
@@ -94,6 +86,11 @@ namespace Gellybeans.Expressions
 
             Console.WriteLine(sb.ToString());
             return sb.ToString();
+        }
+
+        public void Peek()
+        {
+
         }
 
         public void NextToken()
@@ -151,10 +148,15 @@ namespace Gellybeans.Expressions
 
                 case '$':
                     NextChar();
-                    currentToken = TokenType.Bonus;
-                    Tokens.Add(new Token(TokenType.Bonus, "$"));
+                    if(currentChar == '?')
+                    {
+                        NextChar();
+                        currentToken = TokenType.GetBonus;
+                        Tokens.Add(new Token(TokenType.GetBonus, "$?"));                       
+                    }
                     return;
-                                  
+
+
                 case '|':
                     NextChar();
                     if(currentChar == '|')
@@ -166,8 +168,8 @@ namespace Gellybeans.Expressions
                     else if(currentChar == '=')
                     {
                         NextChar();
-                        currentToken = TokenType.AssignFlag;
-                        Tokens.Add(new Token(TokenType.AssignFlag, "|="));
+                        currentToken = TokenType.Assign;
+                        Tokens.Add(new Token(TokenType.Assign, "|="));
                     }              
                     else
                     {
@@ -242,14 +244,14 @@ namespace Gellybeans.Expressions
                     if(currentChar == '=')
                     {
                         NextChar();
-                        currentToken = TokenType.AssignAdd;
-                        Tokens.Add(new Token(TokenType.AssignAdd, "+="));
+                        currentToken = TokenType.Assign;
+                        Tokens.Add(new Token(TokenType.Assign, "+="));
                     }
                     else if(currentChar == '$')
                     {
                         NextChar();
-                        currentToken = TokenType.AssignAddBon;
-                        Tokens.Add(new Token(TokenType.AssignAddBon, "+$"));
+                        currentToken = TokenType.Assign;
+                        Tokens.Add(new Token(TokenType.Assign, "+$"));
                     }                     
                     else
                     {
@@ -263,14 +265,14 @@ namespace Gellybeans.Expressions
                     if(currentChar == '=')
                     {
                         NextChar();
-                        currentToken = TokenType.AssignSub;
-                        Tokens.Add(new Token(TokenType.AssignSub, "-="));
+                        currentToken = TokenType.Assign;
+                        Tokens.Add(new Token(TokenType.Assign, "-="));
                     }
                     else if(currentChar == '$')
                     {
                         NextChar();
-                        currentToken = TokenType.AssignSubBon;
-                        Tokens.Add(new Token(TokenType.AssignSubBon, "-$"));
+                        currentToken = TokenType.Assign;
+                        Tokens.Add(new Token(TokenType.Assign, "-$"));
                     }
                     else
                     {
@@ -284,8 +286,8 @@ namespace Gellybeans.Expressions
                     if(currentChar == '=')
                     {
                         NextChar();
-                        currentToken = TokenType.AssignMul;
-                        Tokens.Add(new Token(TokenType.AssignMul, "*="));
+                        currentToken = TokenType.Assign;
+                        Tokens.Add(new Token(TokenType.Assign, "*="));
                     }
                     else
                     {
@@ -299,8 +301,8 @@ namespace Gellybeans.Expressions
                     if(currentChar == '=')
                     {
                         NextChar();
-                        currentToken = TokenType.AssignDiv;
-                        Tokens.Add(new Token(TokenType.AssignDiv, "/="));
+                        currentToken = TokenType.Assign;
+                        Tokens.Add(new Token(TokenType.Assign, "/="));
                     }
                     else
                     {
@@ -314,14 +316,26 @@ namespace Gellybeans.Expressions
                     if(currentChar == '=')
                     {
                         NextChar();
-                        currentToken = TokenType.AssignMod;
-                        Tokens.Add(new Token(TokenType.AssignMod, "%="));
+                        currentToken = TokenType.Assign;
+                        Tokens.Add(new Token(TokenType.Assign, "%="));
                     }
                     else
                     {
                         currentToken = TokenType.Modulo;
                         Tokens.Add(new Token(TokenType.Modulo, "%"));
                     }                       
+                    return;
+
+                case '[':
+                    NextChar();
+                    currentToken = TokenType.BeginMacro;
+                    Tokens.Add(new Token(TokenType.BeginMacro, "["));
+                    return;
+
+                case ']':
+                    NextChar();
+                    currentToken = TokenType.EndMacro;
+                    Tokens.Add(new Token(TokenType.EndMacro, "]"));
                     return;
 
                 case '(':
@@ -416,24 +430,25 @@ namespace Gellybeans.Expressions
                 return;
             }
 
-            //macro
-            if(currentChar == '[')
+            //substring
+            if(currentChar == '”')
             {
                 NextChar();
-                while(currentChar != ']')
+                while(currentChar != '”')
                 {
                     if(currentChar == '\0')
                     {
-                        Tokens.Add(new Token(TokenType.Error, $"Expected ] "));
+                        Tokens.Add(new Token(TokenType.Error, $"Expected ”"));
                         currentToken = TokenType.Error;
                         return;
                     }
+
                     sb.Append(currentChar);
                     NextChar();
                 }
                 NextChar();
-                currentToken = TokenType.Macro;
-                Tokens.Add(new Token(TokenType.Macro, sb.ToString()));
+                currentToken = TokenType.String;
+                Tokens.Add(new Token(TokenType.String, sb.ToString()));
                 return;
             }
 
@@ -449,7 +464,6 @@ namespace Gellybeans.Expressions
                     NextChar();
                 }
                 identifier = sb.ToString();
-                Console.WriteLine(identifier);
                 currentToken = TokenType.Var;
                 Tokens.Add(new Token(TokenType.Var, sb.ToString()));
                 return;              

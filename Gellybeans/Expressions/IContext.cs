@@ -8,9 +8,9 @@ namespace Gellybeans.Expressions
     
     public interface IContext
     {
-        int Resolve      (string identifier, StringBuilder sb);
-        int ResolveMacro (string identifier, string modifier, StringBuilder sb);
-        int Assign       (string identifier, string assignment, TokenType assignType, StringBuilder sb);
-        int Bonus        (string identifier, string bonusName, int type, int value, TokenType assignType, StringBuilder sb);
+        ExpressionNode Resolve(string varName, StringBuilder sb);
+        int AssignValue         (string identifier, ExpressionNode node, string assignType, StringBuilder sb);
+        int Bonus               (string identifier, string bonusName, int type, int value, string assignType, StringBuilder sb);
+        string? GetValue        (string identifier);
     }
 }

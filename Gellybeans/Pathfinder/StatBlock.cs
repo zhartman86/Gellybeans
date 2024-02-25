@@ -1,4 +1,5 @@
 ﻿using Gellybeans.Expressions;
+using System.Linq.Expressions;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -73,6 +74,7 @@ namespace Gellybeans.Pathfinder
                     Stats[statName].Base = value;
                 else 
                     Stats[statName] = value;
+
                 OnValueChanged($"stat:{statName}");
             }
         }
@@ -199,130 +201,134 @@ namespace Gellybeans.Pathfinder
             return 1;
         }
 
-        public int Resolve(string varName, StringBuilder sb = null!)
+        public string? GetValue(string varName)
+        {
+            varName = varName.Replace(' ', '_').ToUpper();
+            
+            if(Constants.ContainsKey(varName))
+                return Constants[varName].ToString();
+            if(Stats.ContainsKey(varName))
+                return this[varName].ToString();
+            if(Expressions.ContainsKey(varName))
+                return Expressions[varName];
+
+            return null;
+        }
+
+        public ExpressionNode Resolve(string varName, StringBuilder sb = null!)
         {
             varName = varName.Replace(' ', '_').ToUpper();
             if(Constants.ContainsKey(varName))
-                return Constants[varName];
-
-
+                return new NumberNode(Constants[varName]);
 
             if(varName[0] == '@')
             {
                 var replace = varName.Replace("@", "");
                 if(Stats.ContainsKey(replace))
-                    return Stats[replace].Base;
+                    return new NumberNode(Stats[replace].Base);
             }
 
             if(Stats.ContainsKey(varName))
-                return this[varName];
+                return new NumberNode(this[varName]);
             if(Expressions.ContainsKey(varName))
-                return Parser.Parse(Expressions[varName]).Eval(this, sb);
+                return Parser.Parse(Expressions[varName], this, sb);            
 
-                          
-            sb?.AppendLine($"*{varName}?*");
-            
-            return 0;
-        }
-        
-        public int ResolveMacro(string identifier, string modifier, StringBuilder sb = null!)
-        {
-            identifier = identifier.Replace(' ', '_').ToUpper();
-
-            if(Expressions.ContainsKey(identifier))
-            {
-                var expressions = Expressions[identifier].Split(';');
-
-                var results = new int[expressions.Length];
-                for(int i = 0; i < expressions.Length; i++)
-                {
-                    sb.AppendLine($"__*{expressions[i] + modifier}*__");
-                    results[i] = Parser.Parse(expressions[i] + modifier).Eval(this, sb);
-                    sb.AppendLine($"**Total:** {results[i]}");
-                    sb.AppendLine();
-                }                  
-            }
-
-            return 0;
+            return new StringNode($"%{varName} not found.", this, sb);
         }
 
-        public int Assign(string varName, string assignment, TokenType assignType, StringBuilder sb)
+        public int AssignValue(string varName, ExpressionNode node, string assignType, StringBuilder sb = null!)
         {
-            sb ??= new StringBuilder();
+            int result = 0;           
 
             varName = varName.Replace(' ', '_').ToUpper();
             //assignment = assignment.Replace(" ", "_").ToUpper();
 
             if(!validVarName.IsMatch(varName))
             {
-                sb.AppendLine($"Invalid variable name {varName}. No leading numbers or any special characters.");
+                sb?.AppendLine($"Invalid variable name {varName}. No leading numbers or any special characters.");
                 return -99;
             }
 
-            if(assignType == TokenType.AssignExpr && Stats.ContainsKey(varName))
+            if(assignType == "e=" && Stats.ContainsKey(varName))
                 RemoveStat(varName);             
-            else if(assignType != TokenType.AssignExpr && Expressions.ContainsKey(varName))
+            else if(assignType != "e=" && Expressions.ContainsKey(varName))
                 RemoveExpr(varName);
                              
             if(Constants.ContainsKey(varName))
             {
-                sb.AppendLine("Cannot change a constant value");
+                sb?.AppendLine("Cannot change a constant value");
                 return -99;
             }
 
-            if(assignType != TokenType.AssignExpr && !Stats.ContainsKey(varName)) Stats[varName] = 0;
+            if(assignType != "e=" && !Stats.ContainsKey(varName)) Stats[varName] = 0;
+            
+            if(node is StringNode strNode)
+                AddExpr(varName, strNode.String);
 
-            switch(assignType)
+            else if(node is BonusNode bonusNode)
             {
-                case TokenType.AssignExpr:
-                    AddExpr(varName, assignment);
-                    break;
-                case TokenType.Assign:
-                    this[varName] = int.Parse(assignment);
-                    break;
-                case TokenType.AssignAdd:
-                    this[varName] += int.Parse(assignment);
-                    break;
-                case TokenType.AssignSub:
-                    this[varName] -= int.Parse(assignment);
-                    break;
-                case TokenType.AssignMul:
-                    this[varName] *= int.Parse(assignment);
-                    break;
-                case TokenType.AssignDiv:
-                    this[varName] /= int.Parse(assignment);
-                    break;
-                case TokenType.AssignMod:
-                    this[varName] %= int.Parse(assignment);
-                    break;
-                case TokenType.AssignFlag:            
-                    this[varName] |= this[varName] | int.Parse(assignment);
-                    break;
+                bonusNode.Eval();
+                Bonus(varName, bonusNode.BonusName, bonusNode.BonusType.GetValueOrDefault(), bonusNode.BonusValue.GetValueOrDefault(), assignType, sb);
             }
-            sb.AppendLine($"{varName} set to {(assignType != TokenType.AssignExpr ? Stats[varName].Base : Expressions[varName])}");;
-            return 1;
+                
+            else
+            {
+                var assignment = node.Eval();
+
+                switch(assignType)
+                {
+                    case "=":
+                        this[varName] = assignment;
+                        result = this[varName];
+                        break;
+                    case "+=":
+                        this[varName] += assignment;
+                        result = this[varName];
+                        break;
+                    case "-=":
+                        this[varName] -= assignment;
+                        result = this[varName];
+                        break;
+                    case "*=":
+                        this[varName] *= assignment;
+                        result = this[varName];
+                        break;
+                    case "/=":
+                        this[varName] /= assignment;
+                        result = this[varName];
+                        break;
+                    case "%=":
+                        this[varName] %= assignment;
+                        result = this[varName];
+                        break;
+                    case "|=":
+                        this[varName] |= this[varName] | assignment;
+                        result = this[varName];
+                        break;
+                }
+
+            }
+            sb?.AppendLine($"{varName} set to {(assignType != "e=" ? Stats[varName].Base : Expressions[varName])}");;
+            return result;
         }
 
-        public int Bonus(string statName, string bonusName, int type, int value, TokenType assignType, StringBuilder sb)
+        public int Bonus(string statName, string bonusName, int type, int value, string assignType, StringBuilder sb = null!)
         {
-            if(assignType == TokenType.Bonus)
-            {
-                var result = Parser.Parse(bonusName).Eval(this);
-                return Stats[statName].GetBonus((BonusType)result);
-            }
+            if(assignType == "$?")
+                return Stats[statName].GetBonus((BonusType)type);
 
-            if(string.IsNullOrEmpty(statName) && assignType == TokenType.AssignSubBon)
+            if(string.IsNullOrEmpty(statName) && assignType == "-$")
             {
                 Console.WriteLine($"Bonus removed:{statName}");
                 if(bonusName == "")
                 {
                     ClearBonuses();
-                    sb.AppendLine("removed all bonuses from all stats");
+                    sb?.AppendLine("removed all bonuses from all stats");
                 }                   
                 else
                 {
                     ClearBonus(bonusName);
-                    sb.AppendLine($"{bonusName} removed from all stats");
+                    sb?.AppendLine($"{bonusName} removed from all stats");
                 }
             
                 return 1;
@@ -331,14 +337,14 @@ namespace Gellybeans.Pathfinder
 
             if(Enum.GetName(typeof(BonusType), type) == null)
             {
-                sb.AppendLine("Invalid bonus type");
+                sb?.AppendLine("Invalid bonus type");
                 return -99;
             }
 
             statName = statName.Replace(' ', '_').ToUpper();
             if(Expressions.ContainsKey(statName))
             {
-                sb.AppendLine("Cannot assign bonus to an expression");
+                sb?.AppendLine("Cannot assign bonus to an expression");
                 return -99;
             }
 
@@ -347,15 +353,15 @@ namespace Gellybeans.Pathfinder
 
             switch(assignType)
             {
-                case TokenType.AssignAddBon:
+                case "+$":
                     var bonus = new Bonus { Name = bonusName, Type = (BonusType)type, Value = value };
                     Stats[statName].AddBonus(bonus);
-                    sb.AppendLine($"{bonus} to {statName} (Base:{Stats[statName].Base}, Total:{this[statName]})");
+                    sb?.AppendLine($"{bonus} to {statName} (Base:{Stats[statName].Base}, Total:{this[statName]})");
                     break;
 
-                case TokenType.AssignSubBon:
+                case "-$":
                     Stats[statName].RemoveBonus(bonusName);
-                    sb.AppendLine($"{bonusName} removed from {statName}");
+                    sb?.AppendLine($"{bonusName} removed from {statName}");
                     break;
             }
             OnValueChanged($"stats");      
@@ -512,12 +518,12 @@ namespace Gellybeans.Pathfinder
                     ["INIT"] = "INIT_BONUS + DEX",
 
                     ["MAXDEX"] = "max(0, AC_MAXDEX)",
-                    ["AC"] = "10 + AC_BONUS + min(D_DEX, MAXDEX) + SIZE_MOD",
-                    ["TOUCH"] = "AC - ((AC_BONUS $ ARMOR) + (AC_BONUS $ SHIELD) + (AC_BONUS $ NATURAL))",
-                    ["FLAT"] = "AC - ((AC_BONUS $ DODGE) + D_DEX)",
+                    ["AC"] = "10 + AC_BONUS + min(D_DEX, max(0, AC_MAXDEX)) + SIZE_MOD",
+                    ["TOUCH"] = "AC - ((AC_BONUS $? ARMOR) + (AC_BONUS $? SHIELD) + (AC_BONUS $? NATURAL))",
+                    ["FLAT"] = "AC - ((AC_BONUS $? DODGE) + D_DEX)",
 
                     ["CMB"] = "BAB + STR - SIZE_MOD",
-                    ["CMD"] = "10 + BAB + STR + D_DEX + CMD_BONUS + ((AC_BONUS $ CIRCUMSTANCE) + (AC_BONUS $ DEFLECTION) + (AC_BONUS $ DODGE) + (AC_BONUS $ INSIGHT) + (AC_BONUS $ LUCK) + (AC_BONUS $ MORALE) + (AC_BONUS $ PROFANE) + (AC_BONUS $ SACRED)) - SIZE_MOD",
+                    ["CMD"] = "10 + BAB + STR + D_DEX + CMD_BONUS + ((AC_BONUS $? CIRCUMSTANCE) + (AC_BONUS $? DEFLECTION) + (AC_BONUS $? DODGE) + (AC_BONUS $? INSIGHT) + (AC_BONUS $? LUCK) + (AC_BONUS $? MORALE) + (AC_BONUS $? PROFANE) + (AC_BONUS $? SACRED)) - SIZE_MOD",
 					
                     ["ATK"] = "BAB + SIZE_MOD",
 

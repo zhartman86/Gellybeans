@@ -15,19 +15,19 @@ namespace Gellybeans.Expressions
             this.token = token;
         }
 
-        public override int Eval(IContext ctx, StringBuilder sb)
+        public override int Eval()
         {
-            var rhValue = rhs.Eval(ctx, sb);
+            var rhValue = rhs.Eval();
             var lhValue = 0;
             if(lhs.Highest > 0 || lhs.Lowest > 0)
                 for(int i = 0; i < rhValue; i++)
-                    lhValue += lhs.Eval(ctx, sb);
+                    lhValue += lhs.Eval();
             else
             {
                 if(token == TokenType.Mul)
-                    lhValue = (lhs * rhValue).Eval(ctx, sb);
+                    lhValue = (lhs * rhValue).Eval();
                 else if(token == TokenType.Div)
-                    lhValue = (lhs / rhValue).Eval(ctx, sb);
+                    lhValue = (lhs / rhValue).Eval();
             }
            
             return lhValue;

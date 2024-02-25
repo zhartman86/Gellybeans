@@ -107,7 +107,7 @@ namespace Gellybeans.Pathfinder
             sb.AppendLine(brackets.Replace(RangeVar!, m =>
             {
                 var str = m.Value.Trim(new char[] { '{', '}' }).Replace(".CL", cl.ToString());
-                return $"{Parser.Parse(str).Eval(null!, new StringBuilder())}";
+                return $"{Parser.Parse(str).Eval()}";
             }));
 
             if(Targets != "")
@@ -116,7 +116,7 @@ namespace Gellybeans.Pathfinder
                 sb.AppendLine(brackets.Replace(TargetsVar!, m =>
                 {
                     var str = m.Value.Trim(new char[] { '{', '}' }).Replace(".CL", cl.ToString());
-                    return $"{Parser.Parse(str).Eval(null!, new StringBuilder())}";
+                    return $"{Parser.Parse(str).Eval()}";
                 }));
             }
             
@@ -126,7 +126,7 @@ namespace Gellybeans.Pathfinder
                 sb.AppendLine(brackets.Replace(AreaVar!, m =>
                 {
                     var str = m.Value.Trim(new char[] { '{', '}' }).Replace(".CL", cl.ToString());
-                    return $"{Parser.Parse(str).Eval(null!, new StringBuilder())}";
+                    return $"{Parser.Parse(str).Eval()}";
                 }));
             }       
 
@@ -134,7 +134,7 @@ namespace Gellybeans.Pathfinder
             sb.AppendLine(brackets.Replace(DurationVar!, m =>
             {
                 var str = m.Value.Trim(new char[] { '{', '}' }).Replace(".CL", cl.ToString());
-                return $"{Parser.Parse(str).Eval(null!, new StringBuilder())}";
+                return $"{Parser.Parse(str).Eval()}";
             }));
         
 
@@ -145,7 +145,7 @@ namespace Gellybeans.Pathfinder
 
             sb.AppendLine(brackets.Replace(DescriptionVar!, m =>{
                 var str = m.Value.Trim(new char[] { '{', '}' }).Replace(".CL", cl.ToString());
-                return $"**{Parser.Parse(str).Eval(null!, new StringBuilder())}**";
+                return $"**{Parser.Parse(str).Eval()}**";
             }));
                        
             return sb.ToString();
