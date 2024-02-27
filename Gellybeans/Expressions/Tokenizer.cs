@@ -118,6 +118,12 @@ namespace Gellybeans.Expressions
                         currentToken = TokenType.HasFlag;
                         Tokens.Add(new Token(TokenType.HasFlag, ":?"));
                     }
+                    else if(currentChar == ':')
+                    {
+                        NextChar();
+                        currentToken = TokenType.AssignExpr;
+                        Tokens.Add(new Token(TokenType.AssignExpr, "::"));
+                    }
                     else
                     {
                         currentToken = TokenType.Separator;
@@ -387,15 +393,86 @@ namespace Gellybeans.Expressions
                 }           
             }
 
+            //expression encapsulation for var assignment
+            if(currentChar == '`')
+            {
+                NextChar();
+                while(currentChar != '`')
+                {
+                    if(currentChar == '{')
+                    {
+                        while(currentChar != '}')
+                        {
+                            
+                        
+                            if(currentChar == '\0')
+                            {
+                                Tokens.Add(new Token(TokenType.Error, "Expected }"));
+                                currentToken = TokenType.Error;
+                                return;
+                            }
+                            sb.Append(currentChar);
+                            NextChar();
+
+                            if(currentChar == '{')
+                            {
+                                while(currentChar != '}')
+                                {
+                                    if(currentChar == '\0')
+                                    {
+                                        Tokens.Add(new Token(TokenType.Error, "Expected }"));
+                                        currentToken = TokenType.Error;
+                                        return;
+                                    }
+                                    sb.Append(currentChar);
+                                    NextChar();
+                                }
+                            }
+                        }
+                    }
+                    
+                    if(currentChar == '\0')
+                    {
+                        Tokens.Add(new Token(TokenType.Error, "Expected `"));
+                        currentToken = TokenType.Error;
+                        return;
+                    }                    
+
+                    sb.Append(currentChar);
+                    NextChar();
+                }
+                NextChar();
+                currentToken = TokenType.Expression;
+                Tokens.Add(new Token(TokenType.Expression, sb.ToString()));
+                return;
+            }
+
             //string
             if(currentChar == '"')
             {
                 NextChar();
                 while(currentChar != '"')
                 {
+                    if(currentChar == '{')
+                    {
+                        sb.Append(currentChar);
+                        NextChar();
+                        while(currentChar != '}')
+                        {
+                            if(currentChar == '\0')
+                            {
+                                Tokens.Add(new Token(TokenType.Error, "Expected }"));
+                                currentToken = TokenType.Error;
+                                return;
+                            }
+                            sb.Append(currentChar);
+                            NextChar();
+                        }
+                    }
+
                     if(currentChar == '\0')
                     {
-                        Tokens.Add(new Token(TokenType.Error, $"Expected \""));
+                        Tokens.Add(new Token(TokenType.Error, "Expected \""));
                         currentToken = TokenType.Error;
                         return;
                     }
@@ -416,7 +493,7 @@ namespace Gellybeans.Expressions
                 {
                     if(currentChar == '\0')
                     {
-                        Tokens.Add(new Token(TokenType.Error, $"Expected '"));
+                        Tokens.Add(new Token(TokenType.Error, "Expected '"));
                         currentToken = TokenType.Error;
                         return;
                     }
@@ -428,29 +505,7 @@ namespace Gellybeans.Expressions
                 currentToken = TokenType.String;
                 Tokens.Add(new Token(TokenType.String, sb.ToString()));
                 return;
-            }
-
-            //substring
-            if(currentChar == '”')
-            {
-                NextChar();
-                while(currentChar != '”')
-                {
-                    if(currentChar == '\0')
-                    {
-                        Tokens.Add(new Token(TokenType.Error, $"Expected ”"));
-                        currentToken = TokenType.Error;
-                        return;
-                    }
-
-                    sb.Append(currentChar);
-                    NextChar();
-                }
-                NextChar();
-                currentToken = TokenType.String;
-                Tokens.Add(new Token(TokenType.String, sb.ToString()));
-                return;
-            }
+            }          
 
             //var
             if(char.IsLetter(currentChar) || !char.IsAscii(currentChar) || currentChar == '_' || currentChar == '@' || currentChar == '^' || currentChar == '.' || char.IsDigit(currentChar))

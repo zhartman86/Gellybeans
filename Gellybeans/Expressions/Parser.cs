@@ -63,7 +63,7 @@ namespace Gellybeans.Expressions
             if(Current.TokenType == TokenType.EOF)
                 return expr;
 
-            return new StringNode($"%Invalid expression. Error on token `{Current.Value}`", ctx, sb);
+            return new StringNode($"Invalid expression. Error on token `{Current.Value}`", ctx, sb);
         }
 
         ExpressionNode ParseTermination()
@@ -83,6 +83,20 @@ namespace Gellybeans.Expressions
         {
             var node = ParseTernary();
             
+            if(node is VarNode vNode && Current.TokenType == TokenType.AssignExpr)
+            {
+                var identifier = vNode.VarName;
+
+                Next();
+                var rhs = ParseTernary();
+                if(rhs is NumberNode number)
+                {
+                    var stat = new StatNode(number.Eval());
+                    return new AssignVarNode(identifier, stat, ctx, sb);
+                }
+
+            }
+            
             if(node is VarNode varNode && Current.TokenType == TokenType.Assign)
             {
                 var identifier = varNode.VarName;
@@ -93,7 +107,12 @@ namespace Gellybeans.Expressions
                 {
                     Next();
                     var rhs = ParseTernary();
-                    return new AssignNode(identifier, rhs, rhs is StringNode ? "e=" : assingnment, ctx, sb);
+                    if(rhs is StringNode strNode)
+                    {
+                        return new AssignNode(identifier, new StoredExpressionNode($"\"{strNode.String}\""), "e=", ctx, sb);
+                    }
+                    
+                    return new AssignNode(identifier, rhs, rhs is StoredExpressionNode ? "e=" : assingnment, ctx, sb);
                 }
                 else if(assingnment.Contains('$'))
                 {
@@ -110,7 +129,7 @@ namespace Gellybeans.Expressions
                             var bVal = ParseTernary();
                             return new AssignNode(identifier, new BonusNode(bName, bType, bVal), assingnment, ctx, sb);
                         }
-                        else return new StringNode("%Invalid bonus assignment.", ctx, sb);
+                        else return new StringNode("Invalid bonus assignment.", ctx, sb);
                     }
                     else return new AssignNode(identifier, new BonusNode(bName), assingnment, ctx, sb);
                 }
@@ -118,8 +137,10 @@ namespace Gellybeans.Expressions
             }
             else if(Current.TokenType == TokenType.Assign)
             {
+                
                 var assingnment = Current.Value;
                 Next();
+                
                 
                 var bName = Current.TokenType == TokenType.Var ? Current.Value : "";
 
@@ -353,7 +374,6 @@ namespace Gellybeans.Expressions
                 return new VarNode(Current.Value, ctx, sb);
             }
 
-
             if(Current.TokenType == TokenType.BeginMacro)
             {
                 Next();
@@ -365,7 +385,7 @@ namespace Gellybeans.Expressions
                 while(Current.TokenType != TokenType.EndMacro)
                 {
                     if(Current.TokenType == TokenType.EOF)
-                        return new StringNode("%Expected `]`.", ctx, sb);
+                        return new StringNode("Expected `]`.", ctx, sb);
 
                     if(Current.TokenType == TokenType.Semicolon)
                     {
@@ -421,7 +441,7 @@ namespace Gellybeans.Expressions
                     }
 
                     if(Current.TokenType != TokenType.ClosePar)
-                        return new StringNode("%Expected `)`.", ctx, sb);
+                        return new StringNode("Expected `)`.", ctx, sb);
 
                     Next();
                     return new FunctionNode(identifier, args.ToArray());
@@ -443,7 +463,12 @@ namespace Gellybeans.Expressions
                 Next();              
                 return new StringNode(Look(-1).Value, ctx, sb);
             }
-                
+            
+            if(Current.TokenType == TokenType.Expression)
+            {
+                Next();
+                return new StoredExpressionNode(Look(-1).Value.Trim(new char[] {'{', '}' }));
+            }
 
             return new StringNode("%?", ctx, sb);
         }

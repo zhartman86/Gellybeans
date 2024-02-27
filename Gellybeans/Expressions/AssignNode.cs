@@ -8,7 +8,7 @@ namespace Gellybeans.Expressions
         readonly ExpressionNode  rhs;
         readonly string          assignType;
         readonly IContext        ctx;
-        StringBuilder   sb;
+        StringBuilder   sb;     
 
         public AssignNode(string lhs, ExpressionNode rhs, string assignType, IContext ctx, StringBuilder sb = null!)
         {
@@ -21,5 +21,7 @@ namespace Gellybeans.Expressions
 
         public override int Eval() =>                
             ctx.AssignValue(lhs, rhs, assignType, sb);
+
+        
     }
 }

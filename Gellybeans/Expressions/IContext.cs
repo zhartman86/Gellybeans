@@ -12,5 +12,8 @@ namespace Gellybeans.Expressions
         int AssignValue         (string identifier, ExpressionNode node, string assignType, StringBuilder sb);
         int Bonus               (string identifier, string bonusName, int type, int value, string assignType, StringBuilder sb);
         string? GetValue        (string identifier);
+        
+        int Assign(string identifier, ExpressionNode node, StringBuilder sb);
+        ExpressionNode GetVar(string varName, StringBuilder sb);
     }
 }

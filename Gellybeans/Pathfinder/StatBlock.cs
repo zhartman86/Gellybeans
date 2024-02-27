@@ -21,6 +21,8 @@ namespace Gellybeans.Pathfinder
         public Dictionary<string, Stat>     Stats       { get; private set; } = new Dictionary<string, Stat>();
         public Dictionary<string, string>   Expressions { get; private set; } = new Dictionary<string, string>();       
         public Dictionary<string, ExprRow>  ExprRows    { get; private set; } = new Dictionary<string, ExprRow>();
+
+        public Dictionary<string, ExpressionNode> Vars { get; private set; } = new Dictionary<string, ExpressionNode>();
         
         public Dictionary<string, string> Info          { get; private set; } = new Dictionary<string, string>();
 
@@ -233,7 +235,32 @@ namespace Gellybeans.Pathfinder
             if(Expressions.ContainsKey(varName))
                 return Parser.Parse(Expressions[varName], this, sb);            
 
-            return new StringNode($"%{varName} not found.", this, sb);
+            return new StringNode($"{varName} not found.", this, sb);
+        }
+
+        public ExpressionNode GetVar(string identifier, StringBuilder sb)
+        {
+            identifier = identifier.Replace(" ", "_").ToUpper();
+            if(Vars.TryGetValue(identifier, out var node)) 
+                return node;
+
+            return new StringNode($"{identifier} not found.", this, sb);
+        }
+
+        public int Assign(string identifier, ExpressionNode node, StringBuilder sb)
+        {
+            identifier = identifier.Replace(' ', '_').ToUpper();
+            if(!validVarName.IsMatch(identifier))
+            {
+                sb?.AppendLine($"Invalid variable name {identifier}. No leading numbers or any special characters.");
+                return -99;
+            }
+            
+
+            Vars.Add(identifier, node);
+            sb.Append($"{identifier} set to {node}");
+
+            return node.Eval();
         }
 
         public int AssignValue(string varName, ExpressionNode node, string assignType, StringBuilder sb = null!)
@@ -243,11 +270,16 @@ namespace Gellybeans.Pathfinder
             varName = varName.Replace(' ', '_').ToUpper();
             //assignment = assignment.Replace(" ", "_").ToUpper();
 
-            if(!validVarName.IsMatch(varName))
+            if(varName != "" && node is not BonusNode)
             {
-                sb?.AppendLine($"Invalid variable name {varName}. No leading numbers or any special characters.");
-                return -99;
+                if(!validVarName.IsMatch(varName))
+                {
+                    sb?.AppendLine($"Invalid variable name {varName}. No leading numbers or any special characters.");
+                    return -99;
+                }
             }
+
+           
 
             if(assignType == "e=" && Stats.ContainsKey(varName))
                 RemoveStat(varName);             
@@ -262,13 +294,14 @@ namespace Gellybeans.Pathfinder
 
             if(assignType != "e=" && !Stats.ContainsKey(varName)) Stats[varName] = 0;
             
-            if(node is StringNode strNode)
-                AddExpr(varName, strNode.String);
+            if(node is StoredExpressionNode exprNode)
+                AddExpr(varName, exprNode.Expression);
 
             else if(node is BonusNode bonusNode)
             {
                 bonusNode.Eval();
                 Bonus(varName, bonusNode.BonusName, bonusNode.BonusType.GetValueOrDefault(), bonusNode.BonusValue.GetValueOrDefault(), assignType, sb);
+                return 0;
             }
                 
             else

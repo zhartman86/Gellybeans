@@ -22,6 +22,7 @@ namespace Gellybeans.Expressions
 
         public override int Eval() 
         {
+            //var node = ctx.GetVar(varName, sb);
             var node = ctx.Resolve(varName, sb);      
             var value = node.Eval();
             return value;

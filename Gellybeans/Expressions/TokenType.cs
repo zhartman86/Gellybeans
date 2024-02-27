@@ -7,7 +7,7 @@
         GetBonus,       // $?        
         Assign,         // = += -= *= /= %= |= +$ -$ 
         AssignBon,      // $ +$ -$ 
-        AssignExpr,     // used by the Parser
+        AssignExpr,     // ::
         AssignAddExpr,  // ** 
         AssignFlag,     // |=
         LogicalOr,      // ||
@@ -31,9 +31,10 @@
         OpenPar,        // (
         ClosePar,       // )
         Comma,          // ,
-        DoubleQuote,    // "
+        BeginString,    // "
         SingleQuote,    // '
         Semicolon,      // ;
+        Expression,     // `
         Var,            //
         String,         // "abc" or 'abc'
         Dice,           // 1d20

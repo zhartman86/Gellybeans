@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using Gellybeans.Pathfinder;
+using System.Text;
 using System.Xml.Serialization;
 
 namespace Gellybeans.Expressions
@@ -8,7 +9,14 @@ namespace Gellybeans.Expressions
         readonly string             bonusName;
         readonly ExpressionNode?    bonusType;
         readonly ExpressionNode?    bonusValue;
+
+        Bonus Bonus { get; }
         
+        public BonusNode(Bonus bonus)
+        {
+            Bonus = bonus;
+        }
+
         public string BonusName { get { return bonusName; } }
         public int? BonusType;
         public int? BonusValue;
@@ -26,5 +34,7 @@ namespace Gellybeans.Expressions
             BonusValue = bonusValue?.Eval();
             return 0;
         }
+
+        
     }
 }

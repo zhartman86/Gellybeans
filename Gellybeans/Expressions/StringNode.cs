@@ -17,15 +17,15 @@ namespace Gellybeans.Expressions
         {
             this.str = str;
             this.ctx = ctx;
-            this.sb = sb;
-            
-        }
-           
+            this.sb = sb;          
+        }           
 
         public override int Eval()
         {
             int? result = null;
-            
+
+            str = str.Replace(@"\n", "\n");
+
             str = brackets.Replace(str!, m =>
             {
                 var str = m.Value.Trim(new char[] { '{', '}' });
@@ -35,14 +35,10 @@ namespace Gellybeans.Expressions
                 {
                     result = null;
                     return "";
-                }
-                    
-                
+                }         
                 return p.ToString();
             });
-
-            if(!string.IsNullOrEmpty(str) && str[0] == '%')
-                sb?.AppendLine(str.Trim('%'));
+            sb?.AppendLine(str);
 
             return result != null ? result.Value : 0;
         }
