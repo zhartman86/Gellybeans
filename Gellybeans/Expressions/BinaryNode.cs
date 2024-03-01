@@ -9,9 +9,9 @@ namespace Gellybeans.Expressions
         ExpressionNode lhs;
         ExpressionNode rhs;
 
-        Func<int, int, int> op;
+        Func<ValueNode, ValueNode, ValueNode> op;
 
-        public BinaryNode(ExpressionNode lhs, ExpressionNode rhs, Func<int, int, int> op)
+        public BinaryNode(ExpressionNode lhs, ExpressionNode rhs, Func<ValueNode, ValueNode, ValueNode> op)
         {
             this.lhs    = lhs;
             this.rhs    = rhs;
@@ -19,11 +19,9 @@ namespace Gellybeans.Expressions
         }
 
 
-        public override int Eval()
-        {
-            
+        public override ValueNode Eval()
+        {           
             var lhValue = lhs.Eval();
-
             var rhValue = rhs.Eval();
 
             var result = op(lhValue, rhValue);           

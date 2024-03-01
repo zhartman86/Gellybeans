@@ -11,7 +11,7 @@ namespace Gellybeans.Expressions
 
         public string String { get { return str; } }
 
-        static readonly Regex brackets = new Regex(@"\{.*?\}", RegexOptions.Compiled);
+        static readonly Regex brackets = new(@"\{.*?\}", RegexOptions.Compiled);
 
         public StringNode(string str, IContext ctx = null!, StringBuilder sb = null!)
         {
@@ -20,27 +20,19 @@ namespace Gellybeans.Expressions
             this.sb = sb;          
         }           
 
-        public override int Eval()
+        public override ValueNode Eval()
         {
-            int? result = null;
-
             str = str.Replace(@"\n", "\n");
 
             str = brackets.Replace(str!, m =>
             {
                 var str = m.Value.Trim(new char[] { '{', '}' });
-                var p = Parser.Parse(str, ctx).Eval();
-                result ??= p;
-                if(result != null && result == -999)
-                {
-                    result = null;
-                    return "";
-                }         
+                var p = Parser.Parse(str, ctx).Eval();                
                 return p.ToString();
             });
             sb?.AppendLine(str);
 
-            return result != null ? result.Value : 0;
+            return str;
         }
     }
 }

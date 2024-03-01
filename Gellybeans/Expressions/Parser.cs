@@ -25,7 +25,9 @@ namespace Gellybeans.Expressions
         StringBuilder sb;
 
         //dice expression. 0-3 number(s) => d => 1-5 number(s) => 0-3 instances of ('r' or 'h' or 'l' paired with 1-3 number(s))
-        static readonly Regex dRegex = new Regex(@"^([0-9]{0,4})d([0-9]{1,4})((?:r|h|l)(?:[0-9]{1,3})){0,2}$");
+        static readonly Regex dRegex = new Regex(@"^([0-9]{0,4})d([0-9]{1,4})((?:r|h|l)(?:[0-9]{1,3})){0,2}$", RegexOptions.Compiled);
+   
+        public static readonly Regex validVarName = new Regex(@"^[^0-9][^\[\]<>(){}^@:+*/%=!&|;$#?\-.'""]*$", RegexOptions.Compiled);
 
         Token Current { get { return tokens[index]; } }
 
@@ -82,71 +84,46 @@ namespace Gellybeans.Expressions
         ExpressionNode ParseAssignment()
         {
             var node = ParseTernary();
-            
-            if(node is VarNode vNode && Current.TokenType == TokenType.AssignExpr)
+
+            if(node is VarNode varNode && Current.TokenType == TokenType.Assign)
             {
-                var identifier = vNode.VarName;
+                Func<VarNode, ExpressionNode, ValueNode> op = null!;
+
+                switch(Current.Value)
+                {
+                    case "=":
+                        op = (identifier, exprNode) =>
+                        {
+                            var result = exprNode.Eval();
+
+                            switch(exprNode)
+                            {
+                                case StringNode:
+                                case StoredExpressionNode:
+                                    ctx.Vars[identifier.VarName.ToUpper()] = exprNode;
+                                    break;
+                                default:
+                                    var res = exprNode.Eval();
+                                    var statnode = new StatNode(int.Parse(res));
+                                    Console.WriteLine("setting");
+                                    ctx.Vars[identifier.VarName.ToUpper()] = statnode;
+                                    break;
+                            }
+
+                            Console.WriteLine("appending");
+                            sb.AppendLine($"{identifier.VarName} set to {result}");
+                            return result;
+                        };
+                        break;
+
+                }
+
+
+                if(op == null) return node;
 
                 Next();
                 var rhs = ParseTernary();
-                if(rhs is NumberNode number)
-                {
-                    var stat = new StatNode(number.Eval());
-                    return new AssignVarNode(identifier, stat, ctx, sb);
-                }
-
-            }
-            
-            if(node is VarNode varNode && Current.TokenType == TokenType.Assign)
-            {
-                var identifier = varNode.VarName;
-                var assingnment = Current.Value;
-
-
-                if(assingnment.Contains('='))
-                {
-                    Next();
-                    var rhs = ParseTernary();
-                    if(rhs is StringNode strNode)
-                    {
-                        return new AssignNode(identifier, new StoredExpressionNode($"\"{strNode.String}\""), "e=", ctx, sb);
-                    }
-                    
-                    return new AssignNode(identifier, rhs, rhs is StoredExpressionNode ? "e=" : assingnment, ctx, sb);
-                }
-                else if(assingnment.Contains('$'))
-                {
-                    //syntax: bName:bType:bVal
-                    Next();
-                    var bName = Current.TokenType == TokenType.Var ? Current.Value : "";
-                    if(Next().TokenType == TokenType.Separator)
-                    {
-                        Next();
-                        var bType = ParseTernary();
-                        if(Current.TokenType == TokenType.Separator)
-                        {
-                            Next();
-                            var bVal = ParseTernary();
-                            return new AssignNode(identifier, new BonusNode(bName, bType, bVal), assingnment, ctx, sb);
-                        }
-                        else return new StringNode("Invalid bonus assignment.", ctx, sb);
-                    }
-                    else return new AssignNode(identifier, new BonusNode(bName), assingnment, ctx, sb);
-                }
-                
-            }
-            else if(Current.TokenType == TokenType.Assign)
-            {
-                
-                var assingnment = Current.Value;
-                Next();
-                
-                
-                var bName = Current.TokenType == TokenType.Var ? Current.Value : "";
-
-                Next();
-                return new AssignNode("", new BonusNode(bName), assingnment, ctx, sb);
-
+                return new AssignVarNode(varNode, rhs, op);
             }
             return node;
         }
@@ -157,7 +134,7 @@ namespace Gellybeans.Expressions
 
             while(true)
             {
-                Func<int, int, int, int> op = null!;
+                Func<ValueNode, ValueNode, ValueNode, ValueNode> op = null!;
 
                 if(Current.TokenType == TokenType.Ternary) { op = (a, b, c) => a == 1 ? b : c; }
 
@@ -181,7 +158,7 @@ namespace Gellybeans.Expressions
 
             while(true)
             {
-                Func<int, int, int> op = null!;
+                Func<ValueNode, ValueNode, ValueNode> op = null!;
 
                 if(Current.TokenType == TokenType.LogicalOr) { op = (a, b) => (a == 1 || b == 1) ? 1 : 0; }
                 else if(Current.TokenType == TokenType.LogicalAnd) { op = (a, b) => (a == 1 && b == 1) ? 1 : 0; }
@@ -201,7 +178,7 @@ namespace Gellybeans.Expressions
 
             while(true)
             {
-                Func<int, int, int> op = null!;
+                Func<ValueNode, ValueNode, ValueNode> op = null!;
 
                 if(Current.TokenType == TokenType.BitwiseOr) { op = (a, b) => a | b; }
                 else if(Current.TokenType == TokenType.BitwiseAnd) { op = (a, b) => a & b; }
@@ -221,7 +198,7 @@ namespace Gellybeans.Expressions
 
             while(true)
             {
-                Func<int, int, int> op = null!;
+                Func<ValueNode, ValueNode, ValueNode> op = null!;
 
                 if(Current.TokenType == TokenType.Equals) { op = (a, b) => a == b ? 1 : 0; }
                 else if(Current.TokenType == TokenType.NotEquals) { op = (a, b) => a != b ? 1 : 0; }
@@ -242,7 +219,7 @@ namespace Gellybeans.Expressions
 
             while(true)
             {
-                Func<int, int, int> op = null!;
+                Func<ValueNode, ValueNode, ValueNode> op = null!;
 
                 if(Current.TokenType == TokenType.Greater) { op = (a, b) => a > b ? 1 : 0; }
                 else if(Current.TokenType == TokenType.GreaterEquals) { op = (a, b) => a >= b ? 1 : 0; }
@@ -264,7 +241,7 @@ namespace Gellybeans.Expressions
 
             while(true)
             {
-                Func<int, int, int> op = null!;
+                Func<ValueNode, ValueNode, ValueNode> op = null!;
 
                 if(Current.TokenType == TokenType.Add) { op = (a, b) => a + b; }
                 else if(Current.TokenType == TokenType.Sub) { op = (a, b) => a - b; }
@@ -284,7 +261,7 @@ namespace Gellybeans.Expressions
 
             while(true)
             {
-                Func<int, int, int> op = null!;
+                Func<ValueNode, ValueNode, ValueNode> op = null!;
 
                 if(Current.TokenType == TokenType.Mul) { op = (a, b) => a * b; }
                 else if(Current.TokenType == TokenType.Div) { op = (a, b) => a / b; }
@@ -317,7 +294,7 @@ namespace Gellybeans.Expressions
         {
             if(Current.TokenType == TokenType.Number)
             {
-                var node = new NumberNode(int.Parse(Current.Value));
+                var node = new ValueNode(int.Parse(Current.Value));
                 Next();
                 return node;
             }

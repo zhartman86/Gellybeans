@@ -19,7 +19,7 @@ namespace Gellybeans.Expressions
             this.sb = sb;
         }
 
-        public override int Eval()
+        public override ValueNode Eval()
         {
             var random = new Random();
             var results = new List<int>();

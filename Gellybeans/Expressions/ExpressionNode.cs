@@ -10,7 +10,7 @@ namespace Gellybeans.Expressions
     
     public abstract class ExpressionNode 
     {
-        public abstract int Eval();
+        public abstract ValueNode Eval();
     }    
 }
 

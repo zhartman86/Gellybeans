@@ -20,10 +20,9 @@ namespace Gellybeans.Expressions
             this.sb = sb;
         }
 
-        public override int Eval() 
+        public override ValueNode Eval() 
         {
-            //var node = ctx.GetVar(varName, sb);
-            var node = ctx.Resolve(varName, sb);      
+            var node = ctx.GetVar(varName, sb); 
             var value = node.Eval();
             return value;
         }

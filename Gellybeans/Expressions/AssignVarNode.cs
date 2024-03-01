@@ -4,23 +4,22 @@ namespace Gellybeans.Expressions
 {
     public class AssignVarNode : ExpressionNode
     {
-        readonly string identifier;
+        readonly VarNode identifier;
         readonly ExpressionNode assignment;
 
-        readonly IContext ctx;
-        readonly StringBuilder sb;
+        readonly Func<VarNode, ExpressionNode, ValueNode> op;
 
-        public AssignVarNode(string identifier, ExpressionNode assignment, IContext ctx, StringBuilder sb)
+        public AssignVarNode(VarNode identifier, ExpressionNode assignment, Func<VarNode, ExpressionNode, ValueNode> op)
         {
             this.identifier = identifier;
             this.assignment = assignment;
-            this.ctx = ctx;
-            this.sb = sb;
+            this.op = op;
         }
 
-        public override int Eval()
+        public override ValueNode Eval()
         {
-            return ctx.Assign(identifier, assignment, sb);
+            Console.WriteLine("found assignment");
+            return op(identifier, assignment);
         }
 
     }

@@ -8,9 +8,9 @@ namespace Gellybeans.Expressions
         ExpressionNode lhs;
         ExpressionNode rhs;
 
-        Func<int, int, int, int> op;
+        Func<ValueNode, ValueNode, ValueNode, ValueNode> op;
 
-        public TernaryNode(ExpressionNode condition, ExpressionNode lhs, ExpressionNode rhs, Func<int, int, int, int> op)
+        public TernaryNode(ExpressionNode condition, ExpressionNode lhs, ExpressionNode rhs, Func<ValueNode, ValueNode, ValueNode, ValueNode> op)
         {
             this.condition = condition;
             this.lhs = lhs;
@@ -18,7 +18,7 @@ namespace Gellybeans.Expressions
             this.op = op;
         }
 
-        public override int Eval()
+        public override ValueNode Eval()
         {
             int lhValue = 0;
             int rhValue = 0;

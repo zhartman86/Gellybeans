@@ -6,37 +6,23 @@ namespace Gellybeans.Expressions
     {
         public Stat Stat { get; } = new Stat();
 
-        public StatNode(int baseValue) =>
-            Stat.Base = baseValue;
-
-        public override int Eval()
+        public StatNode(int baseValue)
         {
+            Console.WriteLine("creating stat");
+            Stat.Base = baseValue;
+            Console.WriteLine("done");
+        }
+            
+
+        public override ValueNode Eval()
+        {
+            Console.WriteLine("stat");
             return Stat.Value;
         }
 
         public override string ToString()
         {
-            return Stat.Base.ToString();
-        }
-
-        public static StatNode operator +(StatNode lhs, Bonus rhs)
-        {
-            lhs.Stat.AddBonus(rhs);
-            return lhs;
-        }
-
-
-
-        public static StatNode operator -(StatNode lhs, Bonus rhs) 
-        {
-            lhs.Stat.RemoveBonus(rhs);
-            return lhs;
-        }
-
-        public static StatNode operator -(StatNode lhs, string rhs)
-        {
-            lhs.Stat.RemoveBonus(rhs);
-            return lhs;
+            return Stat.Value.ToString();
         }
     }   
 }

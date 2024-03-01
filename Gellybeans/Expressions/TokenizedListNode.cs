@@ -35,7 +35,7 @@ namespace Gellybeans.Expressions
             }
         }
 
-        public override int Eval()
+        public override ValueNode Eval()
         {
             for(int i = 0; i < tokenList.Count; i++)
             {              

@@ -13,7 +13,7 @@ namespace Gellybeans.Expressions
             this.args = args;
         }
 
-        public override int Eval()
+        public override ValueNode Eval()
         {        
             var argValues = new int[args.Length];
             for(int i = 0; i < args.Length; i++)

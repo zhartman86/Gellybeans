@@ -8,12 +8,8 @@ namespace Gellybeans.Expressions
     
     public interface IContext
     {
-        ExpressionNode Resolve(string varName, StringBuilder sb);
-        int AssignValue         (string identifier, ExpressionNode node, string assignType, StringBuilder sb);
-        int Bonus               (string identifier, string bonusName, int type, int value, string assignType, StringBuilder sb);
-        string? GetValue        (string identifier);
-        
-        int Assign(string identifier, ExpressionNode node, StringBuilder sb);
         ExpressionNode GetVar(string varName, StringBuilder sb);
+
+        abstract Dictionary<string, ExpressionNode> Vars { get; }
     }
 }

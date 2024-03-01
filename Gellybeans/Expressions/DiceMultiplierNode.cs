@@ -15,7 +15,7 @@ namespace Gellybeans.Expressions
             this.token = token;
         }
 
-        public override int Eval()
+        public override ValueNode Eval()
         {
             var rhValue = rhs.Eval();
             var lhValue = 0;

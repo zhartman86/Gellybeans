@@ -15,7 +15,7 @@ namespace Gellybeans.Expressions
             this.sb = sb;
         }
 
-        public override int Eval()
+        public override ValueNode Eval()
         {
             for (int i = 0; i < expressions.Count; i++)
             {

@@ -13,7 +13,7 @@ namespace Gellybeans.Expressions
             this.next = next;
         }
 
-        public override int Eval()
+        public override ValueNode Eval()
         {
             next.Eval();
             return 0;

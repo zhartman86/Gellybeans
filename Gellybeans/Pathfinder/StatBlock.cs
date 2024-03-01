@@ -59,8 +59,7 @@ namespace Gellybeans.Pathfinder
             ["ORCUS"] = 666,
         };
 
-        //im not sure where else to validate variable names, as expressions don't have the same limitations, which can contain variable names.
-        public static readonly Regex validVarName = new Regex(@"^[^0-9][^\[\]<>(){}^@:+*/%=!&|;$#?\-.'""]*$");
+
 
         public int this[string statName]
         {
@@ -72,7 +71,7 @@ namespace Gellybeans.Pathfinder
             }
             set
             {
-                if(Stats.ContainsKey(statName) && validVarName.IsMatch(statName)) 
+                if(Stats.ContainsKey(statName)) 
                     Stats[statName].Base = value;
                 else 
                     Stats[statName] = value;
@@ -202,42 +201,7 @@ namespace Gellybeans.Pathfinder
             OnValueChanged("stats");
             return 1;
         }
-
-        public string? GetValue(string varName)
-        {
-            varName = varName.Replace(' ', '_').ToUpper();
-            
-            if(Constants.ContainsKey(varName))
-                return Constants[varName].ToString();
-            if(Stats.ContainsKey(varName))
-                return this[varName].ToString();
-            if(Expressions.ContainsKey(varName))
-                return Expressions[varName];
-
-            return null;
-        }
-
-        public ExpressionNode Resolve(string varName, StringBuilder sb = null!)
-        {
-            varName = varName.Replace(' ', '_').ToUpper();
-            if(Constants.ContainsKey(varName))
-                return new NumberNode(Constants[varName]);
-
-            if(varName[0] == '@')
-            {
-                var replace = varName.Replace("@", "");
-                if(Stats.ContainsKey(replace))
-                    return new NumberNode(Stats[replace].Base);
-            }
-
-            if(Stats.ContainsKey(varName))
-                return new NumberNode(this[varName]);
-            if(Expressions.ContainsKey(varName))
-                return Parser.Parse(Expressions[varName], this, sb);            
-
-            return new StringNode($"{varName} not found.", this, sb);
-        }
-
+     
         public ExpressionNode GetVar(string identifier, StringBuilder sb)
         {
             identifier = identifier.Replace(" ", "_").ToUpper();
@@ -245,104 +209,6 @@ namespace Gellybeans.Pathfinder
                 return node;
 
             return new StringNode($"{identifier} not found.", this, sb);
-        }
-
-        public int Assign(string identifier, ExpressionNode node, StringBuilder sb)
-        {
-            identifier = identifier.Replace(' ', '_').ToUpper();
-            if(!validVarName.IsMatch(identifier))
-            {
-                sb?.AppendLine($"Invalid variable name {identifier}. No leading numbers or any special characters.");
-                return -99;
-            }
-            
-
-            Vars.Add(identifier, node);
-            sb.Append($"{identifier} set to {node}");
-
-            return node.Eval();
-        }
-
-        public int AssignValue(string varName, ExpressionNode node, string assignType, StringBuilder sb = null!)
-        {
-            int result = 0;           
-
-            varName = varName.Replace(' ', '_').ToUpper();
-            //assignment = assignment.Replace(" ", "_").ToUpper();
-
-            if(varName != "" && node is not BonusNode)
-            {
-                if(!validVarName.IsMatch(varName))
-                {
-                    sb?.AppendLine($"Invalid variable name {varName}. No leading numbers or any special characters.");
-                    return -99;
-                }
-            }
-
-           
-
-            if(assignType == "e=" && Stats.ContainsKey(varName))
-                RemoveStat(varName);             
-            else if(assignType != "e=" && Expressions.ContainsKey(varName))
-                RemoveExpr(varName);
-                             
-            if(Constants.ContainsKey(varName))
-            {
-                sb?.AppendLine("Cannot change a constant value");
-                return -99;
-            }
-
-            if(assignType != "e=" && !Stats.ContainsKey(varName)) Stats[varName] = 0;
-            
-            if(node is StoredExpressionNode exprNode)
-                AddExpr(varName, exprNode.Expression);
-
-            else if(node is BonusNode bonusNode)
-            {
-                bonusNode.Eval();
-                Bonus(varName, bonusNode.BonusName, bonusNode.BonusType.GetValueOrDefault(), bonusNode.BonusValue.GetValueOrDefault(), assignType, sb);
-                return 0;
-            }
-                
-            else
-            {
-                var assignment = node.Eval();
-
-                switch(assignType)
-                {
-                    case "=":
-                        this[varName] = assignment;
-                        result = this[varName];
-                        break;
-                    case "+=":
-                        this[varName] += assignment;
-                        result = this[varName];
-                        break;
-                    case "-=":
-                        this[varName] -= assignment;
-                        result = this[varName];
-                        break;
-                    case "*=":
-                        this[varName] *= assignment;
-                        result = this[varName];
-                        break;
-                    case "/=":
-                        this[varName] /= assignment;
-                        result = this[varName];
-                        break;
-                    case "%=":
-                        this[varName] %= assignment;
-                        result = this[varName];
-                        break;
-                    case "|=":
-                        this[varName] |= this[varName] | assignment;
-                        result = this[varName];
-                        break;
-                }
-
-            }
-            sb?.AppendLine($"{varName} set to {(assignType != "e=" ? Stats[varName].Base : Expressions[varName])}");;
-            return result;
         }
 
         public int Bonus(string statName, string bonusName, int type, int value, string assignType, StringBuilder sb = null!)

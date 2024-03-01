@@ -28,7 +28,7 @@ namespace Gellybeans.Expressions
             this.bonusValue = bonusValue;
         }
 
-        public override int Eval()
+        public override ValueNode Eval()
         {
             BonusType = bonusType?.Eval();
             BonusValue = bonusValue?.Eval();
