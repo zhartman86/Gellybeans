@@ -10,6 +10,6 @@ namespace Gellybeans.Expressions
     {
         ExpressionNode GetVar(string varName, StringBuilder sb);
 
-        abstract Dictionary<string, ExpressionNode> Vars { get; }
+        abstract Dictionary<string, ValueNode> Vars { get; }
     }
 }

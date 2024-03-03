@@ -18,16 +18,16 @@ namespace Gellybeans.Expressions
             this.op = op;
         }
 
-        public override ValueNode Eval()
+        public override ValueNode Eval(IContext ctx, StringBuilder sb)
         {
             int lhValue = 0;
             int rhValue = 0;
-            var conValue = condition.Eval();
+            var conValue = condition.Eval(ctx,sb);
             if(conValue == 1)
-                lhValue = lhs.Eval();
+                lhValue = lhs.Eval(ctx, sb);
             
             if(conValue == 0)
-                rhValue = rhs.Eval();
+                rhValue = rhs.Eval(ctx, sb);
 
             var result = op(conValue, lhValue, rhValue);
             return result;

@@ -5,18 +5,20 @@ namespace Gellybeans.Expressions
     public class StoredExpressionNode : ExpressionNode
     {
         public string Expression { get; }
-        IContext ctx;
 
-        public StoredExpressionNode(string expr, IContext ctx = null!)
+        public StoredExpressionNode(string expr)
         {
             Expression = expr;
-            this.ctx = ctx;
         }
             
-
-        public override ValueNode Eval()
+        public override ValueNode Eval(IContext ctx, StringBuilder sb)
         {
-            return Parser.Parse(Expression, ctx).Eval();
+            return new ExpressionValue(Expression);
+        }
+
+        public override string ToString()
+        {
+            return Expression;
         }
     }
 }

@@ -1,4 +1,6 @@
-﻿using System.Reflection.Metadata.Ecma335;
+﻿using System.Reflection.Metadata;
+using System.Reflection.Metadata.Ecma335;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace Gellybeans.Pathfinder
@@ -19,13 +21,18 @@ namespace Gellybeans.Pathfinder
             }
         }
 
+        public Stat() { }
+
+        public Stat(int baseValue) => 
+            Base = baseValue;
 
 
 
 
         public int GetBonus(BonusType type)
         {
-            if(Bonuses is null) return 0;
+            if(Bonuses == null) 
+                return 0;
 
             if(Bonuses.Count > 1)
                 Bonuses.Sort((x, y) => y.Value.CompareTo(x.Value));
@@ -84,20 +91,19 @@ namespace Gellybeans.Pathfinder
             return total;
         }
 
-        public Bonus AddBonus(Bonus b)
+        public bool AddBonus(Bonus b)
         {
+            if(b.Type == BonusType.Empty || b.Value == 0) 
+                return false;
+
             Bonuses ??= new List<Bonus>();
+            
             if(b.Type == BonusType.Base)
-            {
                 Override = b;
-                return b;
-            }
-
-            if(b.Value == 0)
-                return null!;
-
-            Bonuses.Add(b);
-            return b;
+            else
+                Bonuses.Add(b);
+            
+            return true;
         }
 
         public bool RemoveBonus(Bonus b)
@@ -113,9 +119,10 @@ namespace Gellybeans.Pathfinder
             return false;
         }
 
-        public int RemoveBonus(string bonusName)
+        public bool RemoveBonus(string bonusName)
         {
-            if(Bonuses == null) return 0;
+            if(Bonuses == null) 
+                return false;
 
             var bonusToUpper = bonusName.ToUpper();
             int count = 0;
@@ -138,72 +145,185 @@ namespace Gellybeans.Pathfinder
                 }
             }
             foreach(Bonus b in bonuses) RemoveBonus(b);
-            return count;
+            return true;
         }
 
         public override string ToString()
         {
-            StringBuilder sb = null;
+            //StringBuilder sb = null;
 
-            if(Override != null)
-                return $"{Override.Value} (override)";
+            //if(Override != null)
+            //    return $"{Override.Value} (override)";
 
-            if(Bonuses.Count > 0)
-            {
-                sb = new StringBuilder();
-                for(int i = 0; i < Bonuses.Count; i++)
-                    sb.Append($"{Bonuses[i].Value} {Enum.GetName(typeof(BonusType), Bonuses[i].Type)},");
-            }
+            //if(Bonuses.Count > 0)
+            //{
+            //    sb = new StringBuilder();
+            //    for(int i = 0; i < Bonuses.Count; i++)
+            //        sb.Append($"{Bonuses[i].Value} {Enum.GetName(typeof(BonusType), Bonuses[i].Type)},");
+            //}
 
-            return $"{Value} {(Bonus > 0 ? $"({sb.ToString().TrimEnd(',').ToLower()})" : "")}";
+            //return $"{Value} {(Bonus > 0 ? $"({sb.ToString().TrimEnd(',').ToLower()})" : "")}";
+            return Value.ToString();
         }
 
         public static implicit operator int(Stat stat) => stat.Value;
-        public static implicit operator Stat(int value) => new Stat { Base = value };
+        public static implicit operator Stat(int value) => new(value);
 
-        public static Stat operator +(Stat a, Stat b)
+        //public static Stat operator +(Stat lhs, int rhs)
+        //{
+        //    lhs.Base += rhs;
+        //    return lhs;
+        //}
+
+        //public static Stat operator -(Stat lhs, int rhs)
+        //{
+        //    lhs.Base -= rhs;
+        //    return lhs;
+        //}
+
+        //public static Stat operator *(Stat lhs, int rhs)
+        //{
+        //    lhs.Base *= rhs;
+        //    return lhs;
+        //}
+
+        //public static Stat operator /(Stat lhs, int rhs)
+        //{
+        //    lhs.Base /= rhs;
+        //    return lhs;
+        //}
+
+        //public static Stat operator %(Stat lhs, int rhs)
+        //{
+        //    lhs.Base %= rhs;
+        //    return lhs;
+        //}
+
+
+        public static int operator +(Stat lhs, Stat rhs) =>
+            lhs.Value + rhs.Value;
+        public static int operator -(Stat lhs, Stat rhs) =>
+            lhs.Value - rhs.Value;
+        public static int operator *(Stat lhs, Stat rhs) =>
+            lhs.Value * rhs.Value;
+        public static int operator /(Stat lhs, Stat rhs) =>
+            lhs.Value / rhs.Value;
+        public static int operator %(Stat lhs, Stat rhs) =>
+            lhs.Value % rhs.Value;
+
+        public static int operator +(Stat lhs, int rhs) =>
+            lhs.Value + rhs;
+        public static int operator -(Stat lhs, int rhs) =>
+            lhs.Value - rhs;
+        public static int operator *(Stat lhs, int rhs) =>
+            lhs.Value * rhs;
+        public static int operator /(Stat lhs, int rhs) =>
+            lhs.Value / rhs;
+        public static int operator %(Stat lhs, int rhs) =>
+            lhs.Value % rhs;
+        
+        public static int operator +(int lhs, Stat rhs) =>
+            lhs + rhs.Value;
+        public static int operator -(int lhs, Stat rhs) =>
+            lhs + rhs.Value;
+        public static int operator *(int lhs, Stat rhs) =>
+            lhs + rhs.Value;
+        public static int operator /(int lhs, Stat rhs) =>
+            lhs + rhs.Value;
+        public static int operator %(int lhs, Stat rhs) =>
+            lhs + rhs.Value;
+
+
+
+
+        //public static Stat operator +(Stat lhs, Stat rhs)
+        //{
+        //    if( rhs.Bonuses != null)
+        //        lhs.Bonuses?.AddRange( rhs.Bonuses);
+
+        //    var stat = new Stat() { Base = lhs.Base + rhs.Base, Bonuses = lhs.Bonuses ?? ( rhs.Bonuses ?? null!) };
+        //    return stat;
+        //}
+
+        //public static Stat operator -(Stat lhs, Stat rhs)
+        //{
+        //    if( rhs.Bonuses != null)
+        //        lhs.Bonuses?.AddRange( rhs.Bonuses);
+
+        //    var stat = new Stat() { Base = lhs.Base - rhs.Base, Bonuses = lhs.Bonuses ?? ( rhs.Bonuses ?? null!) };
+        //    return stat;
+        //}
+
+        //public static Stat operator *(Stat lhs, Stat rhs)
+        //{
+        //    if( rhs.Bonuses != null)
+        //        lhs.Bonuses?.AddRange( rhs.Bonuses);
+
+        //    var stat = new Stat() { Base = lhs.Base * rhs.Base, Bonuses = lhs.Bonuses ?? ( rhs.Bonuses ?? null!) };
+        //    return stat;
+        //}
+
+        //public static Stat operator /(Stat lhs, Stat rhs)
+        //{
+        //    if( rhs.Bonuses != null)
+        //        lhs.Bonuses?.AddRange( rhs.Bonuses);
+
+        //    var stat = new Stat() { Base = lhs.Base / rhs.Base, Bonuses = lhs.Bonuses ?? ( rhs.Bonuses ?? null!) };
+        //    return stat;
+        //}
+
+        //public static Stat operator %(Stat lhs, Stat rhs)
+        //{
+        //    if( rhs.Bonuses != null)
+        //        lhs.Bonuses?.AddRange( rhs.Bonuses);
+
+        //    var stat = new Stat() { Base = lhs.Base % rhs.Base, Bonuses = lhs.Bonuses ?? ( rhs.Bonuses ?? null!) };
+        //    return stat;
+        //}
+
+        //public static Stat operator |(Stat lhs, Stat rhs)
+        //{
+        //    if(rhs.Bonuses != null)
+        //        lhs.Bonuses?.AddRange(rhs.Bonuses);
+
+        //    var stat = new Stat() { Base = lhs.Base | rhs.Base, Bonuses = lhs.Bonuses ?? (rhs.Bonuses ?? null!) };
+        //    return stat;
+        //}
+
+        //public static Stat operator &(Stat lhs, Stat rhs)
+        //{
+        //    if(rhs.Bonuses != null)
+        //        lhs.Bonuses?.AddRange(rhs.Bonuses);
+
+        //    var stat = new Stat() { Base = lhs.Base & rhs.Base, Bonuses = lhs.Bonuses ?? (rhs.Bonuses ?? null!) };
+        //    return stat;
+        //}
+
+        public static bool operator ==(Stat lhs, Stat rhs) =>
+            lhs.Value == rhs.Value;
+        public static bool operator !=(Stat lhs, Stat rhs) =>
+            lhs.Value != rhs.Value;
+        
+        public override bool Equals(object? obj)
         {
-            if(b.Bonuses != null)
-                a.Bonuses?.AddRange(b.Bonuses);
+            if(obj != null && obj is Stat s)
+                return Value == s.Value;
 
-            var stat = new Stat() { Base = a.Base + b.Base, Bonuses = a.Bonuses ?? (b.Bonuses ?? null!) };
-            return stat;
+            return false;
+        }
+        public override int GetHashCode() =>
+            Value;
+
+        public static Stat operator +(Stat lhs, Bonus rhs)
+        {
+            lhs.AddBonus(rhs);
+            return lhs;
         }
 
-        public static Stat operator -(Stat a, Stat b)
+        public static Stat operator -(Stat lhs, Bonus rhs)
         {
-            if(b.Bonuses != null)
-                a.Bonuses?.AddRange(b.Bonuses);
-
-            var stat = new Stat() { Base = a.Base - b.Base, Bonuses = a.Bonuses ?? (b.Bonuses ?? null!) };
-            return stat;
-        }
-
-        public static Stat operator *(Stat a, Stat b)
-        {
-            if(b.Bonuses != null)
-                a.Bonuses?.AddRange(b.Bonuses);
-
-            var stat = new Stat() { Base = a.Base * b.Base, Bonuses = a.Bonuses ?? (b.Bonuses ?? null!) };
-            return stat;
-        }
-
-        public static Stat operator /(Stat a, Stat b)
-        {
-            if(b.Bonuses != null)
-                a.Bonuses?.AddRange(b.Bonuses);
-
-            var stat = new Stat() { Base = a.Base / b.Base, Bonuses = a.Bonuses ?? (b.Bonuses ?? null!) };
-            return stat;
-        }
-
-        public static Stat operator %(Stat a, Stat b)
-        {
-            if(b.Bonuses != null)
-                a.Bonuses?.AddRange(b.Bonuses);
-
-            var stat = new Stat() { Base = a.Base % b.Base, Bonuses = a.Bonuses ?? (b.Bonuses ?? null!) };
-            return stat;
+            lhs.RemoveBonus(rhs.Name);
+            return lhs;
         }
     }
 }

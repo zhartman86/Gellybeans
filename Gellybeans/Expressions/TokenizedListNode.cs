@@ -5,16 +5,12 @@ namespace Gellybeans.Expressions
     public class TokenizedListNode : ExpressionNode
     {
         readonly List<List<Token>> tokenList = new List<List<Token>>();
-        readonly IContext ctx;
-        readonly StringBuilder sb;
 
         public List<List<Token>> TokenList { get { return tokenList; } }
 
-        public TokenizedListNode(List<List<Token>> tokenList, IContext ctx, StringBuilder sb)
+        public TokenizedListNode(List<List<Token>> tokenList)
         {
             this.tokenList = tokenList;
-            this.ctx = ctx;
-            this.sb = sb;
         }
 
         public void Append(Token token)
@@ -35,12 +31,12 @@ namespace Gellybeans.Expressions
             }
         }
 
-        public override ValueNode Eval()
+        public override ValueNode Eval(IContext ctx, StringBuilder sb)
         {
             for(int i = 0; i < tokenList.Count; i++)
             {              
                 var node = Parser.Parse(tokenList[i], ctx, sb!);
-                var result = node.Eval();
+                var result = node.Eval(ctx, sb);
                 sb?.AppendLine($"**Total:** {result}\r\n");
             }
             

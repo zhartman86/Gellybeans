@@ -17,14 +17,10 @@ namespace Gellybeans.Pathfinder
 
         public string CharacterName { get; set; } = "Name me";
         
-        public List<InvItem>                Inventory   { get; private set; } = new List<InvItem>();
-        public Dictionary<string, Stat>     Stats       { get; private set; } = new Dictionary<string, Stat>();
-        public Dictionary<string, string>   Expressions { get; private set; } = new Dictionary<string, string>();       
+        public List<InvItem>                Inventory   { get; private set; } = new List<InvItem>();     
         public Dictionary<string, ExprRow>  ExprRows    { get; private set; } = new Dictionary<string, ExprRow>();
 
-        public Dictionary<string, ExpressionNode> Vars { get; private set; } = new Dictionary<string, ExpressionNode>();
-        
-        public Dictionary<string, string> Info          { get; private set; } = new Dictionary<string, string>();
+        public Dictionary<string, ValueNode> Vars { get; private set; } = new Dictionary<string, ValueNode>();
 
         public Dictionary<string, int> Constants { get; private set; } = new Dictionary<string, int>()
         {
@@ -61,64 +57,30 @@ namespace Gellybeans.Pathfinder
 
 
 
-        public int this[string statName]
+        public ValueNode this[string statName]
         {
             get
             {
-                if(Stats.ContainsKey(statName))
-                    return Stats[statName].Value;
-                return 0;
+                if(Vars.ContainsKey(statName))
+                    return Vars[statName];
+                return "Var not found.";
             }
             set
             {
-                if(Stats.ContainsKey(statName)) 
-                    Stats[statName].Base = value;
-                else 
-                    Stats[statName] = value;
-
+                Vars[statName] = value;
                 OnValueChanged($"stat:{statName}");
             }
         }
 
-        public void SetInfo(string infoName, string description)
-        {
-            Info[infoName] = description;
-            OnValueChanged("info");
-        }
 
-        public bool RemoveInfo(string infoName)
-        {
-            if(Info.Remove(infoName))
-            {
-                OnValueChanged("info");
-                return true;
-            }
-            return false;
-        }
 
-        public void RemoveStat(string statName)
+
+        public void RemoveVar(string statName)
         {
-            if(Stats.Remove(statName))
+            if(Vars.Remove(statName))
                 OnValueChanged($"stat:{statName}");
         }
-
-        public void AddExpr(string name, string expr)
-        {
-            if(expr == "")
-            {
-                OnValueChanged($"edit:{name}");
-                return;
-            }
-
-            Expressions[name] = expr;
-            OnValueChanged($"expr:{name}");
-        }
-
-        public void RemoveExpr(string name)
-        {
-            if(Expressions.Remove(name))
-                OnValueChanged($"expr:{name}");
-        }
+    
 
         public void AddExprRow(ExprRow row)
         {
@@ -186,18 +148,19 @@ namespace Gellybeans.Pathfinder
         public void ClearBonus(string bonusName)
         {
             var bonusToUpper = bonusName.ToUpper();
-            foreach(var stat in Stats.Values)
-                stat.RemoveBonus(bonusToUpper);
+            foreach(var var in Vars.Where(x => x.Value.Value is Stat))
+                ((Stat)var.Value).RemoveBonus(bonusToUpper);
             OnValueChanged("stats");
         }
 
         public int ClearBonuses()
         {
-            foreach(var stat in Stats.Values)
+            foreach(var var in Vars.Where(x => x.Value.Value is Stat))
             {
-                stat.Override = null!;
-                stat.Bonuses.Clear();
+                ((Stat)var.Value).Override = null!;
+                ((Stat)var.Value).Bonuses.Clear();
             }
+               
             OnValueChanged("stats");
             return 1;
         }
@@ -211,70 +174,16 @@ namespace Gellybeans.Pathfinder
             return new StringNode($"{identifier} not found.", this, sb);
         }
 
-        public int Bonus(string statName, string bonusName, int type, int value, string assignType, StringBuilder sb = null!)
-        {
-            if(assignType == "$?")
-                return Stats[statName].GetBonus((BonusType)type);
-
-            if(string.IsNullOrEmpty(statName) && assignType == "-$")
-            {
-                Console.WriteLine($"Bonus removed:{statName}");
-                if(bonusName == "")
-                {
-                    ClearBonuses();
-                    sb?.AppendLine("removed all bonuses from all stats");
-                }                   
-                else
-                {
-                    ClearBonus(bonusName);
-                    sb?.AppendLine($"{bonusName} removed from all stats");
-                }
-            
-                return 1;
-            }
-                
-
-            if(Enum.GetName(typeof(BonusType), type) == null)
-            {
-                sb?.AppendLine("Invalid bonus type");
-                return -99;
-            }
-
-            statName = statName.Replace(' ', '_').ToUpper();
-            if(Expressions.ContainsKey(statName))
-            {
-                sb?.AppendLine("Cannot assign bonus to an expression");
-                return -99;
-            }
-
-            if(!Stats.ContainsKey(statName)) Stats[statName] = 0;
-
-
-            switch(assignType)
-            {
-                case "+$":
-                    var bonus = new Bonus { Name = bonusName, Type = (BonusType)type, Value = value };
-                    Stats[statName].AddBonus(bonus);
-                    sb?.AppendLine($"{bonus} to {statName} (Base:{Stats[statName].Base}, Total:{this[statName]})");
-                    break;
-
-                case "-$":
-                    Stats[statName].RemoveBonus(bonusName);
-                    sb?.AppendLine($"{bonusName} removed from {statName}");
-                    break;
-            }
-            OnValueChanged($"stats");      
-            return value;
-        }
-
         public static StatBlock DefaultPathfinder(string name)
         {
             var stats = new StatBlock()
             {
                 CharacterName = name,
 
-                Info = new Dictionary<string, string>()
+                Vars = new Dictionary<string, ValueNode>()
                 {
+                    
+                    //strings
                     ["NAME"] = "NAME ME",
                     ["LEVELS"] = "",
                     ["DEITY"] = "",
@@ -282,11 +191,10 @@ namespace Gellybeans.Pathfinder
                     ["GENDER"] = "",
                     ["HAIR"] = "",
                     ["EYES"] = "",
-                    ["BIO"] = ""
-                },
+                    ["BIO"] = "",
 
-                Stats = new Dictionary<string, Stat>()
-                {
+
+                    //stats
                     ["LEVEL"] = 1,
 
                     ["SIZE_MOD"] = 0,
@@ -313,7 +221,7 @@ namespace Gellybeans.Pathfinder
                     ["FORT_BONUS"] = 0,
                     ["REF_BONUS"] = 0,
                     ["WILL_BONUS"] = 0,
-                   
+
                     ["SPEED"] = 0,
                     ["SPEED_BURROW"] = 0,
                     ["SPEED_CLIMB"] = 0,
@@ -350,8 +258,7 @@ namespace Gellybeans.Pathfinder
 
 
                     ["CL_BONUS"] = 0,
-
-                    //skills
+                  
                     ["SK_ACR"] = 0,
                     ["SK_APR"] = 0,
                     ["SK_BLF"] = 0,
@@ -389,11 +296,9 @@ namespace Gellybeans.Pathfinder
                     ["PP"] = 0,
                     ["GP"] = 0,
                     ["SP"] = 0,
-                    ["CP"] = 0
-                },
+                    ["CP"] = 0,
 
-                Expressions = new Dictionary<string, string>()
-                {
+                    //expressions
                     ["HP"] = "HP_BASE + (CON * LEVEL)",
 
                     ["STR"] = "mod(STR_SCORE)",
@@ -403,14 +308,14 @@ namespace Gellybeans.Pathfinder
                     ["WIS"] = "mod(WIS_SCORE)",
                     ["CHA"] = "mod(CHA_SCORE)",
 
-					["D_STR"] = "STR - (STR_DAMAGE / 2)",
-					["D_DEX"] = "DEX - (DEX_DAMAGE / 2)",
-					["D_CON"] = "CON - (CON_DAMAGE / 2)",
-					["D_INT"] = "INT - (INT_DAMAGE / 2)",
-					["D_WIS"] = "WIS - (WIS_DAMAGE / 2)",
-					["D_CHA"] = "CHA - (CHA_DAMAGE / 2)",
+                    ["D_STR"] = "STR - (STR_DAMAGE / 2)",
+                    ["D_DEX"] = "DEX - (DEX_DAMAGE / 2)",
+                    ["D_CON"] = "CON - (CON_DAMAGE / 2)",
+                    ["D_INT"] = "INT - (INT_DAMAGE / 2)",
+                    ["D_WIS"] = "WIS - (WIS_DAMAGE / 2)",
+                    ["D_CHA"] = "CHA - (CHA_DAMAGE / 2)",
 
-					["FORT"] = "FORT_BONUS + SAVE_BONUS + D_CON",
+                    ["FORT"] = "FORT_BONUS + SAVE_BONUS + D_CON",
                     ["REF"] = "REF_BONUS + SAVE_BONUS + D_DEX",
                     ["WILL"] = "WILL_BONUS + SAVE_BONUS + D_WIS",
 
@@ -423,19 +328,19 @@ namespace Gellybeans.Pathfinder
 
                     ["CMB"] = "BAB + STR - SIZE_MOD",
                     ["CMD"] = "10 + BAB + STR + D_DEX + CMD_BONUS + ((AC_BONUS $? CIRCUMSTANCE) + (AC_BONUS $? DEFLECTION) + (AC_BONUS $? DODGE) + (AC_BONUS $? INSIGHT) + (AC_BONUS $? LUCK) + (AC_BONUS $? MORALE) + (AC_BONUS $? PROFANE) + (AC_BONUS $? SACRED)) - SIZE_MOD",
-					
+
                     ["ATK"] = "BAB + SIZE_MOD",
 
-					["A_STR"] = "D_STR + ATK",
-					["A_DEX"] = "D_DEX + ATK",
-					["A_CON"] = "D_CON + ATK",
-					["A_INT"] = "D_INT + ATK",
-					["A_WIS"] = "D_WIS + ATK",
-					["A_CHA"] = "D_CHA + ATK",
+                    ["A_STR"] = "D_STR + ATK",
+                    ["A_DEX"] = "D_DEX + ATK",
+                    ["A_CON"] = "D_CON + ATK",
+                    ["A_INT"] = "D_INT + ATK",
+                    ["A_WIS"] = "D_WIS + ATK",
+                    ["A_CHA"] = "D_CHA + ATK",
 
 
-					//skills
-					["ACR"] = "D_DEX + SK_ALL + SK_ACR + AC_PENALTY",
+                    //skills
+                    ["ACR"] = "D_DEX + SK_ALL + SK_ACR + AC_PENALTY",
                     ["APR"] = "D_INT + SK_ALL + SK_APR",
                     ["BLF"] = "D_CHA + SK_ALL + SK_BLF",
                     ["CLM"] = "D_STR + SK_ALL + SK_CLM + AC_PENALTY",

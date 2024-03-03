@@ -1,40 +1,42 @@
 ﻿using Gellybeans.Pathfinder;
 using System.Text;
-using System.Xml.Serialization;
 
 namespace Gellybeans.Expressions
 {
     public class BonusNode : ExpressionNode
     {
-        readonly string             bonusName;
-        readonly ExpressionNode?    bonusType;
-        readonly ExpressionNode?    bonusValue;
-
-        Bonus Bonus { get; }
-        
-        public BonusNode(Bonus bonus)
-        {
-            Bonus = bonus;
-        }
-
-        public string BonusName { get { return bonusName; } }
-        public int? BonusType;
-        public int? BonusValue;
+        public string BonusName { get; }
+        public ExpressionNode? BonusType;
+        public ExpressionNode? BonusValue;
 
         public BonusNode(string bonusName, ExpressionNode bonusType = null!, ExpressionNode bonusValue = null!)
         {
-            this.bonusName  = bonusName;
-            this.bonusType  = bonusType;
-            this.bonusValue = bonusValue;
+            BonusName = bonusName;
+            BonusType = bonusType;
+            BonusValue = bonusValue;
         }
 
-        public override ValueNode Eval()
+        public Bonus GetBonus()
         {
-            BonusType = bonusType?.Eval();
-            BonusValue = bonusValue?.Eval();
-            return 0;
-        }
+            if(BonusType != null && BonusValue != null)
+            {
+                var hasType = int.TryParse(BonusType.Eval(null!, null!).ToString(), out int type);
+                var hasValue = int.TryParse(BonusValue.Eval(null!, null!).ToString(), out int value);
 
-        
+                Bonus b = new()
+                {
+                    Name = BonusName,
+                    Type = hasType ? (BonusType)type : (BonusType)(-1),
+                    Value = hasValue ? value : 0
+                };
+                return b;
+            }
+            return Bonus.Empty;
+        }
+            
+
+        public override ValueNode Eval(IContext ctx, StringBuilder sb) =>
+            GetBonus();
+
     }
 }

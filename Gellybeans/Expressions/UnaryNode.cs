@@ -14,9 +14,9 @@ namespace Gellybeans.Expressions
             this.op = op;
         }
 
-        public override ValueNode Eval()
+        public override ValueNode Eval(IContext ctx, StringBuilder sb)
         {
-            var rhValue = rhs.Eval();           
+            var rhValue = rhs.Eval(ctx, sb);           
             var result = op(rhValue);
             return result;
         }

@@ -6,24 +6,18 @@ namespace Gellybeans.Expressions
     public class VarNode : ExpressionNode
     {
         readonly string varName;
-        StringBuilder sb;
-        IContext ctx;
-
-
 
         public string VarName { get { return varName; } }
 
-        public VarNode(string varName, IContext ctx, StringBuilder sb = null!)
+        public VarNode(string varName)
         {
             this.varName = varName;
-            this.ctx = ctx;
-            this.sb = sb;
         }
 
-        public override ValueNode Eval() 
+        public override ValueNode Eval(IContext ctx, StringBuilder sb) 
         {
-            var node = ctx.GetVar(varName, sb); 
-            var value = node.Eval();
+            var node = ctx.GetVar(varName, sb);
+            var value = node.Eval(ctx, sb);
             return value;
         }
     }

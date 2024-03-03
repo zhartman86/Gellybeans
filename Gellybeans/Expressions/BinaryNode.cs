@@ -19,13 +19,17 @@ namespace Gellybeans.Expressions
         }
 
 
-        public override ValueNode Eval()
-        {           
-            var lhValue = lhs.Eval();
-            var rhValue = rhs.Eval();
+        public override ValueNode Eval(IContext ctx, StringBuilder sb)
+        {
+            Console.WriteLine($"eval'ing binary node. {lhs}, {rhs}");
+            var lhValue = lhs.Eval(ctx, sb);
+            var rhValue = rhs.Eval(ctx, sb);
+            Console.WriteLine($"eval'd. {lhValue.Value}, {rhValue.Value}");
 
-            var result = op(lhValue, rhValue);           
-                                
+            var result = op(lhValue, rhValue);
+
+            Console.WriteLine($"result {result}");
+
             return result;
         }
     }

@@ -4,9 +4,8 @@ namespace Gellybeans.Expressions
 {
     public class DiceNode : ExpressionNode
     {       
-        int count;
-        int sides;
-        StringBuilder sb;
+        readonly int count;
+        readonly int sides;
 
         public int Reroll       { get; set; } = 0;
         public int Highest      { get; set; } = 0;
@@ -16,10 +15,9 @@ namespace Gellybeans.Expressions
         {
             this.count = count;
             this.sides = sides;
-            this.sb = sb;
         }
 
-        public override ValueNode Eval()
+        public override ValueNode Eval(IContext ctx, StringBuilder sb)
         {
             var random = new Random();
             var results = new List<int>();
@@ -104,9 +102,9 @@ namespace Gellybeans.Expressions
         }
         
         public static DiceNode operator *(DiceNode node, int multiplier) =>
-            new(node.count * multiplier, node.sides, node.sb) { Highest = node.Highest, Reroll = node.Reroll};
+            new(node.count * multiplier, node.sides) { Highest = node.Highest, Reroll = node.Reroll};
         
         public static DiceNode operator /(DiceNode node, int divisor) =>
-            new(node.count / divisor, node.sides, node.sb) { Highest = node.Highest, Reroll = node.Reroll };
+            new(node.count / divisor, node.sides) { Highest = node.Highest, Reroll = node.Reroll };
     }
 }

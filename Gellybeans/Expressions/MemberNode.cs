@@ -10,7 +10,7 @@ namespace Gellybeans.Expressions
         {
         }
 
-        public override ValueNode Eval()
+        public override ValueNode Eval(IContext ctx, StringBuilder sb)
         {
             return 0;
         }

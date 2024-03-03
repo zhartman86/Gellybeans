@@ -3,8 +3,8 @@
     public class Bonus : IComparer<Bonus>
     {
         public string       Name    { get; set; } = "";     
-        public int          Value   { get; set; }
-        public BonusType    Type    { get; set; }
+        public int          Value   { get; set; } = 0;
+        public BonusType    Type    { get; set; } = (BonusType)(-1);
   
 
         public bool Equals(Bonus b) { return this == b; }
@@ -21,5 +21,8 @@
 
         public override string ToString() =>
             $" {(Math.Sign(Value) > 0 ? "+" : "")}{Value} {Enum.GetName(typeof(BonusType), Type)!.ToLower()} {(Math.Sign(Value) > 0 ? "bonus" : "penalty")}";
+
+
+        public static Bonus Empty { get; } = new Bonus();
     }
 }

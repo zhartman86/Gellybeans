@@ -5,21 +5,19 @@ namespace Gellybeans.Expressions
     public class ListNode : ExpressionNode
     {
         readonly List<ExpressionNode> expressions;
-        StringBuilder sb;
 
         public List<ExpressionNode> Expressions { get { return expressions; } }
 
-        public ListNode(List<ExpressionNode> expressions, StringBuilder sb = null!)
+        public ListNode(List<ExpressionNode> expressions)
         {
             this.expressions = expressions;
-            this.sb = sb;
         }
 
-        public override ValueNode Eval()
+        public override ValueNode Eval(IContext ctx, StringBuilder sb)
         {
             for (int i = 0; i < expressions.Count; i++)
             {
-                var result = expressions[i].Eval();
+                var result = expressions[i].Eval(ctx, sb);
                 sb?.AppendLine($"**Total:** {result}\r\n");
             }
             

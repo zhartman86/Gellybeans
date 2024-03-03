@@ -1,7 +1,8 @@
 ﻿namespace Gellybeans.Pathfinder
 {
-    public enum BonusType
+    public enum BonusType : int
     {
+        Empty           = -1,
         Typeless        = 0,
         Alchemical      = 1,
         Armor           = 2,

@@ -154,12 +154,14 @@ namespace Gellybeans.Expressions
 
                 case '$':
                     NextChar();
-                    if(currentChar == '?')
-                    {
-                        NextChar();
-                        currentToken = TokenType.GetBonus;
-                        Tokens.Add(new Token(TokenType.GetBonus, "$?"));                       
-                    }
+                    //if(currentChar == '?')
+                    //{
+                    //    NextChar();
+                    //    currentToken = TokenType.GetBonus;
+                    //    Tokens.Add(new Token(TokenType.GetBonus, "$?"));                       
+                    //}
+                    currentToken = TokenType.Bonus;
+                    Tokens.Add(new Token(TokenType.Bonus, "$"));
                     return;
 
 
@@ -253,12 +255,12 @@ namespace Gellybeans.Expressions
                         currentToken = TokenType.Assign;
                         Tokens.Add(new Token(TokenType.Assign, "+="));
                     }
-                    else if(currentChar == '$')
-                    {
-                        NextChar();
-                        currentToken = TokenType.Assign;
-                        Tokens.Add(new Token(TokenType.Assign, "+$"));
-                    }                     
+                    //else if(currentChar == '$')
+                    //{
+                    //    NextChar();
+                    //    currentToken = TokenType.Assign;
+                    //    Tokens.Add(new Token(TokenType.Assign, "+$"));
+                    //}                     
                     else
                     {
                         currentToken = TokenType.Add;
@@ -274,12 +276,12 @@ namespace Gellybeans.Expressions
                         currentToken = TokenType.Assign;
                         Tokens.Add(new Token(TokenType.Assign, "-="));
                     }
-                    else if(currentChar == '$')
-                    {
-                        NextChar();
-                        currentToken = TokenType.Assign;
-                        Tokens.Add(new Token(TokenType.Assign, "-$"));
-                    }
+                    //else if(currentChar == '$')
+                    //{
+                    //    NextChar();
+                    //    currentToken = TokenType.Assign;
+                    //    Tokens.Add(new Token(TokenType.Assign, "-$"));
+                    //}
                     else
                     {
                         currentToken = TokenType.Sub;

@@ -7,19 +7,18 @@ namespace Gellybeans.Expressions
         readonly VarNode identifier;
         readonly ExpressionNode assignment;
 
-        readonly Func<VarNode, ExpressionNode, ValueNode> op;
+        readonly Func<VarNode, ValueNode, ValueNode> op;
 
-        public AssignVarNode(VarNode identifier, ExpressionNode assignment, Func<VarNode, ExpressionNode, ValueNode> op)
+        public AssignVarNode(VarNode identifier, ExpressionNode assignment, Func<VarNode, ValueNode, ValueNode> op)
         {
             this.identifier = identifier;
             this.assignment = assignment;
             this.op = op;
         }
 
-        public override ValueNode Eval()
+        public override ValueNode Eval(IContext ctx, StringBuilder sb)
         {
-            Console.WriteLine("found assignment");
-            return op(identifier, assignment);
+            return op(identifier, assignment.Eval(ctx, sb));
         }
 
     }
