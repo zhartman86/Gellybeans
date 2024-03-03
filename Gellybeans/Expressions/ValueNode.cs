@@ -1,15 +1,15 @@
 ﻿using Gellybeans.Pathfinder;
 using System.Text;
 
+
 namespace Gellybeans.Expressions
 {
-
     public class ValueNode : ExpressionNode
     {       
          public dynamic Value{ get; }
 
-        public ValueNode(dynamic value) =>
-            Value = value;
+        public ValueNode(dynamic val) =>
+            Value = val;
 
         public override string ToString() => 
             Value.ToString();

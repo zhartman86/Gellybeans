@@ -150,55 +150,30 @@ namespace Gellybeans.Pathfinder
 
         public override string ToString()
         {
-            //StringBuilder sb = null;
+            if(Bonuses != null || Override != null)
+            {
+                var sb = new StringBuilder();
 
-            //if(Override != null)
-            //    return $"{Override.Value} (override)";
+                sb.AppendLine($"**Total: {Value}");
+                if(Override != null)
+                {
+                    sb.AppendLine($"~~**Base:**~~ {Base}");
+                    sb.AppendLine($"**Override:** {Override.Value}");
+                }
+                else
+                    sb.AppendLine($"**Base:** {Base}");
 
-            //if(Bonuses.Count > 0)
-            //{
-            //    sb = new StringBuilder();
-            //    for(int i = 0; i < Bonuses.Count; i++)
-            //        sb.Append($"{Bonuses[i].Value} {Enum.GetName(typeof(BonusType), Bonuses[i].Type)},");
-            //}
-
-            //return $"{Value} {(Bonus > 0 ? $"({sb.ToString().TrimEnd(',').ToLower()})" : "")}";
+                if(Bonuses != null)
+                    for(int i = 0; i < Bonuses.Count; i++)
+                        sb.AppendLine($" - {Bonuses[i]}");                
+                
+                return sb.ToString();
+            }
             return Value.ToString();
         }
 
         public static implicit operator int(Stat stat) => stat.Value;
         public static implicit operator Stat(int value) => new(value);
-
-        //public static Stat operator +(Stat lhs, int rhs)
-        //{
-        //    lhs.Base += rhs;
-        //    return lhs;
-        //}
-
-        //public static Stat operator -(Stat lhs, int rhs)
-        //{
-        //    lhs.Base -= rhs;
-        //    return lhs;
-        //}
-
-        //public static Stat operator *(Stat lhs, int rhs)
-        //{
-        //    lhs.Base *= rhs;
-        //    return lhs;
-        //}
-
-        //public static Stat operator /(Stat lhs, int rhs)
-        //{
-        //    lhs.Base /= rhs;
-        //    return lhs;
-        //}
-
-        //public static Stat operator %(Stat lhs, int rhs)
-        //{
-        //    lhs.Base %= rhs;
-        //    return lhs;
-        //}
-
 
         public static int operator +(Stat lhs, Stat rhs) =>
             lhs.Value + rhs.Value;
@@ -234,8 +209,6 @@ namespace Gellybeans.Pathfinder
             lhs + rhs.Value;
 
 
-
-
         //public static Stat operator +(Stat lhs, Stat rhs)
         //{
         //    if( rhs.Bonuses != null)
@@ -245,59 +218,6 @@ namespace Gellybeans.Pathfinder
         //    return stat;
         //}
 
-        //public static Stat operator -(Stat lhs, Stat rhs)
-        //{
-        //    if( rhs.Bonuses != null)
-        //        lhs.Bonuses?.AddRange( rhs.Bonuses);
-
-        //    var stat = new Stat() { Base = lhs.Base - rhs.Base, Bonuses = lhs.Bonuses ?? ( rhs.Bonuses ?? null!) };
-        //    return stat;
-        //}
-
-        //public static Stat operator *(Stat lhs, Stat rhs)
-        //{
-        //    if( rhs.Bonuses != null)
-        //        lhs.Bonuses?.AddRange( rhs.Bonuses);
-
-        //    var stat = new Stat() { Base = lhs.Base * rhs.Base, Bonuses = lhs.Bonuses ?? ( rhs.Bonuses ?? null!) };
-        //    return stat;
-        //}
-
-        //public static Stat operator /(Stat lhs, Stat rhs)
-        //{
-        //    if( rhs.Bonuses != null)
-        //        lhs.Bonuses?.AddRange( rhs.Bonuses);
-
-        //    var stat = new Stat() { Base = lhs.Base / rhs.Base, Bonuses = lhs.Bonuses ?? ( rhs.Bonuses ?? null!) };
-        //    return stat;
-        //}
-
-        //public static Stat operator %(Stat lhs, Stat rhs)
-        //{
-        //    if( rhs.Bonuses != null)
-        //        lhs.Bonuses?.AddRange( rhs.Bonuses);
-
-        //    var stat = new Stat() { Base = lhs.Base % rhs.Base, Bonuses = lhs.Bonuses ?? ( rhs.Bonuses ?? null!) };
-        //    return stat;
-        //}
-
-        //public static Stat operator |(Stat lhs, Stat rhs)
-        //{
-        //    if(rhs.Bonuses != null)
-        //        lhs.Bonuses?.AddRange(rhs.Bonuses);
-
-        //    var stat = new Stat() { Base = lhs.Base | rhs.Base, Bonuses = lhs.Bonuses ?? (rhs.Bonuses ?? null!) };
-        //    return stat;
-        //}
-
-        //public static Stat operator &(Stat lhs, Stat rhs)
-        //{
-        //    if(rhs.Bonuses != null)
-        //        lhs.Bonuses?.AddRange(rhs.Bonuses);
-
-        //    var stat = new Stat() { Base = lhs.Base & rhs.Base, Bonuses = lhs.Bonuses ?? (rhs.Bonuses ?? null!) };
-        //    return stat;
-        //}
 
         public static bool operator ==(Stat lhs, Stat rhs) =>
             lhs.Value == rhs.Value;

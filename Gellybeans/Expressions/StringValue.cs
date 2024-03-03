@@ -7,24 +7,27 @@ namespace Gellybeans.Expressions
 {
     public class StringValue : ValueNode
     {
-        public string String { get { return Value; } }
+        public string String { get; set; }
         
-        public StringValue(string value) : base(value: value) { }           
+        public StringValue(string str) : base(str) 
+        {
+            String = Value;
+        }           
 
         static readonly Regex brackets = new(@"\{.*?\}", RegexOptions.Compiled);
 
         public override ValueNode Eval(IContext ctx, StringBuilder sb)
         {
-            string str = Value.Replace(@"\n", "\n");
+            string s = String.Replace(@"\n", "\n");
 
-            str = brackets.Replace(str!, m =>
+            s = brackets.Replace(s!, m =>
             {
-                var str = m.Value.Trim(new char[] { '{', '}' });
-                var p = Parser.Parse(str, ctx).Eval(ctx, sb);
+                var s = m.Value.Trim(new char[] { '{', '}' });
+                var p = Parser.Parse(s, ctx).Eval(ctx, sb);
                 return p.ToString();
             });
 
-            return str;
+            return s;
         }
     }
 }

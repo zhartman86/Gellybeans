@@ -9,7 +9,7 @@ namespace Gellybeans.Expressions
     public interface IContext
     {
         ExpressionNode GetVar(string varName, StringBuilder sb);
-
-        abstract Dictionary<string, ValueNode> Vars { get; }
+        void OnValueChanged(string varChanged);
+        Dictionary<string, ValueNode> Vars { get; }
     }
 }

@@ -31,7 +31,7 @@ namespace Gellybeans.Expressions
 
         Token Current { get { return tokens[index]; } }
 
-        public Parser(List<Token> tokens, IContext ctx = null!, StringBuilder sb = null!, int index = 0)
+        public Parser(List<Token> tokens, IContext ctx, StringBuilder sb, int index = 0)
         {
             this.tokens = tokens;
             this.ctx = ctx;
@@ -87,34 +87,22 @@ namespace Gellybeans.Expressions
 
             if(node is VarNode varNode && Current.TokenType == TokenType.Assign)
             {
-                Console.WriteLine($"found assignment: {Current.Value}");
                 Func<VarNode, ValueNode, ValueNode> op = null!;
 
                 var varName = varNode.VarName.ToUpper();
-
                 
                 switch(Current.Value)
                 {
                     case "=":
                         op = (identifier, assignment) =>
                         {
-                            
-                            if(assignment is ExpressionValue)
-                            {
-                                Console.WriteLine("found expression value");
-                            }
-
                             if(assignment.Value is int i)
-                            {
-                                Console.WriteLine("found int");
                                 assignment = new StatValue(i);
-                            }
-
-                            Console.WriteLine($"setting");
+                            
                             ctx.Vars[varName] = assignment;
-                            Console.WriteLine($"{varName} set to {assignment}");
                             sb.AppendLine($"{varName} set to {assignment}");
-                           
+
+                            ctx.OnValueChanged("var");
                             return $"{assignment}";
                         };
                         break;
@@ -123,6 +111,7 @@ namespace Gellybeans.Expressions
                         {
                             op = (identifier, assignment) =>
                             {
+                                ctx.OnValueChanged("var");
                                 if(var is StatValue stat)
                                 {                                                                                                      
                                     if(assignment.Value is int i)
@@ -133,8 +122,8 @@ namespace Gellybeans.Expressions
                                     }                                                                
                                 }
                                 ctx.Vars[varName] = var + assignment;
-                                sb.AppendLine($"{varName} set to {ctx.Vars[varName]}");                             
-                                return $"{ctx.Vars[varName]}";
+                                sb.AppendLine($"{varName} updated");                             
+                                return $"{assignment.Value}";
                             };
 
                         }
@@ -146,20 +135,91 @@ namespace Gellybeans.Expressions
                         {
                             op = (identifier, assignment) =>
                             {
+                                ctx.OnValueChanged("var");
                                 if(var is StatValue stat)
                                 {
                                     if(assignment.Value is int i)
+                                    {
                                         stat.Stat.Base -= i;
+                                        sb.AppendLine($"{varName} base value set to {stat.Stat.Base}");
+                                        return stat.Eval(ctx, sb);
+                                    }
+                                }
+                                ctx.Vars[varName] = var - assignment;
+                                sb.AppendLine($"{varName} updated");
+                                return $"{assignment.Value}";
+                            };
 
-                                    sb.AppendLine($"{varName} base value set to {stat.Stat.Base}");
-                                    return stat.Eval(ctx, sb);
-                                }
-                                else
+                        }
+                        else
+                            sb.Append($"{varNode.VarName} not found");
+                        break;
+                    case "*=":
+                        if(ctx.Vars.TryGetValue(varName, out var))
+                        {
+                            op = (identifier, assignment) =>
+                            {
+                                ctx.OnValueChanged("var");
+                                if(var is StatValue stat)
                                 {
-                                    ctx.Vars[varName] = var - assignment;
-                                    sb.AppendLine($"{varName} set to {ctx.Vars[varName]}");
+                                    if(assignment.Value is int i)
+                                    {
+                                        stat.Stat.Base *= i;
+                                        sb.AppendLine($"{varName} base value set to {stat.Stat.Base}");
+                                        return stat.Eval(ctx, sb);
+                                    }
                                 }
-                                return $"{ctx.Vars[varName]}";
+                                ctx.Vars[varName] = var * assignment;
+                                sb.AppendLine($"{varName} updated");
+                                return $"{assignment.Value}";
+                            };
+
+                        }
+                        else
+                            sb.Append($"{varNode.VarName} not found");
+                        break;
+                    case "/=":
+                        if(ctx.Vars.TryGetValue(varName, out var))
+                        {
+                            op = (identifier, assignment) =>
+                            {
+                                ctx.OnValueChanged("var");
+                                if(var is StatValue stat)
+                                {
+                                    if(assignment.Value is int i)
+                                    {
+                                        stat.Stat.Base /= i;
+                                        sb.AppendLine($"{varName} base value set to {stat.Stat.Base}");
+                                        return stat.Eval(ctx, sb);
+                                    }
+                                }
+                                ctx.Vars[varName] = var / assignment;
+                                sb.AppendLine($"{varName} updated");
+                                return $"{assignment.Value}";
+                            };
+
+                        }
+                        else
+                            sb.Append($"{varNode.VarName} not found");
+                        break;
+                    case "%=":
+                        if(ctx.Vars.TryGetValue(varName, out var))
+                        {
+                            op = (identifier, assignment) =>
+                            {
+                                ctx.OnValueChanged("var");
+                                if(var is StatValue stat)
+                                {
+                                    if(assignment.Value is int i)
+                                    {
+                                        stat.Stat.Base %= i;
+                                        sb.AppendLine($"{varName} base value set to {stat.Stat.Base}");
+                                        return stat.Eval(ctx, sb);
+                                    }
+                                }
+                                ctx.Vars[varName] = var % assignment;
+                                sb.AppendLine($"{varName} updated");
+                                return $"{assignment.Value}";
                             };
 
                         }
@@ -167,7 +227,6 @@ namespace Gellybeans.Expressions
                             sb.Append($"{varNode.VarName} not found");
                         break;
                 }
-
 
                 if(op == null) return node;
 
