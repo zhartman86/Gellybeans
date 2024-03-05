@@ -17,7 +17,7 @@ namespace Gellybeans.Expressions
             this.sides = sides;
         }
 
-        public override ValueNode Eval(IContext ctx, StringBuilder sb)
+        public override dynamic Eval(IContext ctx, StringBuilder sb)
         {
             var random = new Random();
             var results = new List<int>();

@@ -4,17 +4,17 @@ namespace Gellybeans.Expressions
 {
     public class UnaryNode : ExpressionNode
     {
-        ExpressionNode rhs;
+        readonly ExpressionNode rhs;
         
-        Func<int, int> op;
+        Func<dynamic, dynamic> op;
 
-        public UnaryNode(ExpressionNode rhs, Func<int, int> op)
+        public UnaryNode(ExpressionNode rhs, Func<dynamic, dynamic> op)
         {
             this.rhs = rhs;
             this.op = op;
         }
 
-        public override ValueNode Eval(IContext ctx, StringBuilder sb)
+        public override dynamic Eval(IContext ctx, StringBuilder sb)
         {
             var rhValue = rhs.Eval(ctx, sb);           
             var result = op(rhValue);

@@ -3,17 +3,14 @@ using System.Text;
 
 namespace Gellybeans.Expressions
 {
-    public class StatValue : ValueNode
+    public class StatValue
     {
-        public Stat Stat { get; set; }
+        public Stat Stat { get; set; } = new();
         
-        public StatValue(int baseValue) : base(new Stat(baseValue)) 
+        public StatValue(int baseValue)
         {
-            Stat = Value;
+            Stat.Base = baseValue;
         }
-
-        public override ValueNode Eval(IContext ctx, StringBuilder sb) =>
-            Stat;
            
         public override string ToString() =>
             Stat.ToString();

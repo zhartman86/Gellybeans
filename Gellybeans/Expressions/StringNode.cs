@@ -7,13 +7,13 @@ namespace Gellybeans.Expressions
 
         public string String { get; }
 
-        public StringNode(string str, IContext ctx, StringBuilder sb)
+        public StringNode(string str)
         {
             String = str;
         }
                        
 
-        public override ValueNode Eval(IContext ctx, StringBuilder sb) =>
+        public override dynamic Eval(IContext ctx, StringBuilder sb) =>
             new StringValue(String);
 
         public override string ToString()

@@ -8,8 +8,11 @@ namespace Gellybeans.Expressions
     
     public interface IContext
     {
-        ExpressionNode GetVar(string varName, StringBuilder sb);
-        void OnValueChanged(string varChanged);
-        Dictionary<string, ValueNode> Vars { get; }
+        dynamic GetVar(string varName, StringBuilder sb);
+       
+        Dictionary<string, dynamic> Vars { get; }
+        
+        //use the indexer to retrieve and set values. this will check for constants
+        dynamic this[string varName] { get; set; }
     }
 }

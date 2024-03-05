@@ -4,8 +4,9 @@
     {
         None,
         Ternary,        // ?::
-        Bonus,          // $        
-        Assign,         // = += -= *= /= %= |= +$ -$ 
+        Bonus,          // $
+        GetBonus,       // $?
+        Assign,         // = += -= *= /= %= |=
         AssignExpr,     // ::
         AssignAddExpr,  // ** 
         AssignFlag,     // |=

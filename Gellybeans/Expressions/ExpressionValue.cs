@@ -2,20 +2,19 @@
 
 namespace Gellybeans.Expressions
 {
-    public class ExpressionValue : ValueNode
-    {
+    public class ExpressionValue : IEval
+    {        
         public string Expression { get; set; }
 
-        public ExpressionValue(string expr) : base(expr) 
-        {
-            Expression = Value;
-        }
+        public ExpressionValue(string expr) =>
+            Expression = expr;
 
-        public override ValueNode Eval(IContext ctx, StringBuilder sb) =>
+        public override string ToString() =>
+            Expression;
+
+        public dynamic Eval(IContext ctx, StringBuilder sb) =>
             Parser.Parse(Expression, ctx, sb).Eval(ctx, sb);
-
-        public override string ToString() => 
-            Expression.ToString();
+        
 
     }
 }

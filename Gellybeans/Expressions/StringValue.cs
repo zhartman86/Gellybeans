@@ -5,29 +5,42 @@ using System.Text.RegularExpressions;
 
 namespace Gellybeans.Expressions
 {
-    public class StringValue : ValueNode
+    public class StringValue : IEval
     {
         public string String { get; set; }
         
-        public StringValue(string str) : base(str) 
+        static readonly Regex brackets = new(@"\{.*?\}", RegexOptions.Compiled);
+        
+        public StringValue(string value)
         {
-            String = Value;
+            String = value;
         }           
 
-        static readonly Regex brackets = new(@"\{.*?\}", RegexOptions.Compiled);
-
-        public override ValueNode Eval(IContext ctx, StringBuilder sb)
+        public override string ToString()
         {
-            string s = String.Replace(@"\n", "\n");
+            string str = String.Replace(@"\n", "\n");
 
-            s = brackets.Replace(s!, m =>
+            str = brackets.Replace(str!, m =>
+            {
+                return $"**{m.Value}**";      
+            });
+
+            return str;
+        }
+        
+
+        public dynamic Eval(IContext ctx, StringBuilder sb)
+        {
+            string str = String.Replace(@"\n", "\n");
+
+            str = brackets.Replace(str!, m =>
             {
                 var s = m.Value.Trim(new char[] { '{', '}' });
-                var p = Parser.Parse(s, ctx).Eval(ctx, sb);
+                var p = Parser.Parse(s, ctx).Eval(ctx);
                 return p.ToString();
             });
 
-            return s;
+            return str;
         }
     }
 }

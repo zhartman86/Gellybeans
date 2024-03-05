@@ -125,36 +125,29 @@ namespace Gellybeans.Pathfinder
                 return false;
 
             var bonusToUpper = bonusName.ToUpper();
-            int count = 0;
-            var bonuses = new List<Bonus>();
 
             if(Override is not null)
             {
                 if(Override.Name == bonusToUpper)
-                {
-                    Override = null;
-                }
+                    Override = null!;
             }
 
-            for(int i = 0; i < Bonuses.Count; i++)
-            {
-                if(Bonuses[i].Name == bonusToUpper)
-                {
-                    count++;
-                    bonuses.Add(Bonuses[i]);
-                }
-            }
-            foreach(Bonus b in bonuses) RemoveBonus(b);
-            return true;
+            Console.WriteLine($"Removing bonuses named {bonusToUpper}");
+
+            var count = Bonuses.RemoveAll(x => x.Name == bonusToUpper);
+
+            Console.WriteLine($"Bonuses removed: {count}");
+
+            return count > 0;
         }
 
         public override string ToString()
         {
+            var str = $"## {Value}";
             if(Bonuses != null || Override != null)
             {
                 var sb = new StringBuilder();
-
-                sb.AppendLine($"**Total: {Value}");
+                sb.AppendLine(str);
                 if(Override != null)
                 {
                     sb.AppendLine($"~~**Base:**~~ {Base}");
@@ -165,11 +158,11 @@ namespace Gellybeans.Pathfinder
 
                 if(Bonuses != null)
                     for(int i = 0; i < Bonuses.Count; i++)
-                        sb.AppendLine($" - {Bonuses[i]}");                
+                        sb.AppendLine($" -{Bonuses[i]}");                
                 
                 return sb.ToString();
             }
-            return Value.ToString();
+            return str;
         }
 
         public static implicit operator int(Stat stat) => stat.Value;
@@ -200,13 +193,13 @@ namespace Gellybeans.Pathfinder
         public static int operator +(int lhs, Stat rhs) =>
             lhs + rhs.Value;
         public static int operator -(int lhs, Stat rhs) =>
-            lhs + rhs.Value;
+            lhs - rhs.Value;
         public static int operator *(int lhs, Stat rhs) =>
-            lhs + rhs.Value;
+            lhs * rhs.Value;
         public static int operator /(int lhs, Stat rhs) =>
-            lhs + rhs.Value;
+            lhs / rhs.Value;
         public static int operator %(int lhs, Stat rhs) =>
-            lhs + rhs.Value;
+            lhs % rhs.Value;
 
 
         //public static Stat operator +(Stat lhs, Stat rhs)

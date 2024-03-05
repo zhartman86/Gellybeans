@@ -13,18 +13,24 @@ namespace Gellybeans.Expressions
             this.args = args;
         }
 
-        public override ValueNode Eval(IContext ctx, StringBuilder sb)
+        public override dynamic Eval(IContext ctx, StringBuilder sb)
         {        
-            var argValues = new int[args.Length];
+            var argValues = new ValueNode[args.Length];
             for(int i = 0; i < args.Length; i++)
                 argValues[i] = args[i].Eval(ctx, sb);
-            
+
+            for(int i = 0; i < argValues.Length; i++)
+            {
+                Console.WriteLine($"{argValues.GetType()} : {argValues[i].Value}");
+            }
+
+
             return Call(functionName, argValues);
         }
 
-        public int Call(string functionName, int[] args) => functionName switch
+        public ValueNode Call(string functionName, ValueNode[] args) => functionName switch
         {
-            "abs"   => Math.Abs(args[0]),
+            "abs"   => Math.Abs(int.Parse(args[0])),
             "clamp" => Math.Clamp(args[0], args[1], args[2]),
             "if"    => args[0] == 1 ? args[1] : 0,
             "max"   => Math.Max(args[0], args[1]),

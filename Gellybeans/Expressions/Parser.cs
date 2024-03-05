@@ -1,6 +1,7 @@
 ﻿using Gellybeans.Pathfinder;
 using Microsoft.VisualBasic;
 using System.ComponentModel.Design;
+using System.Net.WebSockets;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -62,10 +63,12 @@ namespace Gellybeans.Expressions
         {
             var expr = ParseTermination();
 
+            Console.WriteLine("found node");
+
             if(Current.TokenType == TokenType.EOF)
                 return expr;
 
-            return new StringNode($"Invalid expression. Error on token `{Current.Value}`", ctx, sb);
+            return new StringNode($"Invalid expression. Error on token `{Current.Value}`");
         }
 
         ExpressionNode ParseTermination()
@@ -87,7 +90,7 @@ namespace Gellybeans.Expressions
 
             if(node is VarNode varNode && Current.TokenType == TokenType.Assign)
             {
-                Func<VarNode, ValueNode, ValueNode> op = null!;
+                Func<string, dynamic, dynamic> op = null!;
 
                 var varName = varNode.VarName.ToUpper();
                 
@@ -96,13 +99,12 @@ namespace Gellybeans.Expressions
                     case "=":
                         op = (identifier, assignment) =>
                         {
-                            if(assignment.Value is int i)
-                                assignment = new StatValue(i);
+                            if(assignment is int i)
+                                assignment = new Stat(i);
                             
-                            ctx.Vars[varName] = assignment;
-                            sb.AppendLine($"{varName} set to {assignment}");
+                            ctx[varName] = assignment;
+                            sb?.AppendLine($"{varName} set to {assignment}");
 
-                            ctx.OnValueChanged("var");
                             return $"{assignment}";
                         };
                         break;
@@ -111,120 +113,112 @@ namespace Gellybeans.Expressions
                         {
                             op = (identifier, assignment) =>
                             {
-                                ctx.OnValueChanged("var");
-                                if(var is StatValue stat)
+                                if(var is Stat stat)
                                 {                                                                                                      
-                                    if(assignment.Value is int i)
+                                    if(assignment is int i)
                                     {
-                                        stat.Stat.Base += i;
-                                        sb.AppendLine($"{varName} base value set to {stat.Stat.Base}");
-                                        return stat.Eval(ctx, sb);
+                                        stat.Base += i;
+                                        sb?.AppendLine($"{varName} base value set to {stat.Base}");
+                                        return stat.Value;
                                     }                                                                
                                 }
-                                ctx.Vars[varName] = var + assignment;
-                                sb.AppendLine($"{varName} updated");                             
-                                return $"{assignment.Value}";
+                                ctx[varName] = var + assignment;
+                                sb?.AppendLine($"{varName} updated");                             
+                                return $"{assignment}";
                             };
 
                         }
                         else
-                            sb.Append($"{varNode.VarName} not found");                       
+                            sb?.Append($"{varNode.VarName} not found");                       
                         break;
                     case "-=":
                         if(ctx.Vars.TryGetValue(varName, out var))
                         {
                             op = (identifier, assignment) =>
                             {
-                                ctx.OnValueChanged("var");
-                                if(var is StatValue stat)
+                                if(var is Stat stat)
                                 {
-                                    if(assignment.Value is int i)
+                                    if(assignment is int i)
                                     {
-                                        stat.Stat.Base -= i;
-                                        sb.AppendLine($"{varName} base value set to {stat.Stat.Base}");
-                                        return stat.Eval(ctx, sb);
+                                        stat.Base -= i;
+                                        sb?.AppendLine($"{varName} base value set to {stat.Base}");
+                                        return stat.Value;
                                     }
                                 }
-                                ctx.Vars[varName] = var - assignment;
-                                sb.AppendLine($"{varName} updated");
-                                return $"{assignment.Value}";
+                                ctx[varName] = var - assignment;
+                                sb?.AppendLine($"{varName} updated");
+                                return $"{assignment}";
                             };
 
                         }
                         else
-                            sb.Append($"{varNode.VarName} not found");
+                            sb?.Append($"{varNode.VarName} not found");
                         break;
                     case "*=":
                         if(ctx.Vars.TryGetValue(varName, out var))
                         {
                             op = (identifier, assignment) =>
                             {
-                                ctx.OnValueChanged("var");
-                                if(var is StatValue stat)
+                                if(var is Stat stat)
                                 {
-                                    if(assignment.Value is int i)
+                                    if(assignment is int i)
                                     {
-                                        stat.Stat.Base *= i;
-                                        sb.AppendLine($"{varName} base value set to {stat.Stat.Base}");
-                                        return stat.Eval(ctx, sb);
+                                        stat.Base *= i;
+                                        sb?.AppendLine($"{varName} base value set to {stat.Base}");
+                                        return stat.Value;
                                     }
                                 }
-                                ctx.Vars[varName] = var * assignment;
-                                sb.AppendLine($"{varName} updated");
-                                return $"{assignment.Value}";
+                                ctx[varName] = var * assignment;
+                                sb?.AppendLine($"{varName} updated");
+                                return $"{assignment}";
                             };
-
                         }
                         else
-                            sb.Append($"{varNode.VarName} not found");
+                            sb?.Append($"{varNode.VarName} not found");
                         break;
                     case "/=":
                         if(ctx.Vars.TryGetValue(varName, out var))
                         {
                             op = (identifier, assignment) =>
                             {
-                                ctx.OnValueChanged("var");
-                                if(var is StatValue stat)
+                                if(var is Stat stat)
                                 {
-                                    if(assignment.Value is int i)
+                                    if(assignment is int i)
                                     {
-                                        stat.Stat.Base /= i;
-                                        sb.AppendLine($"{varName} base value set to {stat.Stat.Base}");
-                                        return stat.Eval(ctx, sb);
+                                        stat.Base /= i;
+                                        sb?.AppendLine($"{varName} base value set to {stat.Base}");
+                                        return stat.Value;
                                     }
                                 }
-                                ctx.Vars[varName] = var / assignment;
-                                sb.AppendLine($"{varName} updated");
-                                return $"{assignment.Value}";
+                                ctx[varName] = var / assignment;
+                                sb?.AppendLine($"{varName} updated");
+                                return $"{assignment}";
                             };
-
                         }
                         else
-                            sb.Append($"{varNode.VarName} not found");
+                            sb?.Append($"{varNode.VarName} not found");
                         break;
                     case "%=":
                         if(ctx.Vars.TryGetValue(varName, out var))
                         {
                             op = (identifier, assignment) =>
                             {
-                                ctx.OnValueChanged("var");
-                                if(var is StatValue stat)
+                                if(var is Stat stat)
                                 {
-                                    if(assignment.Value is int i)
+                                    if(assignment is int i)
                                     {
-                                        stat.Stat.Base %= i;
-                                        sb.AppendLine($"{varName} base value set to {stat.Stat.Base}");
-                                        return stat.Eval(ctx, sb);
+                                        stat.Base %= i;
+                                        sb?.AppendLine($"{varName} base value set to {stat.Base}");
+                                        return stat.Value;
                                     }
                                 }
-                                ctx.Vars[varName] = var % assignment;
-                                sb.AppendLine($"{varName} updated");
-                                return $"{assignment.Value}";
+                                ctx[varName] = var % assignment;
+                                sb?.AppendLine($"{varName} updated");
+                                return $"{assignment}";
                             };
-
                         }
                         else
-                            sb.Append($"{varNode.VarName} not found");
+                            sb?.Append($"{varNode.VarName} not found");
                         break;
                 }
 
@@ -232,7 +226,7 @@ namespace Gellybeans.Expressions
 
                 Next();
                 var rhs = ParseTernary();
-                return new AssignVarNode(varNode, rhs, op);
+                return new AssignVarNode(varNode.VarName, rhs, op);
             }
             return node;
         }
@@ -243,7 +237,7 @@ namespace Gellybeans.Expressions
 
             while(true)
             {
-                Func<ValueNode, ValueNode, ValueNode, ValueNode> op = null!;
+                Func<dynamic, dynamic, dynamic, dynamic> op = null!;
 
                 if(Current.TokenType == TokenType.Ternary) { op = (a, b, c) => a == 1 ? b : c; }
 
@@ -267,7 +261,7 @@ namespace Gellybeans.Expressions
 
             while(true)
             {
-                Func<ValueNode, ValueNode, ValueNode> op = null!;
+                Func<dynamic, dynamic, dynamic> op = null!;
 
                 if(Current.TokenType == TokenType.LogicalOr) { op = (a, b) => (a == 1 || b == 1) ? 1 : 0; }
                 else if(Current.TokenType == TokenType.LogicalAnd) { op = (a, b) => (a == 1 && b == 1) ? 1 : 0; }
@@ -287,10 +281,27 @@ namespace Gellybeans.Expressions
 
             while(true)
             {
-                Func<ValueNode, ValueNode, ValueNode> op = null!;
+                Func<dynamic, dynamic, dynamic> op = null!;
 
                 if(Current.TokenType == TokenType.BitwiseOr) { op = (a, b) => a | b; }
                 else if(Current.TokenType == TokenType.BitwiseAnd) { op = (a, b) => a & b; }
+                else if(Current.TokenType == TokenType.GetBonus) 
+                { 
+                    op = (identifier, type) =>
+                    { 
+                        if(ctx.Vars.TryGetValue(identifier.ToString(), out dynamic var))
+                        {
+                            if(var is StatValue s)
+                                return s.Stat.GetBonus((BonusType)(int)type);
+                            else
+                                sb?.AppendLine($"{identifier} is not a stat value.");
+                        }
+                        else
+                            sb?.AppendLine($"{identifier} not found.");
+                        return 0;
+                    }; 
+                
+                }
 
                 if(op == null) return lhs;
 
@@ -307,7 +318,7 @@ namespace Gellybeans.Expressions
 
             while(true)
             {
-                Func<ValueNode, ValueNode, ValueNode> op = null!;
+                Func<dynamic, dynamic, dynamic> op = null!;
 
                 if(Current.TokenType == TokenType.Equals) { op = (a, b) => a == b ? 1 : 0; }
                 else if(Current.TokenType == TokenType.NotEquals) { op = (a, b) => a != b ? 1 : 0; }
@@ -328,7 +339,7 @@ namespace Gellybeans.Expressions
 
             while(true)
             {
-                Func<ValueNode, ValueNode, ValueNode> op = null!;
+                Func<dynamic, dynamic, dynamic> op = null!;
 
                 if(Current.TokenType == TokenType.Greater) { op = (a, b) => a > b ? 1 : 0; }
                 else if(Current.TokenType == TokenType.GreaterEquals) { op = (a, b) => a >= b ? 1 : 0; }
@@ -350,7 +361,7 @@ namespace Gellybeans.Expressions
 
             while(true)
             {
-                Func<ValueNode, ValueNode, ValueNode> op = null!;
+                Func<dynamic, dynamic, dynamic> op = null!;
 
                 if(Current.TokenType == TokenType.Add) { op = (a, b) => a + b; }
                 else if(Current.TokenType == TokenType.Sub) { op = (a, b) => a - b; }
@@ -370,7 +381,7 @@ namespace Gellybeans.Expressions
 
             while(true)
             {
-                Func<ValueNode, ValueNode, ValueNode> op = null!;
+                Func<dynamic, dynamic, dynamic> op = null!;
 
                 if(Current.TokenType == TokenType.Mul) { op = (a, b) => a * b; }
                 else if(Current.TokenType == TokenType.Div) { op = (a, b) => a / b; }
@@ -386,26 +397,51 @@ namespace Gellybeans.Expressions
         }
 
         ExpressionNode ParseUnary()
-        {
-                if(Current.TokenType == TokenType.Add)
+        {                
+            if(Current.TokenType == TokenType.Add)
                     Next();
 
-                if(Current.TokenType == TokenType.Sub)
+            if(Current.TokenType == TokenType.Sub)
+            {
+                Next();
+                var rhs = ParseUnary();
+
+                Func<dynamic, dynamic> op = null!;
+
+                if(rhs is BonusNode b)
                 {
-                    Next();
-                    var rhs = ParseUnary();
-                    return new UnaryNode(rhs, (a) => -a);
+                    op = (bonus) =>
+                    {
+                        var count = 0;
+                        var stats = ctx.Vars.Values.OfType<Stat>();
+                        Console.WriteLine($"stat count: {stats.Count()}. VAR TOTAL: {ctx.Vars.Count}");
+                        foreach(Stat s in stats)
+                        {
+                            if(s.RemoveBonus(b.BonusName))
+                                count++;
+                        }
+                        sb?.AppendLine($"{b.BonusName} removed from {count} stats.");
+
+                        return count;
+                    };
                 }
-                return ParseLeaf();
+                else
+                    op = (a) => -a;
+
+
+                return new UnaryNode(rhs, op);
+            }
+            return ParseLeaf();
         }
 
         ExpressionNode ParseLeaf()
         {
             if(Current.TokenType == TokenType.Number)
-            {
-                var node = new ValueNode(int.Parse(Current.Value));
+            {                               
+                var i = int.Parse(Current.Value);
+
                 Next();
-                return node;
+                return new NumberNode(i);
             }
 
             if(Current.TokenType == TokenType.OpenPar)
@@ -414,7 +450,7 @@ namespace Gellybeans.Expressions
                 var node = ParseTernary();
 
                 if(Current.TokenType != TokenType.ClosePar)
-                    return new StringNode("%Expected`)`", ctx, sb);
+                    return new StringNode("%Expected`)`");
 
                 Next();
                 return node;
@@ -471,7 +507,7 @@ namespace Gellybeans.Expressions
                 while(Current.TokenType != TokenType.EndMacro)
                 {
                     if(Current.TokenType == TokenType.EOF)
-                        return new StringNode("Expected `]`.", ctx, sb);
+                        return new StringNode("Expected `]`.");
 
                     if(Current.TokenType == TokenType.Semicolon)
                     {
@@ -529,13 +565,11 @@ namespace Gellybeans.Expressions
                     }
 
                     if(Current.TokenType != TokenType.ClosePar)
-                        return new StringNode("Expected `)`.", ctx, sb);
+                        return new StringNode("Expected `)`.");
 
                     Next();
                     return new FunctionNode(identifier, args.ToArray());
                 }
-
-                Console.WriteLine("found var");
 
                 Next();
                 return new VarNode(identifier);
@@ -564,14 +598,14 @@ namespace Gellybeans.Expressions
                     else
                         return new BonusNode(bName);
                 }
-                return new StringNode("%?", ctx, sb);
+                return new StringNode("%?");
             }
             
             //StringNode
             if(Current.TokenType == TokenType.String)
             {
                 Next();              
-                return new StringNode(Look(-1).Value, ctx, sb);
+                return new StringNode(Look(-1).Value);
             }
             
             //StoredExpressionNode
@@ -581,7 +615,7 @@ namespace Gellybeans.Expressions
                 return new StoredExpressionNode(Look(-1).Value.Trim(new char[] {'{', '}' }));
             }
 
-            return new StringNode("%?", ctx, sb);
+            return new StringNode("%?");
         }
 
 

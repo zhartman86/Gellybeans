@@ -11,7 +11,7 @@ namespace Gellybeans.Expressions
             Expression = expr;
         }
             
-        public override ValueNode Eval(IContext ctx, StringBuilder sb)
+        public override dynamic Eval(IContext ctx, StringBuilder sb)
         {
             return new ExpressionValue(Expression);
         }

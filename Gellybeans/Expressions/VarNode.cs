@@ -1,5 +1,5 @@
 ﻿using System.Text;
-using System.Text.RegularExpressions;
+using System.Threading.Tasks.Sources;
 
 namespace Gellybeans.Expressions
 {
@@ -14,10 +14,22 @@ namespace Gellybeans.Expressions
             this.varName = varName;
         }
 
-        public override ValueNode Eval(IContext ctx, StringBuilder sb) 
+        public override dynamic Eval(IContext ctx, StringBuilder sb) 
         {
-            var node = ctx.GetVar(varName, sb);
-            var value = node.Eval(ctx, sb);
+            var variable = varName.Replace(" ", "_").ToUpper();
+            dynamic value = "";
+            if(ctx.Vars.TryGetValue(variable, out var node))
+            {
+                if(node is IEval e)
+                {
+                    Console.WriteLine("found eval");
+                    value = e.Eval(ctx, sb);
+                }
+            }
+            else
+                sb?.AppendLine($"{variable} not found.");
+
+            
             return value;
         }
     }

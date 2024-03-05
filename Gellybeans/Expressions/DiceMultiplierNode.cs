@@ -15,7 +15,7 @@ namespace Gellybeans.Expressions
             this.token = token;
         }
 
-        public override ValueNode Eval(IContext ctx, StringBuilder sb)
+        public override dynamic Eval(IContext ctx, StringBuilder sb)
         {
             var rhValue = rhs.Eval(ctx, sb);
             var lhValue = 0;

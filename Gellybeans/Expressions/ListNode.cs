@@ -13,7 +13,7 @@ namespace Gellybeans.Expressions
             this.expressions = expressions;
         }
 
-        public override ValueNode Eval(IContext ctx, StringBuilder sb)
+        public override dynamic Eval(IContext ctx, StringBuilder sb)
         {
             for (int i = 0; i < expressions.Count; i++)
             {

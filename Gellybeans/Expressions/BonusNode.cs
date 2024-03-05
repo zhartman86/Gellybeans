@@ -18,24 +18,22 @@ namespace Gellybeans.Expressions
 
         public Bonus GetBonus()
         {
+            Bonus b = new Bonus() { Name = BonusName };      
+            
             if(BonusType != null && BonusValue != null)
             {
                 var hasType = int.TryParse(BonusType.Eval(null!, null!).ToString(), out int type);
                 var hasValue = int.TryParse(BonusValue.Eval(null!, null!).ToString(), out int value);
 
-                Bonus b = new()
-                {
-                    Name = BonusName,
-                    Type = hasType ? (BonusType)type : (BonusType)(-1),
-                    Value = hasValue ? value : 0
-                };
-                return b;
+                b.Type = hasType ? (BonusType)type : (BonusType)(-1);
+                b.Value = hasValue ? value : 0;
             }
-            return Bonus.Empty;
+
+            return b;
         }
             
 
-        public override ValueNode Eval(IContext ctx, StringBuilder sb) =>
+        public override dynamic Eval(IContext ctx, StringBuilder sb) =>
             GetBonus();
 
     }
