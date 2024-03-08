@@ -28,6 +28,7 @@ namespace Gellybeans.Pathfinder
 
 
             //bonus types
+            ["EMPTY"] = -1,
             ["TYPELESS"] = 0,
             ["ALCHEMICAL"] = 1,
             ["ARMOR"] = 2,
@@ -49,7 +50,7 @@ namespace Gellybeans.Pathfinder
             ["SIZE"] = 18,
             ["TRAIT"] = 19,
             ["PENALTY"] = 20,
-            ["BASE"] = 21,
+            ["OVERRIDE"] = 21,
 
             ["ORCUS"] = 666,
         };
@@ -63,7 +64,8 @@ namespace Gellybeans.Pathfinder
                     return Constants[varName];
                 if(Vars.ContainsKey(varName))
                     return Vars[varName];
-                return "Var not found.";
+                
+                return null!;
             }
             set
             {
@@ -78,10 +80,14 @@ namespace Gellybeans.Pathfinder
 
 
 
-        public void RemoveVar(string statName)
+        public bool RemoveVar(string statName)
         {
             if(Vars.Remove(statName))
-                OnValueChanged($"stat:{statName}");
+            {
+                OnValueChanged($"var");
+                return true;
+            }
+            return false;
         }
     
 
@@ -158,7 +164,7 @@ namespace Gellybeans.Pathfinder
 
         public int ClearBonuses()
         {
-            foreach(var var in Vars.Where(x => x.Value is StatValue))
+            foreach(var var in Vars.OfType<Stat>())
             {
                 ((Stat)var.Value).Override = null!;
                 ((Stat)var.Value).Bonuses.Clear();

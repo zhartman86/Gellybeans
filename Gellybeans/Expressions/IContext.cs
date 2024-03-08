@@ -11,7 +11,10 @@ namespace Gellybeans.Expressions
         dynamic GetVar(string varName, StringBuilder sb);
        
         Dictionary<string, dynamic> Vars { get; }
+        Dictionary<string, dynamic> Constants { get; }
         
+        bool RemoveVar(string varName);
+
         //use the indexer to retrieve and set values. this will check for constants
         dynamic this[string varName] { get; set; }
     }

@@ -2,13 +2,13 @@
 
 namespace Gellybeans.Expressions
 {
-    public class ListNode : ExpressionNode
+    public class GroupNode : ExpressionNode
     {
         readonly List<ExpressionNode> expressions;
 
         public List<ExpressionNode> Expressions { get { return expressions; } }
 
-        public ListNode(List<ExpressionNode> expressions)
+        public GroupNode(List<ExpressionNode> expressions)
         {
             this.expressions = expressions;
         }

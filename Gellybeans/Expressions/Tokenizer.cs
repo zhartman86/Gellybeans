@@ -58,8 +58,8 @@ namespace Gellybeans.Expressions
 
         public void ListTokens()
         {
-            for (int i = 0; i < Tokens.Count; i++) 
-                Console.WriteLine($"{Tokens[i].TokenType}");      
+            for (int i = 0; i < Tokens.Count; i++) { }
+                //Console.WriteLine($"{Tokens[i].TokenType}");      
         }
 
         public override string ToString()
@@ -84,7 +84,6 @@ namespace Gellybeans.Expressions
             for(int i = index; i < tokens.Count; i++)
                 sb.Append(tokens[i].ToString());
 
-            Console.WriteLine(sb.ToString());
             return sb.ToString();
         }
 
@@ -160,8 +159,11 @@ namespace Gellybeans.Expressions
                         currentToken = TokenType.GetBonus;
                         Tokens.Add(new Token(TokenType.GetBonus, "$?"));
                     }
-                    currentToken = TokenType.Bonus;
-                    Tokens.Add(new Token(TokenType.Bonus, "$"));
+                    else
+                    {
+                        currentToken = TokenType.Bonus;
+                        Tokens.Add(new Token(TokenType.Bonus, "$"));
+                    }                 
                     return;
 
 
@@ -324,14 +326,14 @@ namespace Gellybeans.Expressions
 
                 case '[':
                     NextChar();
-                    currentToken = TokenType.BeginMacro;
-                    Tokens.Add(new Token(TokenType.BeginMacro, "["));
+                    currentToken = TokenType.OpenSquare;
+                    Tokens.Add(new Token(TokenType.OpenSquare, "["));
                     return;
 
                 case ']':
                     NextChar();
-                    currentToken = TokenType.EndMacro;
-                    Tokens.Add(new Token(TokenType.EndMacro, "]"));
+                    currentToken = TokenType.CloseSquare;
+                    Tokens.Add(new Token(TokenType.CloseSquare, "]"));
                     return;
 
                 case '(':
@@ -344,12 +346,36 @@ namespace Gellybeans.Expressions
                     NextChar();
                     currentToken = TokenType.ClosePar;
                     Tokens.Add(new Token(TokenType.ClosePar, ")"));
-                    return;               
-                
+                    return;
+
+                case '{':
+                    NextChar();
+                    currentToken = TokenType.OpenSquig;
+                    Tokens.Add(new Token(TokenType.OpenSquig, "{"));
+                    return;
+
+                case '}':
+                    NextChar();
+                    currentToken = TokenType.CloseSquig;
+                    Tokens.Add(new Token(TokenType.CloseSquig, "}"));
+                    return;
+
                 case ',':
                     NextChar();
                     currentToken = TokenType.Comma;
                     Tokens.Add(new Token(TokenType.Comma, ","));
+                    return;
+
+                case '@':
+                    NextChar();
+                    currentToken = TokenType.Base;
+                    Tokens.Add(new Token(TokenType.Base, "@"));
+                    return;
+
+                case '\\':
+                    NextChar();
+                    currentToken = TokenType.Remove;
+                    Tokens.Add(new Token(TokenType.Remove, @"\"));
                     return;
             }
 

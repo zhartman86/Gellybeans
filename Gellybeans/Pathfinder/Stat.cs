@@ -1,11 +1,9 @@
-﻿using System.Reflection.Metadata;
-using System.Reflection.Metadata.Ecma335;
-using System.Runtime.CompilerServices;
+﻿using Gellybeans.Expressions;
 using System.Text;
 
 namespace Gellybeans.Pathfinder
 {
-    public class Stat
+    public class Stat : IEval
     {
 
         public int Base { get; set; } = 0;
@@ -26,6 +24,32 @@ namespace Gellybeans.Pathfinder
         public Stat(int baseValue) => 
             Base = baseValue;
 
+        public string Display()
+        {
+            var str = $"## {Value}";
+            if(Bonuses != null || Override != null)
+            {
+                var stb = new StringBuilder();
+                stb.AppendLine(str);
+                if(Override != null)
+                {
+                    stb.AppendLine($"~~**Base:**~~ {Base}");
+                    stb.AppendLine($"**Override:** {Override.Value}");
+                }
+                else
+                    stb.AppendLine($"**Base:** {Base}");
+
+                if(Bonuses != null)
+                    for(int i = 0; i < Bonuses.Count; i++)
+                        stb.AppendLine($"- {Bonuses[i]}");
+
+                return stb.ToString();
+            }
+            return str;
+        }
+
+        public dynamic Eval(IContext ctx, StringBuilder sb) =>
+            Value;
 
 
 
@@ -98,7 +122,7 @@ namespace Gellybeans.Pathfinder
 
             Bonuses ??= new List<Bonus>();
             
-            if(b.Type == BonusType.Base)
+            if(b.Type == BonusType.Override)
                 Override = b;
             else
                 Bonuses.Add(b);
@@ -132,38 +156,16 @@ namespace Gellybeans.Pathfinder
                     Override = null!;
             }
 
-            Console.WriteLine($"Removing bonuses named {bonusToUpper}");
-
             var count = Bonuses.RemoveAll(x => x.Name == bonusToUpper);
 
-            Console.WriteLine($"Bonuses removed: {count}");
+            if(Bonuses.Count == 0)
+                Bonuses = null!;
 
             return count > 0;
         }
 
-        public override string ToString()
-        {
-            var str = $"## {Value}";
-            if(Bonuses != null || Override != null)
-            {
-                var sb = new StringBuilder();
-                sb.AppendLine(str);
-                if(Override != null)
-                {
-                    sb.AppendLine($"~~**Base:**~~ {Base}");
-                    sb.AppendLine($"**Override:** {Override.Value}");
-                }
-                else
-                    sb.AppendLine($"**Base:** {Base}");
-
-                if(Bonuses != null)
-                    for(int i = 0; i < Bonuses.Count; i++)
-                        sb.AppendLine($" -{Bonuses[i]}");                
-                
-                return sb.ToString();
-            }
-            return str;
-        }
+        public override string ToString() =>
+            Value.ToString();
 
         public static implicit operator int(Stat stat) => stat.Value;
         public static implicit operator Stat(int value) => new(value);
@@ -201,31 +203,10 @@ namespace Gellybeans.Pathfinder
         public static int operator %(int lhs, Stat rhs) =>
             lhs % rhs.Value;
 
-
-        //public static Stat operator +(Stat lhs, Stat rhs)
-        //{
-        //    if( rhs.Bonuses != null)
-        //        lhs.Bonuses?.AddRange( rhs.Bonuses);
-
-        //    var stat = new Stat() { Base = lhs.Base + rhs.Base, Bonuses = lhs.Bonuses ?? ( rhs.Bonuses ?? null!) };
-        //    return stat;
-        //}
-
-
         public static bool operator ==(Stat lhs, Stat rhs) =>
             lhs.Value == rhs.Value;
         public static bool operator !=(Stat lhs, Stat rhs) =>
             lhs.Value != rhs.Value;
-        
-        public override bool Equals(object? obj)
-        {
-            if(obj != null && obj is Stat s)
-                return Value == s.Value;
-
-            return false;
-        }
-        public override int GetHashCode() =>
-            Value;
 
         public static Stat operator +(Stat lhs, Bonus rhs)
         {
@@ -238,5 +219,29 @@ namespace Gellybeans.Pathfinder
             lhs.RemoveBonus(rhs.Name);
             return lhs;
         }
+
+        //public static string operator +(Stat lhs)
+
+        public override bool Equals(object? obj)
+        {
+            if(obj != null && obj is Stat s)
+                return Value == s.Value;
+
+            return false;
+        }
+        public override int GetHashCode() =>
+            Value;
+
+       
+
+
+        //public static Stat operator +(Stat lhs, Stat rhs)
+        //{
+        //    if( rhs.Bonuses != null)
+        //        lhs.Bonuses?.AddRange( rhs.Bonuses);
+
+        //    var stat = new Stat() { Base = lhs.Base + rhs.Base, Bonuses = lhs.Bonuses ?? ( rhs.Bonuses ?? null!) };
+        //    return stat;
+        //}
     }
 }

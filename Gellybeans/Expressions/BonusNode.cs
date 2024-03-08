@@ -16,14 +16,14 @@ namespace Gellybeans.Expressions
             BonusValue = bonusValue;
         }
 
-        public Bonus GetBonus()
+        public Bonus GetBonus(IContext ctx)
         {
             Bonus b = new Bonus() { Name = BonusName };      
             
             if(BonusType != null && BonusValue != null)
             {
-                var hasType = int.TryParse(BonusType.Eval(null!, null!).ToString(), out int type);
-                var hasValue = int.TryParse(BonusValue.Eval(null!, null!).ToString(), out int value);
+                var hasType = int.TryParse(BonusType.Eval(ctx, null!).ToString(), out int type);
+                var hasValue = int.TryParse(BonusValue.Eval(ctx, null!).ToString(), out int value);
 
                 b.Type = hasType ? (BonusType)type : (BonusType)(-1);
                 b.Value = hasValue ? value : 0;
@@ -34,7 +34,7 @@ namespace Gellybeans.Expressions
             
 
         public override dynamic Eval(IContext ctx, StringBuilder sb) =>
-            GetBonus();
+            GetBonus(ctx);
 
     }
 }

@@ -6,9 +6,10 @@
         Ternary,        // ?::
         Bonus,          // $
         GetBonus,       // $?
+        Base,           // @
         Assign,         // = += -= *= /= %= |=
         AssignExpr,     // ::
-        AssignAddExpr,  // ** 
+        Remove,         // \
         AssignFlag,     // |=
         LogicalOr,      // ||
         LogicalAnd,     // &&
@@ -30,6 +31,10 @@
         Number,         // integer
         OpenPar,        // (
         ClosePar,       // )
+        OpenSquig,      // {
+        CloseSquig,     // }
+        OpenSquare,     // [
+        CloseSquare,    // ]
         Comma,          // ,
         BeginString,    // "
         SingleQuote,    // '
@@ -39,9 +44,7 @@
         String,         // "abc" or 'abc'
         Dice,           // 1d20
         Separator,      // :
-        HasFlag,        // :?
-        BeginMacro,     // [
-        EndMacro,       // ]
+        HasFlag,        // :?       
         Error,
         EOF,
     }

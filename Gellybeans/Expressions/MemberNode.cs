@@ -4,7 +4,9 @@ namespace Gellybeans.Expressions
 {
     public class MemberNode : ExpressionNode
     {
-
+        string parentName;
+        ExpressionNode value;
+        
 
         public MemberNode(string identifier, ExpressionNode member, IContext ctx, StringBuilder sb = null!)
         {

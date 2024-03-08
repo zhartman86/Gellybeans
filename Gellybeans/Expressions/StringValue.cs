@@ -11,23 +11,14 @@ namespace Gellybeans.Expressions
         
         static readonly Regex brackets = new(@"\{.*?\}", RegexOptions.Compiled);
         
-        public StringValue(string value)
-        {
+        public StringValue(string value) =>
             String = value;
-        }           
 
-        public override string ToString()
-        {
-            string str = String.Replace(@"\n", "\n");
-
-            str = brackets.Replace(str!, m =>
-            {
-                return $"**{m.Value}**";      
-            });
-
-            return str;
-        }
+        public override string ToString() => 
+            String;
         
+        public string Display() =>
+            String;
 
         public dynamic Eval(IContext ctx, StringBuilder sb)
         {
@@ -42,5 +33,19 @@ namespace Gellybeans.Expressions
 
             return str;
         }
+
+        public static implicit operator StringValue(string s) =>
+            new(s);
+
+        public static StringValue operator +(StringValue lhs, StringValue rhs) =>
+             lhs.String + rhs.String;
+
+        public static StringValue operator +(StringValue lhs, string rhs) =>
+            lhs.String + rhs;
+
+        public static StringValue operator +(string lhs, StringValue rhs) =>
+            lhs + rhs.String;
     }
+
+   
 }

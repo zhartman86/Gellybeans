@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Text;
 using System.Threading.Tasks.Sources;
 
 namespace Gellybeans.Expressions
@@ -17,19 +18,12 @@ namespace Gellybeans.Expressions
         public override dynamic Eval(IContext ctx, StringBuilder sb) 
         {
             var variable = varName.Replace(" ", "_").ToUpper();
-            dynamic value = "";
-            if(ctx.Vars.TryGetValue(variable, out var node))
+            dynamic value = ctx[variable];
+            if(value is null)
             {
-                if(node is IEval e)
-                {
-                    Console.WriteLine("found eval");
-                    value = e.Eval(ctx, sb);
-                }
-            }
-            else
+                value = 0;
                 sb?.AppendLine($"{variable} not found.");
-
-            
+            }
             return value;
         }
     }

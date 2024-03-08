@@ -21,14 +21,11 @@ namespace Gellybeans.Expressions
 
         public override dynamic Eval(IContext ctx, StringBuilder sb)
         {
-            Console.WriteLine($"eval'ing binary node. {lhs}, {rhs}");
             var lhValue = lhs.Eval(ctx, sb);
             var rhValue = rhs.Eval(ctx, sb);
-            Console.WriteLine($"eval'd. {lhValue}, {rhValue}");
 
             var result = op(lhValue, rhValue);
 
-            Console.WriteLine($"result {result}");
 
             return result;
         }
