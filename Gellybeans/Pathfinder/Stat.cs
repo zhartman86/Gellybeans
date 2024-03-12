@@ -24,8 +24,12 @@ namespace Gellybeans.Pathfinder
         public Stat(int baseValue) => 
             Base = baseValue;
 
-        public string Display(IContext ctx, StringBuilder sb)
+        public string Display(int depth, IContext ctx, StringBuilder sb)
         {
+            depth++;
+            if(depth > Parser.MAX_DEPTH)
+                return "operation cancelled: maximum evaluation depth reached.";
+
             var str = $"## {Value}";
             if(Bonuses != null || Override != null)
             {

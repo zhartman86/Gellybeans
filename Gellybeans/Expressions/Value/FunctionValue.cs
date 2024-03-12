@@ -20,8 +20,12 @@ namespace Gellybeans.Expressions
 
 
 
-        public dynamic Invoke(string[] args, IContext ctx, StringBuilder sb)
+        public dynamic Invoke(int depth, string[] args, IContext ctx, StringBuilder sb)
         {
+            depth++;
+            if(depth > Parser.MAX_DEPTH)
+                return "operation cancelled: maximum evaluation depth reached.";
+
             Console.WriteLine("Invoking function");
             if (args.Length != ParamCount)
                 return "Arguments don't match parameter count for this function.";
@@ -33,7 +37,7 @@ namespace Gellybeans.Expressions
             }
             var scope = new ScopedContext(ctx, new());
             Console.WriteLine($"FUNCTION:\n{s}");
-            var result = Parser.Parse(s, scope).Eval(scope);
+            var result = Parser.Parse(s, scope).Eval(depth, scope);
             Console.WriteLine("Function Parsed");
             return result;
         }

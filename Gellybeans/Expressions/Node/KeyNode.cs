@@ -18,10 +18,14 @@ namespace Gellybeans.Expressions
             this.Key = Key;
         }
 
-        public override dynamic Eval(IContext ctx = null, StringBuilder sb = null)
+        public override dynamic Eval(int depth, IContext ctx = null, StringBuilder sb = null)
         {
+            depth++;
+            if(depth > Parser.MAX_DEPTH)
+                return "operation cancelled: maximum evaluation depth reached.";
+
             var v = VarName.ToUpper();
-            var result = Key.Eval(ctx, sb);
+            var result = Key.Eval(depth, ctx, sb);
             if (ctx.TryGetVar(v, out var var))
             {
                 if (var is ArrayValue a)

@@ -12,7 +12,13 @@ namespace Gellybeans.Expressions
         public override string ToString() =>
             Number.ToString();
 
-        public override dynamic Eval(IContext ctx = null!, StringBuilder sb = null!) =>
-            Number;
+        public override dynamic Eval(int depth, IContext ctx = null!, StringBuilder sb = null!)
+        {
+            depth++;
+            if(depth > Parser.MAX_DEPTH)
+                return "operation cancelled: maximum evaluation depth reached.";
+            
+            return Number;
+        }
     }
 }

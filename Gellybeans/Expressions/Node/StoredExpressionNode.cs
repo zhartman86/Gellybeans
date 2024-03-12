@@ -11,8 +11,15 @@ namespace Gellybeans.Expressions
             Expression = expr;
         }
 
-        public override dynamic Eval(IContext ctx, StringBuilder sb) =>
-            new ExpressionValue(Expression);
+        public override dynamic Eval(int depth, IContext ctx, StringBuilder sb)
+        {
+            depth++;
+            if(depth > Parser.MAX_DEPTH)
+                return "operation cancelled: maximum evaluation depth reached.";
+
+            return new ExpressionValue(Expression);
+        }
+        
 
         public override string ToString()
         {

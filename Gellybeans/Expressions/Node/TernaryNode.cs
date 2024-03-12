@@ -19,14 +19,19 @@ namespace Gellybeans.Expressions
             this.op = op;
         }
 
-        public override dynamic Eval(IContext ctx, StringBuilder sb)
+        public override dynamic Eval(int depth, IContext ctx, StringBuilder sb)
         {
+            depth++;
+            if(depth > Parser.MAX_DEPTH)
+                return "operation cancelled: maximum evaluation depth reached.";
+
+
             dynamic lhValue = 0;
             dynamic rhValue = 0;
 
-            var conValue = condition.Eval(ctx, sb);
+            var conValue = condition.Eval(depth, ctx, sb);
             if (conValue is IReduce r)
-                conValue = r.Reduce(ctx, sb);
+                conValue = r.Reduce(depth, ctx, sb);
 
             if (conValue is ArrayValue a)
             {
@@ -34,40 +39,35 @@ namespace Gellybeans.Expressions
                 {
                     if (a.Values[i])
                     {
-                        lhValue = lhs.Eval(ctx, sb);
+                        lhValue = lhs.Eval(depth, ctx, sb);
                         if (lhValue is IReduce rr)
-                            lhValue = rr.Reduce(ctx, sb);
+                            lhValue = rr.Reduce(depth, ctx, sb);
                     }
                     if (!a.Values[i])
                     {
-                        rhValue = rhs.Eval(ctx, sb);
+                        rhValue = rhs.Eval(depth, ctx, sb);
                         if (rhValue is IReduce rrr)
-                            rhValue = rrr.Reduce(ctx, sb);
+                            rhValue = rrr.Reduce(depth, ctx, sb);
                     }
                     a.Values[i] = op(a.Values[i], lhValue, rhValue);
                 }
                 return a;
-
             }
             else
             {
                 if (conValue)
                 {
-                    lhValue = lhs.Eval(ctx, sb);
+                    lhValue = lhs.Eval(depth, ctx, sb);
                     if (lhValue is IReduce rr)
-                        lhValue = rr.Reduce(ctx, sb);
+                        lhValue = rr.Reduce(depth, ctx, sb);
                 }
                 if (!conValue)
                 {
-                    rhValue = rhs.Eval(ctx, sb);
+                    rhValue = rhs.Eval(depth, ctx, sb);
                     if (rhValue is IReduce rrr)
-                        rhValue = rrr.Reduce(ctx, sb);
+                        rhValue = rrr.Reduce(depth, ctx, sb);
                 }
             }
-
-
-
-
 
             var result = op(conValue, lhValue, rhValue);
             return result;

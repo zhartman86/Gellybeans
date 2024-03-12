@@ -17,12 +17,16 @@ namespace Gellybeans.Expressions
 
 
 
-        public override dynamic Eval(IContext ctx, StringBuilder sb)
+        public override dynamic Eval(int depth, IContext ctx, StringBuilder sb)
         {
+            depth++;
+            if(depth > Parser.MAX_DEPTH)
+                return "operation cancelled: maximum evaluation depth reached.";
+
             var v = varName.Replace(" ", "_").ToUpper();
             dynamic value = ctx[v];
             if (value is IReduce r)
-                value = r.Reduce(ctx, sb);
+                value = r.Reduce(depth, ctx, sb);
             if (value is null)
             {
                 value = 0;

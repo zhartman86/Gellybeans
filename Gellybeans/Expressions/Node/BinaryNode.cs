@@ -19,17 +19,21 @@ namespace Gellybeans.Expressions
         }
 
 
-        public override dynamic Eval(IContext ctx, StringBuilder sb)
+        public override dynamic Eval(int depth, IContext ctx, StringBuilder sb)
         {
+            depth++;
+            if(depth > Parser.MAX_DEPTH)
+                return "operation cancelled: maximum evaluation depth reached.";
+
             Console.WriteLine($"binary: lhs:{lhs.GetType()}, rhs:{rhs.GetType()}");
 
-            var lhValue = lhs.Eval(ctx, sb);
+            var lhValue = lhs.Eval(depth, ctx, sb);
             if (lhValue is IReduce r)
-                lhValue = r.Reduce(ctx, sb);
+                lhValue = r.Reduce(depth, ctx, sb);
 
-            var rhValue = rhs.Eval(ctx, sb);
+            var rhValue = rhs.Eval(depth, ctx, sb);
             if (rhValue is IReduce rr)
-                rhValue = rr.Reduce(ctx, sb);
+                rhValue = rr.Reduce(depth, ctx, sb);
 
             Console.WriteLine($"binary: lhValue:{lhValue.GetType()}, rhValue:{rhValue.GetType()}");
 

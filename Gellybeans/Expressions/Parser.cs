@@ -11,20 +11,20 @@ using System.Xml.Linq;
 namespace Gellybeans.Expressions
 {
     /// <summary>
-    /// This will take an expression and generate nodes, as to respect typical mathematical equations and their order of operations.
-    /// 
-    /// Ternary => LogicalAndOr => Equals => GreaterLess => AddSub => MultDivMod => Unary => Leaf (Number => Parens => Dice => Variables => Bonuses, etc.)
-    /// 
     /// This parser builds and expands upon ideas expressed in an article written by Brad Robinson. Thanks Brad!
     /// The article can can be found here: https://medium.com/@toptensoftware/writing-a-simple-math-expression-engine-in-c-d414de18d4ce
     /// </summary>
 
     public class Parser
     {
-        List<Token> tokens;
-        IContext ctx;
+        public const int MAX_DEPTH = 500;
+
+        readonly List<Token> tokens;
+        readonly IContext ctx;       
+        readonly StringBuilder sb;
+
         int index;
-        StringBuilder sb;
+        int depth = 0;
 
         //dice expression. 0-3 number(s) => d => 1-5 number(s) => 0-3 instances of ('r' or 'h' or 'l' paired with 1-3 number(s))
         static readonly Regex dRegex = new Regex(@"^([0-9]{0,4})d([0-9]{1,4})((?:r|h|l)(?:[0-9]{1,3})){0,2}$", RegexOptions.Compiled);
@@ -78,14 +78,14 @@ namespace Gellybeans.Expressions
             {
                 Console.WriteLine("PIPING");
                 Next();
-                var result = expr.Eval(ctx, sb);
+                var result = expr.Eval(depth, ctx, sb);
                 return new PipeNode(result, ParseTermination());
             }
             
             if(Current.TokenType == TokenType.Semicolon)
             {
                 Next();
-                expr.Eval(ctx, sb);
+                expr.Eval(depth, ctx, sb);
                 return ParseTermination();
             }
             return expr;
@@ -261,7 +261,7 @@ namespace Gellybeans.Expressions
                             {
                                 op = (identifier, assignment) =>
                                 {                                   
-                                    var index = keyNode.Key.Eval();
+                                    var index = keyNode.Key.Eval(depth);
                                     var setMessage = $"{varName}[{index}] set";
                                     if(index >= 0 && index < a.Values.Length)
                                         a[index] = assignment;
@@ -551,7 +551,7 @@ namespace Gellybeans.Expressions
                 var rhs = ParseLeaf();
                 op = (value) =>
                 {
-                    var d = new DiceNode(1, 20).Eval(ctx, sb);
+                    var d = new DiceNode(1, 20).Eval(depth, ctx, sb);
                     return d + value;
                 };
                 return new UnaryNode(rhs, op);

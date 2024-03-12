@@ -11,7 +11,7 @@ namespace Gellybeans.Expressions
             Message = message;
         }
 
-        public override dynamic Eval(IContext ctx = null, StringBuilder sb = null) =>
+        public override dynamic Eval(int depth, IContext ctx = null, StringBuilder sb = null) =>
             Message;
     }
 }

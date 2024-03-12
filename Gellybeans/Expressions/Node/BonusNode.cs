@@ -16,19 +16,19 @@ namespace Gellybeans.Expressions
             BonusValue = bonusValue;
         }
 
-        public Bonus GetBonus(IContext ctx)
+        public Bonus GetBonus(int depth, IContext ctx)
         {
             Bonus b = new Bonus() { Name = BonusName };
 
             if (BonusType != null && BonusValue != null)
             {
-                var typeValue = BonusType.Eval(ctx, null!);
+                var typeValue = BonusType.Eval(depth, ctx, null!);
                 if (typeValue is IReduce r)
-                    typeValue = r.Reduce(ctx, null!);
+                    typeValue = r.Reduce(depth, ctx, null!);
 
-                var valueValue = BonusValue.Eval(ctx, null!);
+                var valueValue = BonusValue.Eval(depth, ctx, null!);
                 if (valueValue is IReduce rr)
-                    typeValue = rr.Reduce(ctx, null!);
+                    typeValue = rr.Reduce(depth, ctx, null!);
 
                 var hasType = int.TryParse(typeValue.ToString(), out int type);
                 var hasValue = int.TryParse(typeValue.ToString(), out int value);
@@ -41,8 +41,15 @@ namespace Gellybeans.Expressions
         }
 
 
-        public override dynamic Eval(IContext ctx, StringBuilder sb) =>
-            GetBonus(ctx);
+        public override dynamic Eval(int depth, IContext ctx, StringBuilder sb)
+        {
+            depth++;
+            if(depth > Parser.MAX_DEPTH)
+                return "operation cancelled: maximum evaluation depth reached.";
+
+            return GetBonus(depth, ctx);
+        }
+            
 
     }
 }

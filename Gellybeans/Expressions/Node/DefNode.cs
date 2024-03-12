@@ -17,9 +17,13 @@ namespace Gellybeans.Expressions
             this.placeholders = placeholders;
         }
 
-        public override dynamic Eval(IContext ctx, StringBuilder sb)
+        public override dynamic Eval(int depth, IContext ctx, StringBuilder sb)
         {
-            for (int i = 0; i < placeholders.Length; i++)
+            depth++;
+            if(depth > Parser.MAX_DEPTH)
+                return "operation cancelled: maximum evaluation depth reached.";
+
+            for(int i = 0; i < placeholders.Length; i++)
             {
                 for (int j = 0; j < tokens.Count; j++)
                 {

@@ -24,7 +24,7 @@ namespace Gellybeans.Expressions
             }
         }
 
-        public string Display(IContext ctx, StringBuilder sb)
+        public string Display(int depth, IContext ctx, StringBuilder sb)
         {
             var results = new StringBuilder();
             results.Append('[');
@@ -39,13 +39,17 @@ namespace Gellybeans.Expressions
             return results.ToString();
         }
 
-        public dynamic Reduce(IContext ctx, StringBuilder sb)
+        public dynamic Reduce(int depth, IContext ctx, StringBuilder sb)
         {
+            depth++;
+            if(depth > Parser.MAX_DEPTH)
+                return "operation cancelled: maximum evaluation depth reached.";
+
             var a = new dynamic[Values.Length];
             for (int i = 0; i < Values.Length; i++)
             {
                 if (Values[i] is IReduce r)
-                    a[i] = r.Reduce(ctx, sb);
+                    a[i] = r.Reduce(depth, ctx, sb);
                 else
                     a[i] = Values[i];
             }

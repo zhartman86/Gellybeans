@@ -17,8 +17,12 @@ namespace Gellybeans.Expressions
             this.sides = sides;
         }
 
-        public override dynamic Eval(IContext ctx, StringBuilder sb)
+        public override dynamic Eval(int depth, IContext ctx, StringBuilder sb)
         {
+            depth++;
+            if(depth > Parser.MAX_DEPTH)
+                return "operation cancelled: maximum evaluation depth reached.";
+
             var random = new Random();
             var results = new List<int>();
             int total = 0;

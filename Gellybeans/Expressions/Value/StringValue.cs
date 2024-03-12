@@ -12,14 +12,14 @@ namespace Gellybeans.Expressions
         public StringValue(string value) =>
             String = value;
 
-        public string Display(IContext ctx, StringBuilder sb)
+        public string Display(int depth, IContext ctx, StringBuilder sb)
         {
             string str = String.Replace(@"\n", "\n");
 
             str = brackets.Replace(str!, m =>
             {
                 var s = m.Value.Trim(new char[] { '{', '}' });
-                var p = Parser.Parse(s, ctx).Eval(ctx);
+                var p = Parser.Parse(s, ctx).Eval(depth, ctx);
                 return p.ToString();
             });
 

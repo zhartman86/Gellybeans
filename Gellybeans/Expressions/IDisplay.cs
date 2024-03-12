@@ -4,6 +4,6 @@ namespace Gellybeans.Expressions
 {
     public interface IDisplay
     {
-        string Display(IContext ctx, StringBuilder sb);
+        string Display(int depth, IContext ctx, StringBuilder sb);
     }
 }

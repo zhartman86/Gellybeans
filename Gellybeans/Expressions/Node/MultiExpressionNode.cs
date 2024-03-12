@@ -13,9 +13,13 @@ namespace Gellybeans.Expressions
             this.next = next;
         }
 
-        public override dynamic Eval(IContext ctx, StringBuilder sb)
+        public override dynamic Eval(int depth, IContext ctx, StringBuilder sb)
         {
-            next.Eval(ctx, sb);
+            depth++;
+            if(depth > Parser.MAX_DEPTH)
+                return "operation cancelled: maximum evaluation depth reached.";
+
+            next.Eval(depth, ctx, sb);
             return 0;
         }
     }
