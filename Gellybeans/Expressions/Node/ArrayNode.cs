@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Text;
 
 namespace Gellybeans.Expressions
 {
@@ -16,9 +12,9 @@ namespace Gellybeans.Expressions
         public override dynamic Eval(IContext ctx, StringBuilder sb)
         {
             var array = new dynamic[Values.Length];
-            for(int i = 0; i < Values.Length; i++)
+            for (int i = 0; i < Values.Length; i++)
                 array[i] = Values[i].Eval(ctx, sb);
-   
+
             return new ArrayValue(array);
         }
     }

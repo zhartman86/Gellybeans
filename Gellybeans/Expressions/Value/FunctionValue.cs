@@ -1,17 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
+﻿using System.Text;
 
 namespace Gellybeans.Expressions
 {
     public class FunctionValue
     {
-        int ParamCount { get; set; } 
-        string Body { get; set; }
+        public int ParamCount { get; set; }
+        public string Body { get; set; }
 
         public FunctionValue(int paramCount, string body)
         {
@@ -20,24 +14,27 @@ namespace Gellybeans.Expressions
         }
 
         public override string ToString() =>
-            $"{Body}\nParamCount:**{ParamCount}**";
-        
-            
+            $"```{Body}```\n\nParamCount:**{ParamCount}**";
+
+
 
 
 
         public dynamic Invoke(string[] args, IContext ctx, StringBuilder sb)
         {
-            if(args.Length != ParamCount)
+            Console.WriteLine("Invoking function");
+            if (args.Length != ParamCount)
                 return "Arguments don't match parameter count for this function.";
 
             string s = Body;
-            for(int i = 0; i < args.Length; i++)
+            for (int i = 0; i < args.Length; i++)
             {
                 s = s.Replace($"«{i}»", args[i]);
             }
-
-            var result = Parser.Parse(s, ctx, sb).Eval();         
+            var scope = new ScopedContext(ctx, new());
+            Console.WriteLine($"FUNCTION:\n{s}");
+            var result = Parser.Parse(s, scope).Eval(scope);
+            Console.WriteLine("Function Parsed");
             return result;
         }
     }

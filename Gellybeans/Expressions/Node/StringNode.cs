@@ -11,7 +11,7 @@ namespace Gellybeans.Expressions
         {
             String = str;
         }
-                       
+
 
         public override dynamic Eval(IContext ctx, StringBuilder sb) =>
             new StringValue(String);

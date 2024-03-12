@@ -197,13 +197,13 @@ namespace Gellybeans.Pathfinder
         public static bool operator !=(Stat lhs, Stat rhs) =>
             lhs.Value != rhs.Value;
         public static bool operator <(Stat lhs, Stat rhs) =>
-            lhs.Value > rhs.Value;
+            lhs.Value < rhs.Value;
         public static bool operator >(Stat lhs, Stat rhs) =>
             lhs.Value > rhs.Value;       
         public static bool operator <=(Stat lhs, Stat rhs) =>
-            lhs.Value > rhs.Value;
+            lhs.Value <= rhs.Value;
         public static bool operator >=(Stat lhs, Stat rhs) =>
-            lhs.Value > rhs.Value;
+            lhs.Value >= rhs.Value;
 
         //STAT INT
         public static int operator +(Stat lhs, int rhs) =>
@@ -221,7 +221,7 @@ namespace Gellybeans.Pathfinder
         public static bool operator !=(Stat lhs, int rhs) =>
             lhs.Value != rhs;
         public static bool operator <(Stat lhs, int rhs) =>
-            lhs.Value > rhs;
+            lhs.Value < rhs;
         public static bool operator >(Stat lhs, int rhs) =>
             lhs.Value > rhs;
         public static bool operator <=(Stat lhs, int rhs) =>

@@ -77,7 +77,22 @@ namespace Gellybeans.Pathfinder
             }
         }
 
+        public bool TryGetVar(string varName, out dynamic value)
+        {
+            if(Constants.ContainsKey(varName))
+            {
+                value = Constants[varName];
+                return true;
+            }
+            if(Vars.ContainsKey(varName))
+            {
+                value = Vars[varName];
+                return true;
+            }
 
+            else value = null!;
+            return false;
+        }
 
 
         public bool RemoveVar(string statName)

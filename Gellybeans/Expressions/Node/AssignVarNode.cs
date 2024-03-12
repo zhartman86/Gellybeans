@@ -18,6 +18,6 @@ namespace Gellybeans.Expressions
 
         public override dynamic Eval(IContext ctx, StringBuilder sb) =>
             op(identifier, assignment.Eval(ctx, sb));
-        
+
     }
 }

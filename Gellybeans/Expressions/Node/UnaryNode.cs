@@ -5,7 +5,7 @@ namespace Gellybeans.Expressions
     public class UnaryNode : ExpressionNode
     {
         readonly ExpressionNode node;
-        
+
         Func<dynamic, dynamic> op;
 
         public UnaryNode(ExpressionNode node, Func<dynamic, dynamic> op)
@@ -17,7 +17,7 @@ namespace Gellybeans.Expressions
         public override dynamic Eval(IContext ctx, StringBuilder sb)
         {
             var rhValue = node.Eval(ctx, sb);
-            if(rhValue is IReduce r)
+            if (rhValue is IReduce r)
                 rhValue = r.Reduce(ctx, sb);
             var result = op(rhValue);
             return result;

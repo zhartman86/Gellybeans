@@ -1,4 +1,5 @@
-﻿using Gellybeans.Pathfinder;
+﻿using Gellybeans.Expressions;
+using Gellybeans.Pathfinder;
 using Microsoft.VisualBasic;
 using System.ComponentModel.Design;
 using System.Net.WebSockets;
@@ -73,6 +74,14 @@ namespace Gellybeans.Expressions
         {
             var expr = ParseAssignment();
 
+            if(Current.TokenType == TokenType.Pipe)
+            {
+                Console.WriteLine("PIPING");
+                Next();
+                var result = expr.Eval(ctx, sb);
+                return new PipeNode(result, ParseTermination());
+            }
+            
             if(Current.TokenType == TokenType.Semicolon)
             {
                 Next();
@@ -85,7 +94,6 @@ namespace Gellybeans.Expressions
         ExpressionNode ParseAssignment()
         {
             var node = ParseTernary();
-
             if(Current.TokenType == TokenType.Assign)
             {
                 Func<string, dynamic, dynamic> op = null!;
@@ -93,12 +101,6 @@ namespace Gellybeans.Expressions
                 if(node is VarNode varNode)
                 {                
                     var varName = varNode.VarName.ToUpper();
-
-                    if(ctx.Constants.ContainsKey(varName))
-                    {
-                        Next();
-                        return new ErrorNode($"Cannot modify the constant value {varName}");
-                    }
 
                     switch(Current.Value)
                     {
@@ -124,7 +126,7 @@ namespace Gellybeans.Expressions
                             };
                             break;
                         case "+=":
-                            if(ctx.Vars.TryGetValue(varName, out var var))
+                            if(ctx.TryGetVar(varName, out var var))
                             {
                                 op = (identifier, assignment) =>
                                 {
@@ -148,7 +150,7 @@ namespace Gellybeans.Expressions
                                 sb?.Append($"{varNode.VarName} not found");
                             break;
                         case "-=":
-                            if(ctx.Vars.TryGetValue(varName, out var))
+                            if(ctx.TryGetVar(varName, out var))
                             {
                                 op = (identifier, assignment) =>
                                 {
@@ -172,7 +174,7 @@ namespace Gellybeans.Expressions
                                 sb?.Append($"{varNode.VarName} not found");
                             break;
                         case "*=":
-                            if(ctx.Vars.TryGetValue(varName, out var))
+                            if(ctx.TryGetVar(varName, out var))
                             {
                                 op = (identifier, assignment) =>
                                 {
@@ -195,7 +197,7 @@ namespace Gellybeans.Expressions
                                 sb?.Append($"{varNode.VarName} not found");
                             break;
                         case "/=":
-                            if(ctx.Vars.TryGetValue(varName, out var))
+                            if(ctx.TryGetVar(varName, out var))
                             {
                                 op = (identifier, assignment) =>
                                 {
@@ -218,7 +220,7 @@ namespace Gellybeans.Expressions
                                 sb?.Append($"{varNode.VarName} not found");
                             break;
                         case "%=":
-                            if(ctx.Vars.TryGetValue(varName, out var))
+                            if(ctx.TryGetVar(varName, out var))
                             {
                                 op = (identifier, assignment) =>
                                 {
@@ -251,15 +253,11 @@ namespace Gellybeans.Expressions
                 
                 if(node is KeyNode keyNode)
                 {
-                    Console.WriteLine("keynode found");
                     var varName = keyNode.VarName.ToUpper();
-
-                    
-
                     switch(Current.Value)
                     {
                         case "=":
-                            if(ctx.Vars.TryGetValue(varName, out var var) && var is ArrayValue a)
+                            if(ctx.TryGetVar(varName, out var var) && var is ArrayValue a)
                             {
                                 op = (identifier, assignment) =>
                                 {                                   
@@ -338,14 +336,12 @@ namespace Gellybeans.Expressions
             while(true)
             {
                 Func<dynamic, dynamic, dynamic> op = null!;
-
-                if(Current.TokenType == TokenType.BitwiseOr) { op = (a, b) => a | b; }
-                else if(Current.TokenType == TokenType.BitwiseAnd) { op = (a, b) => a & b; }
-                else if(Current.TokenType == TokenType.GetBonus) 
+                
+                if(Current.TokenType == TokenType.GetBonus) 
                 { 
                     op = (identifier, type) =>
                     { 
-                        if(ctx.Vars.TryGetValue(identifier.ToString(), out dynamic var))
+                        if(ctx.TryGetVar(identifier.ToString(), out dynamic var))
                         {
                             if(var is Stat s)
                                 return s.GetBonus((BonusType)(int)type);
@@ -355,8 +351,7 @@ namespace Gellybeans.Expressions
                         else
                             sb?.AppendLine($"{identifier} not found.");
                         return 0;
-                    }; 
-                
+                    };                
                 }
 
                 if(op == null) return lhs;
@@ -550,7 +545,7 @@ namespace Gellybeans.Expressions
                 
             }
             
-            if(Current.TokenType == TokenType.BitwiseAnd)
+            if(Current.TokenType == TokenType.And)
             {
                 Next();
                 var rhs = ParseLeaf();
@@ -665,22 +660,28 @@ namespace Gellybeans.Expressions
                 {
                     Move(2);
 
-                    if(ctx.Vars.TryGetValue(identifier.ToUpper(), out var value))
+                    
+                    if(ctx.TryGetVar(identifier.ToUpper(), out var value))
                     {
                         if(value is FunctionValue function)
                         {
                             var args = new List<ExpressionNode>();
-                            while(true)
+                            CallNode c;
+                            if(Current.TokenType == TokenType.ClosePar)
                             {
-                                args.Add(ParseTernary());
-
-                                if(Current.TokenType == TokenType.Comma)
-                                {
-                                    Next();
-                                    continue;
-                                }
-                                break;
+                                c = new CallNode(identifier.ToUpper(), args);
                             }
+                            else
+                                while(true)
+                                {
+                                    args.Add(ParseTernary());
+                                    if(Current.TokenType == TokenType.Comma)
+                                    {
+                                        Next();
+                                        continue;
+                                    }
+                                    break;
+                                }                 
 
                             if(Current.TokenType != TokenType.ClosePar)
                                 return new ErrorNode("Expected `)`");

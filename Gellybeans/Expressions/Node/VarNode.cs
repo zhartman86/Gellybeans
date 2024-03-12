@@ -17,13 +17,13 @@ namespace Gellybeans.Expressions
 
 
 
-        public override dynamic Eval(IContext ctx, StringBuilder sb) 
+        public override dynamic Eval(IContext ctx, StringBuilder sb)
         {
             var v = varName.Replace(" ", "_").ToUpper();
             dynamic value = ctx[v];
-            if(value is IReduce r)
+            if (value is IReduce r)
                 value = r.Reduce(ctx, sb);
-            if(value is null)
+            if (value is null)
             {
                 value = 0;
                 sb?.AppendLine($"{v} not found.");

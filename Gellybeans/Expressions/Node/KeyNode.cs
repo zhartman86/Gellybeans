@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Gellybeans.Expressions;
 
 namespace Gellybeans.Expressions
 {
@@ -20,13 +21,14 @@ namespace Gellybeans.Expressions
         public override dynamic Eval(IContext ctx = null, StringBuilder sb = null)
         {
             var v = VarName.ToUpper();
-            var result = Key.Eval(ctx, sb);         
-            if(ctx.Vars.TryGetValue(v, out var var))
+            var result = Key.Eval(ctx, sb);
+            if (ctx.TryGetVar(v, out var var))
             {
-                if(var is ArrayValue a)
+                if (var is ArrayValue a)
                     return a[result];
             }
-            return $"{v} not found";
+            sb?.Append($"{v} not found");
+            return result;
         }
     }
 }

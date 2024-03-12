@@ -183,8 +183,8 @@ namespace Gellybeans.Expressions
                     }              
                     else
                     {
-                        currentToken = TokenType.BitwiseOr;
-                        Tokens.Add(new Token(TokenType.BitwiseOr, "|"));
+                        currentToken = TokenType.Pipe;
+                        Tokens.Add(new Token(TokenType.Pipe, "|"));
                     }                    
                     return;
                 
@@ -198,8 +198,8 @@ namespace Gellybeans.Expressions
                     }
                     else
                     {
-                        currentToken = TokenType.BitwiseAnd;
-                        Tokens.Add(new Token(TokenType.BitwiseAnd, "&"));
+                        currentToken = TokenType.And;
+                        Tokens.Add(new Token(TokenType.And, "&"));
                     }                     
                     return;
 

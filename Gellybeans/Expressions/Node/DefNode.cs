@@ -12,25 +12,25 @@ namespace Gellybeans.Expressions
         readonly List<Token> tokens;
 
         public DefNode(List<Token> tokens, string[] placeholders)
-        {            
+        {
             this.tokens = tokens;
             this.placeholders = placeholders;
         }
 
         public override dynamic Eval(IContext ctx, StringBuilder sb)
-        {           
-            for(int i = 0; i < placeholders.Length; i++)
+        {
+            for (int i = 0; i < placeholders.Length; i++)
             {
-                for(int j = 0; j < tokens.Count; j++)
+                for (int j = 0; j < tokens.Count; j++)
                 {
-                    if(tokens[j].TokenType == TokenType.Var && tokens[j].Value == placeholders[i])
-                        tokens[j].Value = $"«{i}»";
+                    if (tokens[j].TokenType == TokenType.Var && tokens[j].Value == placeholders[i])
+                        tokens[j].Value = $"(«{i}»)";
                 }
 
             }
 
             return new FunctionValue(placeholders.Length, Tokenizer.Output(tokens));
         }
-            
+
     }
 }

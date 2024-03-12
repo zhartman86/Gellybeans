@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using Gellybeans.Expressions;
 
 namespace Gellybeans.Expressions
 {
@@ -23,24 +24,24 @@ namespace Gellybeans.Expressions
             dynamic lhValue = 0;
             dynamic rhValue = 0;
 
-            var conValue = condition.Eval(ctx,sb);
-            if(conValue is IReduce r)
+            var conValue = condition.Eval(ctx, sb);
+            if (conValue is IReduce r)
                 conValue = r.Reduce(ctx, sb);
-            
-            if(conValue is ArrayValue a)
-            {                
-                for(int i = 0; i < a.Values.Length; i++) 
+
+            if (conValue is ArrayValue a)
+            {
+                for (int i = 0; i < a.Values.Length; i++)
                 {
-                    if(a.Values[i])
+                    if (a.Values[i])
                     {
                         lhValue = lhs.Eval(ctx, sb);
-                        if(lhValue is IReduce rr)
+                        if (lhValue is IReduce rr)
                             lhValue = rr.Reduce(ctx, sb);
                     }
-                    if(!a.Values[i])
+                    if (!a.Values[i])
                     {
                         rhValue = rhs.Eval(ctx, sb);
-                        if(rhValue is IReduce rrr)
+                        if (rhValue is IReduce rrr)
                             rhValue = rrr.Reduce(ctx, sb);
                     }
                     a.Values[i] = op(a.Values[i], lhValue, rhValue);
@@ -50,23 +51,23 @@ namespace Gellybeans.Expressions
             }
             else
             {
-                if(conValue)
+                if (conValue)
                 {
                     lhValue = lhs.Eval(ctx, sb);
-                    if(lhValue is IReduce rr)
+                    if (lhValue is IReduce rr)
                         lhValue = rr.Reduce(ctx, sb);
                 }
-                if(!conValue)
+                if (!conValue)
                 {
                     rhValue = rhs.Eval(ctx, sb);
-                    if(rhValue is IReduce rrr)
+                    if (rhValue is IReduce rrr)
                         rhValue = rrr.Reduce(ctx, sb);
                 }
             }
-           
 
-           
-                           
+
+
+
 
             var result = op(conValue, lhValue, rhValue);
             return result;

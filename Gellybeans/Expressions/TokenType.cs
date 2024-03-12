@@ -13,9 +13,8 @@
         AssignFlag,     // |=
         LogicalOr,      // ||
         LogicalAnd,     // &&
-        BitwiseOr,      //
-        BitwiseXor,     //
-        BitwiseAnd,     //
+        Pipe,           // |
+        And,            // &
         Equals,         // ==
         NotEquals,      // !=
         Greater,        // >
