@@ -1,26 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Gellybeans.Pathfinder;
 using System.Text;
 using System.Text.RegularExpressions;
 
 namespace Gellybeans.Expressions
 {
-    public class StringValue : IEval
+    public class StringValue : IDisplay
     {
         public string String { get; set; }
         
         static readonly Regex brackets = new(@"\{.*?\}", RegexOptions.Compiled);
         
         public StringValue(string value) =>
-            String = value;
-
-        public override string ToString() => 
-            String;
+            String = value;      
         
-        public string Display() =>
-            String;
-
-        public dynamic Eval(IContext ctx, StringBuilder sb)
+        public string Display(IContext ctx, StringBuilder sb)
         {
             string str = String.Replace(@"\n", "\n");
 
@@ -34,6 +27,9 @@ namespace Gellybeans.Expressions
             return str;
         }
 
+        public override string ToString() =>
+            String;
+
         public static implicit operator StringValue(string s) =>
             new(s);
 
@@ -45,6 +41,12 @@ namespace Gellybeans.Expressions
 
         public static StringValue operator +(string lhs, StringValue rhs) =>
             lhs + rhs.String;
+
+        public static StringValue operator +(StringValue lhs, int rhs) =>
+            lhs.String + rhs;
+
+        public static StringValue operator +(int lhs, StringValue rhs) =>
+           lhs + rhs.String;
     }
 
    

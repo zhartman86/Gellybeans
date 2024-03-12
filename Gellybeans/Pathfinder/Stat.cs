@@ -3,7 +3,7 @@ using System.Text;
 
 namespace Gellybeans.Pathfinder
 {
-    public class Stat : IEval
+    public class Stat : IDisplay
     {
 
         public int Base { get; set; } = 0;
@@ -24,7 +24,7 @@ namespace Gellybeans.Pathfinder
         public Stat(int baseValue) => 
             Base = baseValue;
 
-        public string Display()
+        public string Display(IContext ctx, StringBuilder sb)
         {
             var str = $"## {Value}";
             if(Bonuses != null || Override != null)
@@ -47,11 +47,6 @@ namespace Gellybeans.Pathfinder
             }
             return str;
         }
-
-        public dynamic Eval(IContext ctx, StringBuilder sb) =>
-            Value;
-
-
 
         public int GetBonus(BonusType type)
         {
@@ -164,12 +159,29 @@ namespace Gellybeans.Pathfinder
             return count > 0;
         }
 
-        public override string ToString() =>
-            Value.ToString();
+        public override string ToString()
+        {
+            if(Bonuses != null)
+            {
+                string s = "";
+                for(int i = 0; i < Bonuses.Count; i++)
+                {                   
+                    s += $"{Bonuses[i]}";
+                    if(i < Bonuses.Count - 1)
+                        s += ", ";
+                }                                  
+                return $"{Value} ({s})";
+            }
+            return Value.ToString();
+        }
+            
+            
 
         public static implicit operator int(Stat stat) => stat.Value;
         public static implicit operator Stat(int value) => new(value);
 
+        
+        //STAT STAT
         public static int operator +(Stat lhs, Stat rhs) =>
             lhs.Value + rhs.Value;
         public static int operator -(Stat lhs, Stat rhs) =>
@@ -180,7 +192,20 @@ namespace Gellybeans.Pathfinder
             lhs.Value / rhs.Value;
         public static int operator %(Stat lhs, Stat rhs) =>
             lhs.Value % rhs.Value;
+        public static bool operator ==(Stat lhs, Stat rhs) =>
+            lhs.Value == rhs.Value;
+        public static bool operator !=(Stat lhs, Stat rhs) =>
+            lhs.Value != rhs.Value;
+        public static bool operator <(Stat lhs, Stat rhs) =>
+            lhs.Value > rhs.Value;
+        public static bool operator >(Stat lhs, Stat rhs) =>
+            lhs.Value > rhs.Value;       
+        public static bool operator <=(Stat lhs, Stat rhs) =>
+            lhs.Value > rhs.Value;
+        public static bool operator >=(Stat lhs, Stat rhs) =>
+            lhs.Value > rhs.Value;
 
+        //STAT INT
         public static int operator +(Stat lhs, int rhs) =>
             lhs.Value + rhs;
         public static int operator -(Stat lhs, int rhs) =>
@@ -191,7 +216,20 @@ namespace Gellybeans.Pathfinder
             lhs.Value / rhs;
         public static int operator %(Stat lhs, int rhs) =>
             lhs.Value % rhs;
-        
+        public static bool operator ==(Stat lhs, int rhs) =>
+            lhs.Value == rhs;
+        public static bool operator !=(Stat lhs, int rhs) =>
+            lhs.Value != rhs;
+        public static bool operator <(Stat lhs, int rhs) =>
+            lhs.Value > rhs;
+        public static bool operator >(Stat lhs, int rhs) =>
+            lhs.Value > rhs;
+        public static bool operator <=(Stat lhs, int rhs) =>
+            lhs.Value <= rhs;
+        public static bool operator >=(Stat lhs, int rhs) =>
+            lhs.Value >= rhs;
+
+        //INT STAT
         public static int operator +(int lhs, Stat rhs) =>
             lhs + rhs.Value;
         public static int operator -(int lhs, Stat rhs) =>
@@ -202,11 +240,20 @@ namespace Gellybeans.Pathfinder
             lhs / rhs.Value;
         public static int operator %(int lhs, Stat rhs) =>
             lhs % rhs.Value;
+        public static bool operator ==(int lhs, Stat rhs) =>
+            lhs == rhs.Value;
+        public static bool operator !=(int lhs, Stat rhs) =>
+            lhs != rhs.Value;
+        public static bool operator <(int lhs, Stat rhs) =>
+            lhs < rhs.Value;
+        public static bool operator >(int lhs, Stat rhs) =>
+            lhs > rhs.Value;
+        public static bool operator <=(int lhs, Stat rhs) =>
+            lhs <= rhs.Value;
+        public static bool operator >=(int lhs, Stat rhs) =>
+            lhs >= rhs.Value;
 
-        public static bool operator ==(Stat lhs, Stat rhs) =>
-            lhs.Value == rhs.Value;
-        public static bool operator !=(Stat lhs, Stat rhs) =>
-            lhs.Value != rhs.Value;
+
 
         public static Stat operator +(Stat lhs, Bonus rhs)
         {

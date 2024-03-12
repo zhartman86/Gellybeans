@@ -22,8 +22,16 @@ namespace Gellybeans.Expressions
             
             if(BonusType != null && BonusValue != null)
             {
-                var hasType = int.TryParse(BonusType.Eval(ctx, null!).ToString(), out int type);
-                var hasValue = int.TryParse(BonusValue.Eval(ctx, null!).ToString(), out int value);
+                var typeValue = BonusType.Eval(ctx, null!);
+                if(typeValue is IReduce r)
+                    typeValue = r.Reduce(ctx, null!);
+
+                var valueValue = BonusValue.Eval(ctx, null!);
+                if(valueValue is IReduce rr)
+                    typeValue = rr.Reduce(ctx, null!);
+
+                var hasType = int.TryParse(typeValue.ToString(), out int type);
+                var hasValue = int.TryParse(typeValue.ToString(), out int value);
 
                 b.Type = hasType ? (BonusType)type : (BonusType)(-1);
                 b.Value = hasValue ? value : 0;

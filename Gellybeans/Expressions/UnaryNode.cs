@@ -16,7 +16,9 @@ namespace Gellybeans.Expressions
 
         public override dynamic Eval(IContext ctx, StringBuilder sb)
         {
-            var rhValue = node.Eval(ctx, sb);           
+            var rhValue = node.Eval(ctx, sb);
+            if(rhValue is IReduce r)
+                rhValue = r.Reduce(ctx, sb);
             var result = op(rhValue);
             return result;
         }

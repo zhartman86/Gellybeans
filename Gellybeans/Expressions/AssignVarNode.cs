@@ -16,10 +16,8 @@ namespace Gellybeans.Expressions
             this.op = op;
         }
 
-        public override dynamic Eval(IContext ctx, StringBuilder sb)
-        {
-            return op(identifier, assignment.Eval(ctx, sb));
-        }
-
+        public override dynamic Eval(IContext ctx, StringBuilder sb) =>
+            op(identifier, assignment.Eval(ctx, sb));
+        
     }
 }

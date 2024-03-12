@@ -7,6 +7,8 @@ namespace Gellybeans.Expressions
         readonly string functionName;
         readonly ExpressionNode[] args;
 
+        readonly static Random rand = new();
+
         public FunctionNode(string functionName, ExpressionNode[] args = null!)
         {
             this.functionName = functionName;
@@ -20,7 +22,12 @@ namespace Gellybeans.Expressions
             {
                 argValues = new dynamic[args.Length];
                 for(int i = 0; i < args.Length; i++)
+                {
                     argValues[i] = args[i].Eval(ctx, sb);
+                    if(argValues[i] is IReduce r)
+                        argValues[i] = r.Reduce(ctx, sb);
+                }
+                    
             }
            
             return Call(functionName, argValues, ctx);
@@ -34,41 +41,32 @@ namespace Gellybeans.Expressions
             "max"       => Math.Max(args[0], args[1]),
             "min"       => Math.Min(args[0], args[1]),
             "mod"       => Math.Max(-5, args[0] >= 10 ? (args[0] - 10) / 2 : (args[0] - 11) / 2),
-            "rand"      => new Random().Next(args[0], args[1] + 1),
+            "rand"      => rand.Next(args[0], args[1] + 1),
             "bad"       => args[0] / 3,
             "good"      => 2 + (args[0] / 2),
             "tq"        => (args[0] + (args[0] / 2)) / 2,
             "oh"        => (args[0] / 2),
             "th"        => (args[0] + (args[0] / 2)),
-            "listvar"   => ListVars(args == null ? "" : args[0].ToString(), ctx),
+            "upper"     => args[0].ToString().ToUpper(),
+            "lower"     => args[0].ToString().ToLower(),
+            "shuffle"   => Shuffle(args[0]),
             _           => 0
         };
 
-
-        string ListVars(string varName, IContext ctx)
+        ArrayValue Shuffle(ArrayValue array)
         {
             
-            var sb = new StringBuilder();
-
-            if(varName != "%?")
+            int n = array.Values.Length;
+            dynamic[] a = new dynamic[n];
+            array.Values.CopyTo(a,0);
+            while(n > 1)
             {
-                varName = varName.ToUpper();
-                if(ctx.Vars.TryGetValue(varName, out dynamic var))
-                    sb.AppendLine($"|{varName,-15} |{var.GetType().Name.Replace("Value", ""),-15} |{var,-50}");
+                int k = rand.Next(n--);
+                (a[k], a[n]) = (a[n], a[k]);
             }
-            else
-            {
-                var ordered = ctx.Vars.OrderBy(x => x.GetType().Name);
-                sb.AppendLine($"|{"VAR",-15} |{"TYPE",-15} |{"VALUE",-50}");
-                foreach(var var in ordered)
-                {
-                    sb.AppendLine($"|{var.Key,-15} |{var.Value.GetType().Name.Replace("Value", ""),-15} |{var.Value,-50}");
-                }
-
-                using var stream = new MemoryStream(Encoding.Default.GetBytes(sb.ToString()));
-                
-            }
-            return $"```{sb}```";
+            return new ArrayValue(a);
         }
+
+       
     }
 }

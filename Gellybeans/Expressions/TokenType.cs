@@ -20,6 +20,7 @@
         NotEquals,      // !=
         Greater,        // >
         GreaterEquals,  // >=
+        Lambda,         // ->
         Less,           // <
         LessEquals,     // <=
         Not,            // !

@@ -23,8 +23,8 @@ namespace Gellybeans.Pathfinder
         public Dictionary<string, dynamic> Vars { get; private set; } = new Dictionary<string, dynamic>();
         public Dictionary<string, dynamic> Constants { get; private set; } = new Dictionary<string, dynamic>()
         {
-            ["TRUE"] = 1,
-            ["FALSE"] = 0,
+            ["TRUE"] = true,
+            ["FALSE"] = false,
 
 
             //bonus types
@@ -267,6 +267,7 @@ namespace Gellybeans.Pathfinder
                     ["AC_MAXDEX"]       = new Stat(99),
                     ["AC_PENALTY"]      = new Stat(0),
 
+                    
 
                     ["CL_BONUS"]        = new Stat(0),
                   
@@ -338,7 +339,7 @@ namespace Gellybeans.Pathfinder
                     ["FLAT"]            = new ExpressionValue("AC - ((AC_BONUS $? DODGE) + D_DEX)"),
 
                     ["CMB"]             = new ExpressionValue("BAB + STR - SIZE_MOD"),
-                    ["CMD"]             = new ExpressionValue("10 + BAB + STR + D_DEX + CMD_BONUS + ((AC_BONUS $? CIRCUMSTANCE) + (AC_BONUS $? DEFLECTION) + (AC_BONUS $? DODGE) + (AC_BONUS $? INSIGHT) + (AC_BONUS $? LUCK) + (AC_BONUS $? MORALE) + (AC_BONUS $? PROFANE) + (AC_BONUS $? SACRED)) - SIZE_MOD"),
+                    ["CMD"]             = new ExpressionValue("10 + BAB + D_STR + D_DEX + CMD_BONUS + ((AC_BONUS $? CIRCUMSTANCE) + (AC_BONUS $? DEFLECTION) + (AC_BONUS $? DODGE) + (AC_BONUS $? INSIGHT) + (AC_BONUS $? LUCK) + (AC_BONUS $? MORALE) + (AC_BONUS $? PROFANE) + (AC_BONUS $? SACRED)) - SIZE_MOD"),
 
                     ["ATK"]             = new ExpressionValue("BAB + SIZE_MOD"),
 

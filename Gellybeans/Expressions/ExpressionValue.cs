@@ -2,37 +2,44 @@
 
 namespace Gellybeans.Expressions
 {
-    public class ExpressionValue : IEval
+    public class ExpressionValue : IReduce
     {        
         public string Expression { get; set; }
 
-        public ExpressionValue(string expr) =>
+        public ExpressionValue(string expr)
+        {         
             Expression = expr;
+        }
+            
 
         public override string ToString() =>
             Expression;
 
-        public dynamic Eval(IContext ctx, StringBuilder sb)
+        public dynamic Reduce(IContext ctx, StringBuilder sb)
         {
-            var result = Parser.Parse(Expression, ctx, sb).Eval(ctx, sb);
-            if(!object.ReferenceEquals(null, result))
-            {
-                if(result is IEval e)
-                {
-                    result = e.Eval(ctx, sb);
-                }
-            }
+            var result = Parser.Parse(Expression, ctx, sb).Eval(ctx, sb);           
+            while(result is IReduce r)
+                result = r.Reduce(ctx, sb);       
             return result;
         }
-
+            
+                     
+    
         public static implicit operator ExpressionValue(string s) => 
             new(s);
 
+        public override bool Equals(object? obj)
+        {
+            if(ReferenceEquals(obj, null))
+                return false;
 
-        public static ExpressionValue operator +(ExpressionValue lhs, dynamic rhs) =>
-            $"{lhs.Expression} + " + rhs;
+            if(obj is IReduce rhs)
+                return Equals(Expression.Equals(rhs));
+            return false;
+        }
 
-        public static ExpressionValue operator +(dynamic lhs, ExpressionValue rhs) =>
-             lhs + $" + {rhs.Expression}";
+        public override int GetHashCode() =>
+            Expression.GetHashCode();
+       
     }
 }

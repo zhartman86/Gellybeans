@@ -15,13 +15,10 @@ namespace Gellybeans.Expressions
 
         public override dynamic Eval(IContext ctx, StringBuilder sb)
         {
-            Console.WriteLine("array");
             var array = new dynamic[Values.Length];
             for(int i = 0; i < Values.Length; i++)
-            {
                 array[i] = Values[i].Eval(ctx, sb);
-            }
-            Console.WriteLine("returning");
+   
             return new ArrayValue(array);
         }
     }

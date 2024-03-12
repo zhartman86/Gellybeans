@@ -15,14 +15,18 @@ namespace Gellybeans.Expressions
             this.varName = varName;
         }
 
+
+
         public override dynamic Eval(IContext ctx, StringBuilder sb) 
         {
-            var variable = varName.Replace(" ", "_").ToUpper();
-            dynamic value = ctx[variable];
+            var v = varName.Replace(" ", "_").ToUpper();
+            dynamic value = ctx[v];
+            if(value is IReduce r)
+                value = r.Reduce(ctx, sb);
             if(value is null)
             {
                 value = 0;
-                sb?.AppendLine($"{variable} not found.");
+                sb?.AppendLine($"{v} not found.");
             }
             return value;
         }

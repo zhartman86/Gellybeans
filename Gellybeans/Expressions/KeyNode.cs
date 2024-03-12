@@ -8,24 +8,25 @@ namespace Gellybeans.Expressions
 {
     public class KeyNode : ExpressionNode
     {
-        readonly string varName;
-        readonly ExpressionNode key;
+        public string VarName { get; }
+        public ExpressionNode Key { get; }
 
-        public KeyNode(string varName, ExpressionNode key)
+        public KeyNode(string VarName, ExpressionNode Key)
         {
-            this.varName = varName;
-            this.key = key;
+            this.VarName = VarName;
+            this.Key = Key;
         }
 
         public override dynamic Eval(IContext ctx = null, StringBuilder sb = null)
         {
-            var result = key.Eval(ctx, sb);         
-            if(ctx.Vars.TryGetValue(varName, out var var))
+            var v = VarName.ToUpper();
+            var result = Key.Eval(ctx, sb);         
+            if(ctx.Vars.TryGetValue(v, out var var))
             {
                 if(var is ArrayValue a)
                     return a[result];
             }
-            return $"{varName} not found";
+            return $"{v} not found";
         }
     }
 }

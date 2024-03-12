@@ -137,7 +137,7 @@ namespace Gellybeans.Expressions
                         NextChar();
                         currentToken = TokenType.Equals;
                         Tokens.Add(new Token(TokenType.Equals, "=="));
-                    }
+                    }                    
                     else
                     {
                         currentToken = TokenType.Assign;
@@ -271,6 +271,12 @@ namespace Gellybeans.Expressions
                         NextChar();
                         currentToken = TokenType.Assign;
                         Tokens.Add(new Token(TokenType.Assign, "-="));
+                    }
+                    else if(currentChar == '>')
+                    {
+                        NextChar();
+                        currentToken = TokenType.Lambda;
+                        Tokens.Add(new(TokenType.Lambda, "->"));
                     }
                     else
                     {
@@ -459,7 +465,7 @@ namespace Gellybeans.Expressions
                 }
                 NextChar();
                 currentToken = TokenType.Expression;
-                Tokens.Add(new Token(TokenType.Expression, sb.ToString()));
+                Tokens.Add(new Token(TokenType.Expression, $"`{sb}`"));
                 return;
             }
 
@@ -497,31 +503,9 @@ namespace Gellybeans.Expressions
                 }
                 NextChar();
                 currentToken = TokenType.String;
-                Tokens.Add(new Token(TokenType.String, sb.ToString()));
+                Tokens.Add(new Token(TokenType.String, $"\"{sb}\""));
                 return;
-            }
-
-            //substring
-            if(currentChar == '\'')
-            {
-                NextChar();
-                while(currentChar != '\'')
-                {
-                    if(currentChar == '\0')
-                    {
-                        Tokens.Add(new Token(TokenType.Error, "Expected '"));
-                        currentToken = TokenType.Error;
-                        return;
-                    }
-
-                    sb.Append(currentChar);
-                    NextChar();
-                }
-                NextChar();
-                currentToken = TokenType.String;
-                Tokens.Add(new Token(TokenType.String, sb.ToString()));
-                return;
-            }          
+            }      
 
             //var
             if(char.IsLetter(currentChar) || !char.IsAscii(currentChar) || currentChar == '_' || currentChar == '@' || currentChar == '^' || currentChar == '.' || char.IsDigit(currentChar))
