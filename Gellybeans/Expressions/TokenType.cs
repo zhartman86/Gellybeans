@@ -8,7 +8,6 @@
         GetBonus,       // $?
         Base,           // @
         Assign,         // = += -= *= /= %= |=
-        AssignExpr,     // ::
         Remove,         // \
         AssignFlag,     // |=
         LogicalOr,      // ||
@@ -44,7 +43,9 @@
         String,         // "abc" or 'abc'
         Dice,           // 1d20
         Separator,      // :
-        HasFlag,        // :?       
+        HasFlag,        // :?
+        Range,          // ..
+        RangeRandom,    // .^        
         Error,
         EOF,
     }

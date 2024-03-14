@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using System.Text;
-using System.Threading.Tasks;
-using Gellybeans.Expressions;
 
 namespace Gellybeans.Expressions
 {
@@ -29,7 +25,50 @@ namespace Gellybeans.Expressions
             if (ctx.TryGetVar(v, out var var))
             {
                 if (var is ArrayValue a)
+                {
+                    if(result is RangeValue r)
+                    {
+                        if(r.OneRandom)
+                            return a[Random.Shared.Next(0, a.Values.Length)];
+                        
+
+                        var start = r.Lower;
+                        if(start < 0)
+                            start = a.Values.Length + start;
+                        var end = r.Upper;
+                        if (end < 0)
+                            end = a.Values.Length + end;
+
+                        if(start < 0 || start >= a.Values.Length || end < 0 || end >= a.Values.Length)
+                            return "Invalid range for this array.";
+
+                        
+                        else
+                        {
+                            var list = new List<dynamic>();
+                            if(start > end)
+                            {
+                                for(int i = start; i >= end; i--)
+                                    list.Add(a[i]);
+                            }
+                            else
+                            {
+                                for(int i = start; i <= end; i++)
+                                    list.Add(a[i]);
+                            }
+                            return new ArrayValue(list.ToArray());
+                        }                                        
+                    }
+
+                    if(result < 0)
+                        result = a.Values.Length + result;                   
+                    
+                    if(result < 0 || result >= a.Values.Length)
+                        return "Index out of range";
+
                     return a[result];
+                }
+                    
             }
             sb?.Append($"{v} not found");
             return result;

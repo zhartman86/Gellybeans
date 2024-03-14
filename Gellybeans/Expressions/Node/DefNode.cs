@@ -23,17 +23,8 @@ namespace Gellybeans.Expressions
             if(depth > Parser.MAX_DEPTH)
                 return "operation cancelled: maximum evaluation depth reached.";
 
-            for(int i = 0; i < placeholders.Length; i++)
-            {
-                for (int j = 0; j < tokens.Count; j++)
-                {
-                    if (tokens[j].TokenType == TokenType.Var && tokens[j].Value == placeholders[i])
-                        tokens[j].Value = $"(«{i}»)";
-                }
-
-            }
-
-            return new FunctionValue(placeholders.Length, Tokenizer.Output(tokens));
+            Console.WriteLine(Tokenizer.Output(tokens));
+            return new FunctionValue(placeholders, tokens);
         }
 
     }

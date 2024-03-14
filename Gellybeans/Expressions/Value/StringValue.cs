@@ -7,27 +7,96 @@ namespace Gellybeans.Expressions
     {
         public string String { get; set; }
 
-        static readonly Regex brackets = new(@"\{.*?\}", RegexOptions.Compiled);
+        static readonly Regex brackets = new(@"\{.*?\}(?!})", RegexOptions.Compiled);
 
         public StringValue(string value) =>
             String = value;
 
         public string Display(int depth, IContext ctx, StringBuilder sb)
         {
-            string str = String.Replace(@"\n", "\n");
+            var str = Parse(depth, ctx, String);
+            str = str.Replace(@"\n", "\n");
 
-            str = brackets.Replace(str!, m =>
-            {
-                var s = m.Value.Trim(new char[] { '{', '}' });
-                var p = Parser.Parse(s, ctx).Eval(depth, ctx);
-                return p.ToString();
-            });
+            
+
+            //str = brackets.Replace(str!, m =>
+            //{
+            //    Console.WriteLine($"TRIM:{m.Value}");
+            //    var s = m.Value.Trim(new char[] { '{', '}' });
+            //    var p = Parser.Parse(s, ctx).Eval(depth, ctx);
+            //    return p.ToString();
+            //});
 
             return str;
         }
 
+        public static string Parse(int depth, IContext ctx, string s)
+        {
+            var reader = new StringReader(s);
+            var sb = new StringBuilder();
+
+            int c = reader.Peek();
+            char chr = c < 0 ? '\0' : (char)c;
+
+            while(chr != '\0') 
+            {
+                c = reader.Read();
+                chr = c < 0 ? '\0' : (char)c;
+
+                if(chr == '{')
+                {
+                    var r = ParseDepth('{', '}', reader, chr, out chr);
+
+                    if(r.Length > 0)
+                    {
+                        Console.WriteLine($"FOUND STR EXPR: {r}");
+                        var result = Parser.Parse(r[1..^1], ctx).Eval(depth, ctx);
+                        Console.WriteLine(result.ToString());
+                        sb.Append(result.ToString());
+                    }
+                }
+
+                
+
+                if(chr == '\0')
+                    break;
+
+                sb.Append(chr);              
+            }
+
+            return sb.ToString();
+        }
+
+        static string ParseDepth(char open, char close, StringReader reader, char chr, out char outChar)
+        {
+            var sb = new StringBuilder();
+            int c;
+            
+            while(chr != close)
+            {
+                sb.Append(chr);
+                
+                c = reader.Read();
+                chr = c < 0 ? '\0' : (char)c;
+
+                if(chr == open)
+                    sb.Append(ParseDepth(open, close, reader, chr, out chr));
+
+                if(chr == '\0')
+                    break;
+
+                                 
+            }
+            sb.Append(chr);
+
+            c = reader.Read();
+            outChar = c < 0 ? '\0' : (char)c;
+
+            return sb.ToString();
+        }
+
         public override string ToString() =>
-            $"\"{String}\"";
+            String;
 
         public static implicit operator StringValue(string s) =>
             new(s);

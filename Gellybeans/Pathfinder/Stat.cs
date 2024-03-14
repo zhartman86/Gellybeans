@@ -165,17 +165,17 @@ namespace Gellybeans.Pathfinder
 
         public override string ToString()
         {
-            if(Bonuses != null)
-            {
-                string s = "";
-                for(int i = 0; i < Bonuses.Count; i++)
-                {                   
-                    s += $"{Bonuses[i]}";
-                    if(i < Bonuses.Count - 1)
-                        s += ", ";
-                }                                  
-                return $"{Value} ({s})";
-            }
+            //if(Bonuses != null)
+            //{
+            //    string s = "";
+            //    for(int i = 0; i < Bonuses.Count; i++)
+            //    {                   
+            //        s += $"{Bonuses[i]}";
+            //        if(i < Bonuses.Count - 1)
+            //            s += ", ";
+            //    }                                  
+            //    return $"{Value} ({s})";
+            //}
             return Value.ToString();
         }
             

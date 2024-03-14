@@ -28,7 +28,7 @@ namespace Gellybeans.Expressions
             }
             set 
             {
-                if(parent != null)
+                if(parent != null && parent.TryGetVar(varName, out var v))
                     parent[varName] = value;
                 else
                     Vars[varName] = value;          

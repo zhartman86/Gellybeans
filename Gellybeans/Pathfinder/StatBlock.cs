@@ -7,9 +7,12 @@ namespace Gellybeans.Pathfinder
 {
     public class StatBlock : IContext
     {
-        public Guid Id          { get; set; }
-        public Guid CampaignId  { get; set; }
+        IContext parent = null!;
+        public IContext Global { get {  return parent; } }
 
+        public Guid Id          { get; set; }
+        public Guid CampaignId  { get; set; }     
+        
         public ulong Owner { get; set; }
 
         public event EventHandler<string>? ValueChanged;
@@ -55,15 +58,12 @@ namespace Gellybeans.Pathfinder
             ["ORCUS"] = 666,
         };
           
-
         public dynamic this[string varName]
         {
             get
             {
-                if(Constants.ContainsKey(varName)) 
-                    return Constants[varName];
-                if(Vars.ContainsKey(varName))
-                    return Vars[varName];
+                if(TryGetVar(varName, out var v))
+                    return v;
                 
                 return null!;
             }
@@ -87,6 +87,11 @@ namespace Gellybeans.Pathfinder
             if(Vars.ContainsKey(varName))
             {
                 value = Vars[varName];
+                return true;
+            }
+            if(parent != null && parent.TryGetVar(varName, out var v))
+            {
+                value = v;
                 return true;
             }
 
@@ -199,6 +204,9 @@ namespace Gellybeans.Pathfinder
 
             return null;
         }
+
+        public void SetGlobal(IContext ctx) =>
+            parent = ctx;
 
         public static StatBlock DefaultPathfinder(string name)
         {

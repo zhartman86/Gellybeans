@@ -61,7 +61,7 @@ namespace Gellybeans.Expressions
                     if (lhValue is IReduce rr)
                         lhValue = rr.Reduce(depth, ctx, sb);
                 }
-                if (!conValue)
+                else
                 {
                     rhValue = rhs.Eval(depth, ctx, sb);
                     if (rhValue is IReduce rrr)

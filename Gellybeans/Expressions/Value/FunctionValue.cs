@@ -4,42 +4,41 @@ namespace Gellybeans.Expressions
 {
     public class FunctionValue
     {
-        public int ParamCount { get; set; }
-        public string Body { get; set; }
+        public string[] VarNames {  get; set; }
+        public List<Token> Tokens { get; set; }
 
-        public FunctionValue(int paramCount, string body)
+        public FunctionValue(string[] varNames, List<Token> tokens)
         {
-            ParamCount = paramCount;
-            Body = body;
+            VarNames = varNames;
+            Tokens = tokens;
         }
 
-        public override string ToString() =>
-            $"```{Body}```\n\nParamCount:**{ParamCount}**";
 
-
-
-
-
-        public dynamic Invoke(int depth, string[] args, IContext ctx, StringBuilder sb)
+        public dynamic Invoke(int depth, dynamic[] args, IContext ctx, StringBuilder sb)
         {
             depth++;
             if(depth > Parser.MAX_DEPTH)
                 return "operation cancelled: maximum evaluation depth reached.";
 
-            Console.WriteLine("Invoking function");
-            if (args.Length != ParamCount)
+            
+            if (args.Length != VarNames.Length)
                 return "Arguments don't match parameter count for this function.";
 
-            string s = Body;
+            var dict = new Dictionary<string, dynamic>();
             for (int i = 0; i < args.Length; i++)
             {
-                s = s.Replace($"«{i}»", args[i]);
+                Console.WriteLine($"Var: {VarNames[i]}, Value: {args[i]}");
+                dict.Add(VarNames[i].ToUpper(), args[i]);
             }
-            var scope = new ScopedContext(ctx, new());
-            Console.WriteLine($"FUNCTION:\n{s}");
-            var result = Parser.Parse(s, scope).Eval(depth, scope);
-            Console.WriteLine("Function Parsed");
+
+            Console.WriteLine($"Invoking function: {Tokenizer.Output(Tokens)}");
+            var scope = new ScopedContext(ctx, dict);
+            var result = Parser.Parse(Tokens, scope).Eval(depth, scope);
             return result;
         }
+
+        public override string ToString() =>
+            $"**Function**\nParameter Count: {VarNames.Length}\n\n{Tokenizer.Output(Tokens)}";
+       
     }
 }

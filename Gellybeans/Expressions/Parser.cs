@@ -1,12 +1,6 @@
-﻿using Gellybeans.Expressions;
-using Gellybeans.Pathfinder;
-using Microsoft.VisualBasic;
-using System.ComponentModel.Design;
-using System.Net.WebSockets;
-using System.Runtime.CompilerServices;
+﻿using Gellybeans.Pathfinder;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Xml.Linq;
 
 namespace Gellybeans.Expressions
 {
@@ -17,7 +11,7 @@ namespace Gellybeans.Expressions
 
     public class Parser
     {
-        public const int MAX_DEPTH = 500;
+        public const int MAX_DEPTH = 1500;
 
         readonly List<Token> tokens;
         readonly IContext ctx;       
@@ -27,9 +21,9 @@ namespace Gellybeans.Expressions
         int depth = 0;
 
         //dice expression. 0-3 number(s) => d => 1-5 number(s) => 0-3 instances of ('r' or 'h' or 'l' paired with 1-3 number(s))
-        static readonly Regex dRegex = new Regex(@"^([0-9]{0,4})d([0-9]{1,4})((?:r|h|l)(?:[0-9]{1,3})){0,2}$", RegexOptions.Compiled);
+        static readonly Regex dRegex = new(@"^([0-9]{0,3})d([0-9]{1,3})((?:r|h|l)(?:[0-9]{1,3})){0,2}$", RegexOptions.Compiled);
    
-        public static readonly Regex validVarName = new Regex(@"^[^0-9][^\[\]<>(){}^@:+*/%=!&|;$#?\-.'""]*$", RegexOptions.Compiled);
+        public static readonly Regex validVarName = new(@"^[^0-9][^\[\]<>(){}^@:+*/%=!&|;$#?\-.'""]*$", RegexOptions.Compiled);
 
         Token Current { get { return tokens[index]; } }
 
@@ -57,8 +51,6 @@ namespace Gellybeans.Expressions
                 index++;
             return Current;
         }
-
-
 
         public ExpressionNode ParseExpr()
         {
@@ -293,7 +285,7 @@ namespace Gellybeans.Expressions
             {
                 Func<dynamic, dynamic, dynamic, dynamic> op = null!;
 
-                if(Current.TokenType == TokenType.Ternary) { op = (a, b, c) => a ? b : c; }
+                if(Current.TokenType == TokenType.Ternary) op = (a, b, c) => a ? b : c;
 
                 if(op == null) return conditional;
 
@@ -308,7 +300,6 @@ namespace Gellybeans.Expressions
             }
         }
 
-
         ExpressionNode ParseLogicalAndOr()
         {
             var lhs = ParseBitwiseAndOr();
@@ -317,14 +308,13 @@ namespace Gellybeans.Expressions
             {
                 Func<dynamic, dynamic, dynamic> op = null!;
 
-                if(Current.TokenType == TokenType.LogicalOr) { op = (a, b) => (a || b ); }
-                else if(Current.TokenType == TokenType.LogicalAnd) { op = (a, b) => (a && b); }
+                if(Current.TokenType == TokenType.LogicalOr) op = (a, b) => (a || b);
+                else if(Current.TokenType == TokenType.LogicalAnd) op = (a, b) => (a && b);
 
                 if(op == null) return lhs;
 
                 Next();
                 var rhs = ParseBitwiseAndOr();
-
                 lhs = new BinaryNode(lhs, rhs, op);
             }
         }
@@ -358,7 +348,6 @@ namespace Gellybeans.Expressions
 
                 Next();
                 var rhs = ParseEquals();
-
                 lhs = new BinaryNode(lhs, rhs, op);
             }
         }
@@ -371,27 +360,27 @@ namespace Gellybeans.Expressions
             {
                 Func<dynamic, dynamic, dynamic> op = null!;
 
-                if(Current.TokenType == TokenType.Equals) { op = (a, b) => a == b; }
-                else if(Current.TokenType == TokenType.NotEquals) { op = (a, b) => a != b; }
-                else if(Current.TokenType == TokenType.HasFlag) { op = (a, b) => (a & b) != 0; }
-                else if(Current.TokenType == TokenType.GetBonus)
-                    op = (lhs, rhs) =>
+                if(Current.TokenType == TokenType.Equals)  op = (a, b) => a == b; 
+                else if(Current.TokenType == TokenType.NotEquals)  op = (a, b) => a != b; 
+                else if(Current.TokenType == TokenType.HasFlag)  op = (a, b) => (a & b) != 0; 
+                else if(Current.TokenType == TokenType.Range) op = (lhs, rhs) => new RangeValue(lhs, rhs);
+                else if(Current.TokenType == TokenType.RangeRandom) op = (lhs, rhs) => new RangeValue(lhs, rhs, true);
+                else if(Current.TokenType == TokenType.GetBonus) op = (lhs, rhs) =>
+                {
+                    var value = 0;
+                    if(lhs is Stat s && rhs is int i)
                     {
-                        var value = 0;
-                        if(lhs is Stat s && rhs is int i)
-                        {
-                            value = s.GetBonus((BonusType)i);
-                        }
-                            
-                       
-                        return value;
-                    };
+                        value = s.GetBonus((BonusType)i);
+                    }
+
+
+                    return value;
+                };
 
                 if(op == null) return lhs;
 
                 Next();
                 var rhs = ParseGreaterLess();
-
                 lhs = new BinaryNode(lhs, rhs, op);
             }
         }
@@ -404,16 +393,15 @@ namespace Gellybeans.Expressions
             {
                 Func<dynamic, dynamic, dynamic> op = null!;
 
-                if(Current.TokenType == TokenType.Greater)              { op = (a, b) => a > b; }
-                else if(Current.TokenType == TokenType.GreaterEquals)   { op = (a, b) => a >= b; }
-                else if(Current.TokenType == TokenType.Less)            { op = (a, b) => a < b; }
-                else if(Current.TokenType == TokenType.LessEquals)      { op = (a, b) => a <= b; }
+                if(Current.TokenType == TokenType.Greater)              op = (a, b) => a > b;           
+                else if(Current.TokenType == TokenType.GreaterEquals)   op = (a, b) => a >= b;
+                else if(Current.TokenType == TokenType.Less)            op = (a, b) => a < b;
+                else if(Current.TokenType == TokenType.LessEquals)      op = (a, b) => a <= b;
 
                 if(op == null) return lhs;
 
                 Next();
                 var rhs = ParseAddSub();
-
                 lhs = new BinaryNode(lhs, rhs, op);
             }
         }
@@ -426,14 +414,13 @@ namespace Gellybeans.Expressions
             {
                 Func<dynamic, dynamic, dynamic> op = null!;
 
-                if(Current.TokenType == TokenType.Add) { op = (a, b) => a + b; }
-                else if(Current.TokenType == TokenType.Sub) { op = (a, b) => a - b; }
+                if(Current.TokenType == TokenType.Add) op = (a, b) => a + b;
+                else if(Current.TokenType == TokenType.Sub) op = (a, b) => a - b;
 
                 if(op == null) return lhs;
 
                 Next();
                 var rhs = ParseMulDivMod();
-
                 lhs = new BinaryNode(lhs, rhs, op);
             }
         }
@@ -446,15 +433,14 @@ namespace Gellybeans.Expressions
             {
                 Func<dynamic, dynamic, dynamic> op = null!;
 
-                if(Current.TokenType == TokenType.Mul) { op = (a, b) => a * b; }
-                else if(Current.TokenType == TokenType.Div) { op = (a, b) => a / b; }
-                else if(Current.TokenType == TokenType.Modulo) { op = (a, b) => a % b; }
+                if(Current.TokenType == TokenType.Mul) op = (a, b) => a * b;
+                else if(Current.TokenType == TokenType.Div) op = (a, b) => a / b;
+                else if(Current.TokenType == TokenType.Modulo) op = (a, b) => a % b;
 
                 if(op == null) return lhs;
 
                 Next();
                 var rhs = ParseUnary();
-
                 lhs = new BinaryNode(lhs, rhs, op);
             }
         }
@@ -483,13 +469,11 @@ namespace Gellybeans.Expressions
                                 count++;
                         }
                         sb?.AppendLine($"{b.BonusName} removed from {count} stats.");
-
                         return count;
                     };
                 }
                 else
                     op = (a) => -a;
-
 
                 return new UnaryNode(rhs, op);
             }
@@ -499,8 +483,7 @@ namespace Gellybeans.Expressions
                 op = (value) => !value;
                 
                 Next();
-                var rhs = ParseLeaf();
-                
+                var rhs = ParseLeaf();              
                 return new UnaryNode(rhs, op);
             }
 
@@ -522,8 +505,7 @@ namespace Gellybeans.Expressions
                         }                           
                     };
                     return new UnaryNode(rhs, op);
-                }
-                
+                }               
             }
 
             if(Current.TokenType == TokenType.Remove)
@@ -540,11 +522,9 @@ namespace Gellybeans.Expressions
                         return new StringValue($"{varName} not found.");
                     };
                     return new UnaryNode(new NumberNode(0), op);
-                }
-                
-                
+                }                             
             }
-            
+           
             if(Current.TokenType == TokenType.And)
             {
                 Next();
@@ -556,20 +536,19 @@ namespace Gellybeans.Expressions
                 };
                 return new UnaryNode(rhs, op);
             }
-
             return ParseLeaf();
         }
 
         ExpressionNode ParseLeaf()
         {
             if(Current.TokenType == TokenType.Number)
-            {                               
-                var i = int.Parse(Current.Value);
+            {                                              
+                var number =  new NumberNode(int.Parse(Current.Value));
 
                 Next();
-                return new NumberNode(i);
+                return number;             
             }
-
+            
             if(Current.TokenType == TokenType.OpenPar)
             {
                 Next();
@@ -580,9 +559,8 @@ namespace Gellybeans.Expressions
 
                 Next();
                 return node;
-            }
+            }          
 
-            
             if(Current.TokenType == TokenType.Dice)
             {
                 //^([0-9]{0,3})d([0-9]{1,3})((?:r|h|l)(?:[0-9]{1,3})){0,3}$
@@ -592,7 +570,6 @@ namespace Gellybeans.Expressions
                 {
                     var count = match.Groups[1].Captures.Count > 0 ? int.TryParse(match.Groups[1].Captures[0].Value, out int outVal) ? outVal : 1 : 1;
                     var sides = int.Parse(match.Groups[2].Captures[0].Value);
-
                     var lhs = new DiceNode(count, sides, sb);
 
                     for(int i = 0; i < match.Groups[3].Captures.Count; i++)
@@ -629,7 +606,6 @@ namespace Gellybeans.Expressions
                 var list = new List<ExpressionNode>();
 
                 Next();
-
                 while(true)
                 {
                     list.Add(ParseTernary());
@@ -647,9 +623,7 @@ namespace Gellybeans.Expressions
 
                 Next();
                 return new ArrayNode(list.ToArray());
-            }
-       
-
+            }     
 
             //VarNode
             if(Current.TokenType == TokenType.Var)
@@ -835,6 +809,8 @@ namespace Gellybeans.Expressions
                             list.Add(Current);
                             Next();
                         }
+                        list.Add(new Token(TokenType.EOF, ""));
+
                         Next();
                         Console.WriteLine($"parsed function:\n{Tokenizer.Output(list)}");
                         return new DefNode(list, parameters.ToArray());
@@ -845,6 +821,13 @@ namespace Gellybeans.Expressions
 
                 }    
             }
+
+            if(Current.TokenType == TokenType.RangeRandom)
+            {
+                Next();
+                return new ValueNode(new RangeValue(0, 0, true));
+            }
+                
 
             return new ErrorNode("%?");
         }

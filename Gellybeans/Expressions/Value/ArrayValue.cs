@@ -60,14 +60,14 @@ namespace Gellybeans.Expressions
         {
             var s = new StringBuilder();
 
-            s.Append("{ ");
+            s.Append("[ ");
             for (int i = 0; i < Values.Length; i++)
             {
                 s.Append($"{Values[i]}");
                 if (i < Values.Length - 1)
                     s.Append(", ");
             }
-            s.Append(" }");
+            s.Append(" ]");
             return s.ToString();
         }
 

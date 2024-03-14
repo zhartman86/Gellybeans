@@ -19,11 +19,10 @@ namespace Gellybeans.Expressions
             if(depth > Parser.MAX_DEPTH)
                 return "operation cancelled: maximum evaluation depth reached.";
 
-            var argResults = new string[args.Count];
+            var argResults = new dynamic[args.Count];
 
             for (int i = 0; i < args.Count; i++)
-                argResults[i] = args[i] is VarNode v ? v.VarName : args[i].Eval(depth, ctx, sb).ToString();
-
+                argResults[i] = args[i].Eval(depth, ctx, sb);
 
             if (ctx.TryGetVar(varName, out var value))
             {

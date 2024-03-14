@@ -28,10 +28,10 @@ namespace Gellybeans.Expressions
 
                 var valueValue = BonusValue.Eval(depth, ctx, null!);
                 if (valueValue is IReduce rr)
-                    typeValue = rr.Reduce(depth, ctx, null!);
+                    valueValue = rr.Reduce(depth, ctx, null!);
 
                 var hasType = int.TryParse(typeValue.ToString(), out int type);
-                var hasValue = int.TryParse(typeValue.ToString(), out int value);
+                var hasValue = int.TryParse(valueValue.ToString(), out int value);
 
                 b.Type = hasType ? (BonusType)type : (BonusType)(-1);
                 b.Value = hasValue ? value : 0;
