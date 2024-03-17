@@ -19,7 +19,7 @@ namespace Gellybeans.Expressions
             if(depth > Parser.MAX_DEPTH)
                 return "operation cancelled: maximum evaluation depth reached.";
             
-            return new StringValue(String);
+            return new StringValue(String); 
         }
            
 
