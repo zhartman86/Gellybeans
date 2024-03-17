@@ -85,9 +85,11 @@ namespace Gellybeans.Expressions
             return sb.ToString();
         }
 
-        public void Peek()
+        public char Peek()
         {
-
+            int chr = reader.Peek();
+            char c = chr < 0 ? '\0' : (char)chr;
+            return c;
         }
 
         public void NextToken()
@@ -141,7 +143,7 @@ namespace Gellybeans.Expressions
                     if(currentChar == '^')
                     {
                         NextChar();
-                        Tokens.Add(new Token(TokenType.RangeRandom, ".^"));
+                        Tokens.Add(new Token(TokenType.Random, ".^"));
                     }
                     return;
 
@@ -214,7 +216,18 @@ namespace Gellybeans.Expressions
                     {
                         NextChar();
                         Tokens.Add(new Token(TokenType.GreaterEquals, ">="));
-                    }                       
+                    }
+                    else if(Peek() == '>')
+                    {
+                        NextChar();
+                        NextChar();
+                        Tokens.Add(new Token(TokenType.Append, ">>>"));
+                    }
+                    else if(currentChar == '>')
+                    {
+                        NextChar();
+                        Tokens.Add(new Token(TokenType.Pull, ">>"));
+                    }                 
                     else
                     {
                         Tokens.Add(new Token(TokenType.Greater, ">"));
@@ -227,7 +240,12 @@ namespace Gellybeans.Expressions
                     {
                         NextChar();
                         Tokens.Add(new Token(TokenType.LessEquals, "<="));
-                    }                  
+                    }
+                    else if(currentChar == '<')
+                    {
+                        NextChar();
+                        Tokens.Add(new Token(TokenType.Push, "<<"));
+                    }
                     else
                     {
                         Tokens.Add(new Token(TokenType.Less, "<"));
@@ -345,6 +363,11 @@ namespace Gellybeans.Expressions
                     Tokens.Add(new Token(TokenType.Base, "@"));
                     return;
 
+                case '#':
+                    NextChar();
+                    Tokens.Add(new Token(TokenType.Self, "#"));
+                    return;
+
                 case '\\':
                     NextChar();
                     Tokens.Add(new Token(TokenType.Remove, @"\"));
@@ -436,10 +459,7 @@ namespace Gellybeans.Expressions
                 while(currentChar != '"')
                 {
                     if(currentChar == '{')
-                    {
                         sb.Append(ParseDepth('{', '}'));
-                        Console.WriteLine($"APPENDED: {sb} , CURRENT CHAR: {currentChar}");
-                    }
                                    
                     if(currentChar == '\0')
                     {
@@ -451,7 +471,6 @@ namespace Gellybeans.Expressions
                         sb.Append(currentChar);
                         NextChar();
                     }
-                       
                 }
                 NextChar();
                 Console.WriteLine($"STRING VALUE: {sb}");
@@ -460,7 +479,7 @@ namespace Gellybeans.Expressions
             }      
 
             //var
-            if(char.IsLetter(currentChar) || !char.IsAscii(currentChar) || currentChar == '_' || currentChar == '@' || currentChar == '^' || char.IsDigit(currentChar))
+            if(char.IsLetter(currentChar) || !char.IsAscii(currentChar) || currentChar == '_' || currentChar == '^' || char.IsDigit(currentChar))
             {
                 sb.Append(currentChar);
                 NextChar();
@@ -492,7 +511,7 @@ namespace Gellybeans.Expressions
                     sb.Append(ParseDepth(open, close));
                 if(currentChar == '\0')
                 {
-                    Tokens.Add(new Token(TokenType.Error, $"Expected {close}"));
+                    Tokens.Add(new Token(TokenType.Error, $"Expected `{close}`"));
                     break;
                 }                 
             }

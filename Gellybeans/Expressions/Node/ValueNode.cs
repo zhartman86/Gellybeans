@@ -9,7 +9,7 @@ namespace Gellybeans.Expressions
         public ValueNode(dynamic value) =>
             this.value = value;
 
-        public override dynamic Eval(int depth, IContext ctx = null!, StringBuilder sb = null!)
+        public override dynamic Eval(int depth, object caller, StringBuilder sb, IContext ctx = null!)
         {
             depth++;
             if(depth > Parser.MAX_DEPTH)

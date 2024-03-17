@@ -14,23 +14,28 @@ namespace Gellybeans.Expressions
             this.Key = Key;
         }
 
-        public override dynamic Eval(int depth, IContext ctx = null, StringBuilder sb = null)
+        public override dynamic Eval(int depth, object caller, StringBuilder sb, IContext ctx = null!)
         {
             depth++;
             if(depth > Parser.MAX_DEPTH)
                 return "operation cancelled: maximum evaluation depth reached.";
 
             var v = VarName.ToUpper();
-            var result = Key.Eval(depth, ctx, sb);
+            var result = Key.Eval(depth: depth, caller: this, sb: sb, ctx : ctx);
             if (ctx.TryGetVar(v, out var var))
             {
                 if (var is ArrayValue a)
                 {
-                    if(result is RangeValue r)
+                    if(result is SymbolNode symbol)
                     {
-                        if(r.OneRandom)
+                        Console.WriteLine($"FOUND SYMBOL IN KEY: {symbol.Symbol}");
+                        if(symbol.Symbol == ".^")
                             return a[Random.Shared.Next(0, a.Values.Length)];
                         
+                    }
+
+                    if(result is RangeValue r)
+                    {
 
                         var start = r.Lower;
                         if(start < 0)
@@ -40,7 +45,7 @@ namespace Gellybeans.Expressions
                             end = a.Values.Length + end;
 
                         if(start < 0 || start >= a.Values.Length || end < 0 || end >= a.Values.Length)
-                            return "Invalid range for this array.";
+                            return new StringValue($"Invalid range `[{r}]` for this array.");
 
                         
                         else
@@ -64,7 +69,7 @@ namespace Gellybeans.Expressions
                         result = a.Values.Length + result;                   
                     
                     if(result < 0 || result >= a.Values.Length)
-                        return "Index out of range";
+                        return new StringValue($"Index `[{result}]` out of range");
 
                     return a[result];
                 }

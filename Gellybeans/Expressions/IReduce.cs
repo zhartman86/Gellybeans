@@ -4,6 +4,6 @@ namespace Gellybeans.Expressions
 {
     public interface IReduce
     {
-        dynamic Reduce(int depth, IContext ctx, StringBuilder sb);
+        dynamic Reduce(int depth, object caller, StringBuilder sb, IContext ctx = null!);
     }
 }

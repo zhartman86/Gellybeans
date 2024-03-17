@@ -2,23 +2,19 @@
 
 namespace Gellybeans.Expressions
 {
-    internal class NumberNode : ExpressionNode
+    public class SymbolNode : ExpressionNode
     {
-        public int Number { get; }
+        public string Symbol { get; }
 
-        public NumberNode(int number) =>
-            Number = number;
-
-        public override string ToString() =>
-            Number.ToString();
+        public SymbolNode(string symbol) => 
+            Symbol = symbol;
 
         public override dynamic Eval(int depth, object caller, StringBuilder sb, IContext ctx = null!)
         {
             depth++;
             if(depth > Parser.MAX_DEPTH)
                 return "operation cancelled: maximum evaluation depth reached.";
-            
-            return Number;
+            return this;
         }
     }
 }

@@ -14,15 +14,26 @@ namespace Gellybeans.Expressions
             Vars = vars;
         }
 
+        public ScopedContext(IContext parent, string varName, dynamic var)
+        {
+            this.parent = parent;
+            Vars = new Dictionary<string, dynamic>() { { varName, var } };
+        }
+
         public dynamic this[string varName]
         {
             get 
             {
+                Console.WriteLine("CHECKING VARS");
                 if(Vars.ContainsKey(varName))
                     return Vars[varName];
                 if(parent != null)
                     if(parent.TryGetVar(varName, out var v))
-                        return v;              
+                    {
+                        Console.WriteLine("FOUND PARENT VAR");
+                        return v;
+                    }
+                                 
                 
                 return null!;
             }

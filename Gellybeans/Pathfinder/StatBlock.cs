@@ -84,12 +84,12 @@ namespace Gellybeans.Pathfinder
                 value = Constants[varName];
                 return true;
             }
-            if(Vars.ContainsKey(varName))
+            else if(Vars.ContainsKey(varName))
             {
                 value = Vars[varName];
                 return true;
             }
-            if(parent != null && parent.TryGetVar(varName, out var v))
+            else if(parent != null && parent.TryGetVar(varName, out var v))
             {
                 value = v;
                 return true;

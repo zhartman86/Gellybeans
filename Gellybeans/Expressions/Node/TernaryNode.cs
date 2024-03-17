@@ -19,58 +19,48 @@ namespace Gellybeans.Expressions
             this.op = op;
         }
 
-        public override dynamic Eval(int depth, IContext ctx, StringBuilder sb)
+        public override dynamic Eval(int depth, object caller, StringBuilder sb, IContext ctx = null!)
         {
             depth++;
             if(depth > Parser.MAX_DEPTH)
                 return "operation cancelled: maximum evaluation depth reached.";
 
-
             dynamic lhValue = 0;
             dynamic rhValue = 0;
 
-            var conValue = condition.Eval(depth, ctx, sb);
-            if (conValue is IReduce r)
-                conValue = r.Reduce(depth, ctx, sb);
+            var conValue = condition.Eval(depth: depth, caller: this, sb: sb, ctx : ctx);
+            if(conValue is IReduce r)
+                conValue = r.Reduce(depth: depth, caller: this, sb: sb, ctx: ctx);
 
-            if (conValue is ArrayValue a)
-            {
-                for (int i = 0; i < a.Values.Length; i++)
+
+            if(conValue is ArrayValue a)
+            {                   
+                var na = new dynamic[a.Values.Length];
+                for(int i = 0; i < a.Values.Length; i++)
                 {
-                    if (a.Values[i])
+                    var value = a[i] ? lhs.Eval(depth: depth, caller: this, sb: sb, ctx: ctx) : rhs.Eval(depth: depth, caller: this, sb: sb, ctx: ctx);
+
+                    if(value is SymbolNode s)
                     {
-                        lhValue = lhs.Eval(depth, ctx, sb);
-                        if (lhValue is IReduce rr)
-                            lhValue = rr.Reduce(depth, ctx, sb);
-                    }
-                    if (!a.Values[i])
-                    {
-                        rhValue = rhs.Eval(depth, ctx, sb);
-                        if (rhValue is IReduce rrr)
-                            rhValue = rrr.Reduce(depth, ctx, sb);
-                    }
-                    a.Values[i] = op(a.Values[i], lhValue, rhValue);
+                        if(s.Symbol == "#")
+                            if(condition is BinaryNode b)                     
+                                if(b.LResult is ArrayValue av)
+                                {
+                                    value = av[i];
+                                }                       
+                    }              
+                    na[i] = op(a[i], a[i] ? value : lhValue, !a[i] ? value : rhValue);
                 }
-                return a;
-            }
+                return new ArrayValue(na);                         
+            }     
             else
             {
-                if (conValue)
-                {
-                    lhValue = lhs.Eval(depth, ctx, sb);
-                    if (lhValue is IReduce rr)
-                        lhValue = rr.Reduce(depth, ctx, sb);
-                }
-                else
-                {
-                    rhValue = rhs.Eval(depth, ctx, sb);
-                    if (rhValue is IReduce rrr)
-                        rhValue = rrr.Reduce(depth, ctx, sb);
-                }
-            }
-
-            var result = op(conValue, lhValue, rhValue);
-            return result;
+                var value = conValue ? lhs.Eval(depth: depth, caller: this, sb: sb, ctx: ctx) : rhs.Eval(depth: depth, caller: this, sb: sb, ctx: ctx);
+                if(value is IReduce rr)
+                    value = rr.Reduce(depth: depth, caller: this, sb: sb, ctx: ctx);
+                var result = op(conValue, conValue ? value : lhValue, !conValue ? value : rhValue);
+                return result;
+            }                         
         }
     }
 }

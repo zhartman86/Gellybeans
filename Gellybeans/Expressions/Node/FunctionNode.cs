@@ -16,7 +16,7 @@ namespace Gellybeans.Expressions
             this.args = args;
         }
 
-        public override dynamic Eval(int depth, IContext ctx, StringBuilder sb)
+        public override dynamic Eval(int depth, object caller, StringBuilder sb, IContext ctx = null!)
         {
             depth++;
             if(depth > Parser.MAX_DEPTH)
@@ -29,17 +29,17 @@ namespace Gellybeans.Expressions
                 argValues = new dynamic[args.Length];
                 for (int i = 0; i < args.Length; i++)
                 {
-                    argValues[i] = args[i].Eval(depth, ctx, sb);
+                    argValues[i] = args[i].Eval(depth: depth, caller: this, sb: sb, ctx : ctx);
                     if (argValues[i] is IReduce r)
-                        argValues[i] = r.Reduce(depth, ctx, sb);
+                        argValues[i] = r.Reduce(depth: depth, caller: this, sb: sb, ctx : ctx);
                 }
 
             }
 
-            return Call(functionName, argValues, ctx, sb);
+            return Call(functionName, depth, caller, argValues, ctx, sb);
         }
 
-        public dynamic Call(string functionName, dynamic[] args = null!, IContext ctx = null!, StringBuilder sb = null!) => functionName switch
+        public dynamic Call(string functionName, int depth, object caller, dynamic[] args = null!, IContext ctx = null!, StringBuilder sb = null!) => functionName switch
         {
             "abs" => Math.Abs(args[0]),
             "clamp" => Math.Clamp(args[0], args[1], args[2]),
@@ -55,14 +55,19 @@ namespace Gellybeans.Expressions
             "th" => args[0] + args[0] / 2,
             "upper" => args[0].ToString().ToUpper(),
             "lower" => args[0].ToString().ToLower(),
-            "print" => Print(args[0], sb),
+            "print" => Print(args[0], depth, caller, ctx, sb),
             "shuffle" => Shuffle(args[0]),
             _ => 0
         };
 
-        static string Print(dynamic s, StringBuilder sb)
+        static string Print(dynamic s, int depth, object caller, IContext ctx, StringBuilder sb)
         {
-            sb?.AppendLine(s.ToString());
+            if(sb != null)
+            {
+                var sv = new StringValue(s.ToString()).Display(depth, caller, sb, ctx);
+                sb.AppendLine(sv);
+            }
+            
             return "";
         }
 

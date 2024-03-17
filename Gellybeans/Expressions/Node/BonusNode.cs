@@ -22,13 +22,13 @@ namespace Gellybeans.Expressions
 
             if (BonusType != null && BonusValue != null)
             {
-                var typeValue = BonusType.Eval(depth, ctx, null!);
+                var typeValue = BonusType.Eval(depth: depth, caller: this, sb: null!, ctx: ctx);
                 if (typeValue is IReduce r)
-                    typeValue = r.Reduce(depth, ctx, null!);
+                    typeValue = r.Reduce(depth: depth, caller: this, sb: null!, ctx: ctx);
 
-                var valueValue = BonusValue.Eval(depth, ctx, null!);
+                var valueValue = BonusValue.Eval(depth: depth, caller: this, sb: null!, ctx: ctx);
                 if (valueValue is IReduce rr)
-                    valueValue = rr.Reduce(depth, ctx, null!);
+                    valueValue = rr.Reduce(depth: depth, caller: this, sb: null!, ctx: ctx);
 
                 var hasType = int.TryParse(typeValue.ToString(), out int type);
                 var hasValue = int.TryParse(valueValue.ToString(), out int value);
@@ -41,7 +41,7 @@ namespace Gellybeans.Expressions
         }
 
 
-        public override dynamic Eval(int depth, IContext ctx, StringBuilder sb)
+        public override dynamic Eval(int depth, object caller, StringBuilder sb, IContext ctx = null!)
         {
             depth++;
             if(depth > Parser.MAX_DEPTH)

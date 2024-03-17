@@ -19,6 +19,9 @@
         Greater,        // >
         GreaterEquals,  // >=
         Lambda,         // ->
+        Push,           // <<
+        Pull,           // >>
+        Append,         // >>>
         Less,           // <
         LessEquals,     // <=
         Not,            // !
@@ -39,13 +42,15 @@
         SingleQuote,    // '
         Semicolon,      // ;
         Expression,     // `
+        Self,           // #
         Var,            //
         String,         // "abc" or 'abc'
         Dice,           // 1d20
         Separator,      // :
         HasFlag,        // :?
-        Range,          // ..
-        RangeRandom,    // .^        
+        Range,          // ..              
+        Caret,          // ^
+        Random,         // .^ 
         Error,
         EOF,
     }

@@ -7,30 +7,17 @@ namespace Gellybeans.Expressions
     {
         public string String { get; set; }
 
-        static readonly Regex brackets = new(@"\{.*?\}(?!})", RegexOptions.Compiled);
-
         public StringValue(string value) =>
             String = value;
 
-        public string Display(int depth, IContext ctx, StringBuilder sb)
+        public string Display(int depth, object caller, StringBuilder sb, IContext ctx)
         {
             var str = Parse(depth, ctx, String);
             str = str.Replace(@"\n", "\n");
-
-            
-
-            //str = brackets.Replace(str!, m =>
-            //{
-            //    Console.WriteLine($"TRIM:{m.Value}");
-            //    var s = m.Value.Trim(new char[] { '{', '}' });
-            //    var p = Parser.Parse(s, ctx).Eval(depth, ctx);
-            //    return p.ToString();
-            //});
-
             return str;
         }
 
-        public static string Parse(int depth, IContext ctx, string s)
+        public string Parse(int depth, IContext ctx, string s)
         {
             var reader = new StringReader(s);
             var sb = new StringBuilder();
@@ -50,7 +37,9 @@ namespace Gellybeans.Expressions
                     if(r.Length > 0)
                     {
                         Console.WriteLine($"FOUND STR EXPR: {r}");
-                        var result = Parser.Parse(r[1..^1], ctx).Eval(depth, ctx);
+                        var result = Parser.Parse(r[1..^1], this, ctx: ctx).Eval(depth: depth, caller: this, sb: sb, ctx : ctx);
+                        if(result is IReduce rr)
+                            result = rr.Reduce(depth: depth, caller: this, sb: sb, ctx : ctx);
                         Console.WriteLine(result.ToString());
                         sb.Append(result.ToString());
                     }
@@ -110,16 +99,47 @@ namespace Gellybeans.Expressions
         public static StringValue operator +(string lhs, StringValue rhs) =>
             lhs + rhs.String;
 
-        public static StringValue operator +(StringValue lhs, int rhs) =>
-            lhs.String + rhs;
-
-        public static StringValue operator +(int lhs, StringValue rhs) =>
-           lhs + rhs.String;
-
         public static bool operator ==(StringValue lhs, StringValue rhs) =>
             lhs.String == rhs.String;
         public static bool operator !=(StringValue lhs, StringValue rhs) =>
             lhs.String == rhs.String;
+
+
+        public static bool operator ==(StringValue lhs, int rhs) =>
+            false;
+        public static bool operator !=(StringValue lhs, int rhs) =>
+            true;
+        public static bool operator >(StringValue lhs, int rhs) =>
+            false;
+        public static bool operator >=(StringValue lhs, int rhs) =>
+            false;
+        public static bool operator <(StringValue lhs, int rhs) =>
+            false;
+        public static bool operator <=(StringValue lhs, int rhs) =>
+            false;
+        public static bool operator ==(int lhs, StringValue rhs) =>
+            false;
+        public static bool operator !=(int lhs, StringValue rhs) =>
+            true;
+        public static bool operator >(int lhs, StringValue rhs) =>
+            false;
+        public static bool operator >=(int lhs, StringValue rhs) =>
+            false;
+        public static bool operator <(int lhs, StringValue rhs) =>
+            false;
+        public static bool operator <=(int lhs, StringValue rhs) =>
+            false;
+
+
+
+
+
+
+
+
+
+        public override int GetHashCode() =>
+            String.GetHashCode();
 
         public override bool Equals(object? obj)
         {

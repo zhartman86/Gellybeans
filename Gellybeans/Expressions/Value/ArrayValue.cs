@@ -24,7 +24,7 @@ namespace Gellybeans.Expressions
             }
         }
 
-        public string Display(int depth, IContext ctx, StringBuilder sb)
+        public string Display(int depth, object caller, StringBuilder sb, IContext ctx)
         {
             var results = new StringBuilder();
             results.Append('[');
@@ -39,7 +39,7 @@ namespace Gellybeans.Expressions
             return results.ToString();
         }
 
-        public dynamic Reduce(int depth, IContext ctx, StringBuilder sb)
+        public dynamic Reduce(int depth, object caller, StringBuilder sb, IContext ctx = null!)
         {
             depth++;
             if(depth > Parser.MAX_DEPTH)
@@ -49,7 +49,7 @@ namespace Gellybeans.Expressions
             for (int i = 0; i < Values.Length; i++)
             {
                 if (Values[i] is IReduce r)
-                    a[i] = r.Reduce(depth, ctx, sb);
+                    a[i] = r.Reduce(depth: depth, caller: this, sb: sb, ctx : ctx);
                 else
                     a[i] = Values[i];
             }
@@ -76,6 +76,14 @@ namespace Gellybeans.Expressions
 
         public static ArrayValue operator +(ArrayValue lhs, dynamic rhs)
         {
+            if(lhs.Values == null || lhs.Values.Length == 0)
+            {
+                var array = new dynamic[rhs];
+                Array.Fill(array, 0);
+                return new ArrayValue(array);
+            }
+               
+
             var a = new ArrayValue(new dynamic[lhs.Values.Length]);
             for (int i = 0; i < lhs.Values.Length; i++)
             {
@@ -127,6 +135,7 @@ namespace Gellybeans.Expressions
         public static ArrayValue operator ==(ArrayValue lhs, dynamic rhs)
         {
             var a = new ArrayValue(new dynamic[lhs.Values.Length]);
+            
             for (int i = 0; i < lhs.Values.Length; i++)
             {
                 a[i] = lhs[i] == rhs;
@@ -210,7 +219,6 @@ namespace Gellybeans.Expressions
             }
             return new ArrayValue(a.ToArray());
         }
-
 
         public static bool operator ==(ArrayValue lhs, ArrayValue rhs)
         {

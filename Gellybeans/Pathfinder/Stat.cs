@@ -24,7 +24,7 @@ namespace Gellybeans.Pathfinder
         public Stat(int baseValue) => 
             Base = baseValue;
 
-        public string Display(int depth, IContext ctx, StringBuilder sb)
+        public string Display(int depth, object caller, StringBuilder sb, IContext ctx)
         {
             depth++;
             if(depth > Parser.MAX_DEPTH)

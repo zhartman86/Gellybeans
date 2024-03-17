@@ -16,13 +16,17 @@ namespace Gellybeans.Expressions
             this.op = op;
         }
 
-        public override dynamic Eval(int depth, IContext ctx, StringBuilder sb)
+        public override dynamic Eval(int depth, object caller, StringBuilder sb, IContext ctx = null!)
         {
             depth++;
             if(depth > Parser.MAX_DEPTH)
                 return "operation cancelled: maximum evaluation depth reached.";
+            
+            Console.WriteLine(caller.GetType().Name);
+            if(caller is not FunctionValue && caller is not TernaryNode)
+                sb?.AppendLine($"{identifier} set");
 
-            return op(identifier, assignment.Eval(depth, ctx, sb));
+            return op(identifier, assignment.Eval(depth: depth, caller: this, sb: sb, ctx : ctx));
         }
             
 

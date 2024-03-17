@@ -15,15 +15,15 @@ namespace Gellybeans.Expressions
         public override string ToString() =>
             Expression;
 
-        public dynamic Reduce(int depth, IContext ctx, StringBuilder sb)
+        public dynamic Reduce(int depth, object caller, StringBuilder sb, IContext ctx = null!)
         {
             depth++;
             if(depth > Parser.MAX_DEPTH)
                 return "operation cancelled: maximum evaluation depth reached.";
 
-            var result = Parser.Parse(Expression, ctx, sb).Eval(depth, ctx, sb);
+            var result = Parser.Parse(Expression, this, sb, ctx).Eval(depth: depth, caller: this, sb: sb, ctx : ctx);
             while (result is IReduce r)
-                result = r.Reduce(depth, ctx, sb);
+                result = r.Reduce(depth: depth, caller: this, sb: sb, ctx : ctx);
             return result;
         }
 

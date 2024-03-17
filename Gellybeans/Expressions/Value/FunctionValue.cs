@@ -5,16 +5,15 @@ namespace Gellybeans.Expressions
     public class FunctionValue
     {
         public string[] VarNames {  get; set; }
-        public List<Token> Tokens { get; set; }
+        public string Expression { get; set; }
 
-        public FunctionValue(string[] varNames, List<Token> tokens)
+        public FunctionValue(string[] varNames, string expression)
         {
             VarNames = varNames;
-            Tokens = tokens;
+            Expression = expression;
         }
 
-
-        public dynamic Invoke(int depth, dynamic[] args, IContext ctx, StringBuilder sb)
+        public dynamic Invoke(int depth, dynamic[] args, StringBuilder sb, IContext ctx)
         {
             depth++;
             if(depth > Parser.MAX_DEPTH)
@@ -31,14 +30,23 @@ namespace Gellybeans.Expressions
                 dict.Add(VarNames[i].ToUpper(), args[i]);
             }
 
-            Console.WriteLine($"Invoking function: {Tokenizer.Output(Tokens)}");
             var scope = new ScopedContext(ctx, dict);
-            var result = Parser.Parse(Tokens, scope).Eval(depth, scope);
+            var result = Parser.Parse(Expression, this, sb, scope).Eval(depth: depth, caller: this, sb: sb, ctx : scope);
+            if(result is IReduce r)
+                result = r.Reduce(depth: depth, caller: this, sb: sb, ctx : scope);
+
             return result;
         }
 
         public override string ToString() =>
-            $"**Function**\nParameter Count: {VarNames.Length}\n\n{Tokenizer.Output(Tokens)}";
-       
+            $"### **Function**\n>>> ### ({GetParamNames()})\n `{Expression}`";
+        
+        public string GetParamNames()
+        {
+            string s = "";
+            for(int i = 0; i < VarNames.Length; i++)
+                s += $"{VarNames[i]},";
+            return s.Trim(',');
+        }
     }
 }

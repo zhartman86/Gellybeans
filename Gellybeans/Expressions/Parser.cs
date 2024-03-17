@@ -1,4 +1,8 @@
 ﻿using Gellybeans.Pathfinder;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net.Http.Headers;
+using System.Reflection.Metadata.Ecma335;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -14,8 +18,11 @@ namespace Gellybeans.Expressions
         public const int MAX_DEPTH = 1500;
 
         readonly List<Token> tokens;
-        readonly IContext ctx;       
+
+        object caller;
+        IContext ctx;       
         readonly StringBuilder sb;
+
 
         int index;
         int depth = 0;
@@ -27,9 +34,10 @@ namespace Gellybeans.Expressions
 
         Token Current { get { return tokens[index]; } }
 
-        public Parser(List<Token> tokens, IContext ctx, StringBuilder sb, int index = 0)
+        public Parser(List<Token> tokens, object caller, StringBuilder sb, IContext ctx,int index = 0)
         {
             this.tokens = tokens;
+            this.caller = caller;
             this.ctx = ctx;
             this.index = index;
             this.sb = sb;
@@ -59,7 +67,7 @@ namespace Gellybeans.Expressions
             if(Current.TokenType == TokenType.EOF || expr is ErrorNode)
                 return expr;
 
-            return new ErrorNode($"Invalid expression. Error on token `{Current.Value}`");
+            return new ErrorNode($"Invalid expression. Error on index {index} : `{Current.Value}``");
         }
 
         ExpressionNode ParseTermination()
@@ -68,16 +76,16 @@ namespace Gellybeans.Expressions
 
             if(Current.TokenType == TokenType.Pipe)
             {
-                Console.WriteLine("PIPING");
                 Next();
-                var result = expr.Eval(depth, ctx, sb);
-                return new PipeNode(result, ParseTermination());
+                var result = expr.Eval(depth: depth, caller: caller, sb: sb, ctx : ctx);
+                var scope = new ScopedContext(ctx, "P", result);          
+                return new PipeNode(result, ParseTermination(), scope);
             }
             
             if(Current.TokenType == TokenType.Semicolon)
             {
                 Next();
-                expr.Eval(depth, ctx, sb);
+                expr.Eval(depth: depth, caller: caller, sb: sb, ctx : ctx);
                 return ParseTermination();
             }
             return expr;
@@ -99,21 +107,17 @@ namespace Gellybeans.Expressions
                         case "=":
                             op = (identifier, assignment) =>
                             {
-                                var setMessage = $"{varName} set";
                                 if(assignment is int i)
                                 {
                                     if(ctx[varName] is Stat s && s.Bonuses != null)
                                     {
                                         s.Base = i;
                                         assignment = s;
-                                        setMessage = $"{varName} has bonuses. Base value set";
                                     }
                                     else
                                         assignment = new Stat(i);
                                 }
                                 ctx[varName] = assignment;
-                                sb?.AppendLine(setMessage);
-
                                 return $"{assignment}";
                             };
                             break;
@@ -128,18 +132,16 @@ namespace Gellybeans.Expressions
                                         {
                                             stat.Base += i;
                                             ctx[varName] = stat;
-                                            sb?.AppendLine($"{varName} base value set to {stat.Base}");
-                                            return stat.Value;
+                                            return stat;
                                         }
                                     }
                                     ctx[varName] = var + assignment;
-                                    sb?.AppendLine($"{varName} updated");
-                                    return $"{assignment}";
+                                    return assignment;
                                 };
 
                             }
                             else
-                                sb?.Append($"{varNode.VarName} not found");
+                                return new ErrorNode($"{varNode.VarName} not found");
                             break;
                         case "-=":
                             if(ctx.TryGetVar(varName, out var))
@@ -152,18 +154,16 @@ namespace Gellybeans.Expressions
                                         {
                                             stat.Base -= i;
                                             ctx[varName] = stat;
-                                            sb?.AppendLine($"{varName} base value set to {stat.Base}");
-                                            return stat.Value;
+                                            return stat;
                                         }
                                     }
                                     ctx[varName] = var - assignment;
-                                    sb?.AppendLine($"{varName} updated");
-                                    return $"{assignment}";
+                                    return assignment;
                                 };
 
                             }
                             else
-                                sb?.Append($"{varNode.VarName} not found");
+                                return new ErrorNode($"{varNode.VarName} not found");
                             break;
                         case "*=":
                             if(ctx.TryGetVar(varName, out var))
@@ -176,17 +176,15 @@ namespace Gellybeans.Expressions
                                         {
                                             stat.Base *= i;
                                             ctx[varName] = stat;
-                                            sb?.AppendLine($"{varName} base value set to {stat.Base}");
-                                            return stat.Value;
+                                            return stat;
                                         }
                                     }
                                     ctx[varName] = var * assignment;
-                                    sb?.AppendLine($"{varName} updated");
-                                    return $"{assignment}";
+                                    return assignment;
                                 };
                             }
                             else
-                                sb?.Append($"{varNode.VarName} not found");
+                                return new ErrorNode($"{varNode.VarName} not found");
                             break;
                         case "/=":
                             if(ctx.TryGetVar(varName, out var))
@@ -199,17 +197,15 @@ namespace Gellybeans.Expressions
                                         {
                                             stat.Base /= i;
                                             ctx[varName] = stat;
-                                            sb?.AppendLine($"{varName} base value set to {stat.Base}");
-                                            return stat.Value;
+                                            return stat;
                                         }
                                     }
                                     ctx[varName] = var / assignment;
-                                    sb?.AppendLine($"{varName} updated");
-                                    return $"{assignment}";
+                                    return assignment;
                                 };
                             }
                             else
-                                sb?.Append($"{varNode.VarName} not found");
+                                return new ErrorNode($"{varNode.VarName} not found");
                             break;
                         case "%=":
                             if(ctx.TryGetVar(varName, out var))
@@ -222,17 +218,15 @@ namespace Gellybeans.Expressions
                                         {
                                             stat.Base %= i;
                                             ctx[varName] = stat;
-                                            sb?.AppendLine($"{varName} base value set to {stat.Base}");
-                                            return stat.Value;
+                                            return stat;
                                         }
                                     }
                                     ctx[varName] = var % assignment;
-                                    sb?.AppendLine($"{varName} updated");
-                                    return $"{assignment}";
+                                    return assignment;
                                 };
                             }
                             else
-                                sb?.Append($"{varNode.VarName} not found");
+                                return new ErrorNode($"{varNode.VarName} not found");
                             break;
                     }
 
@@ -253,14 +247,15 @@ namespace Gellybeans.Expressions
                             {
                                 op = (identifier, assignment) =>
                                 {                                   
-                                    var index = keyNode.Key.Eval(depth);
-                                    var setMessage = $"{varName}[{index}] set";
+                                    var index = keyNode.Key.Eval(depth: depth, caller: caller, sb: sb, ctx : ctx);
+                                    if(index < 0)
+                                        index = a.Values.Length + index;
+
                                     if(index >= 0 && index < a.Values.Length)
                                         a[index] = assignment;
                                     else
                                         return "Index out of range";
 
-                                    sb?.AppendLine(setMessage);
                                     return $"{assignment}";
                                 };
                             }                            
@@ -273,7 +268,7 @@ namespace Gellybeans.Expressions
                     var rhs = ParseTernary();
                     return new AssignVarNode(varName, rhs, op);
                 }
-            }
+            }                  
             return node;
         }
 
@@ -336,11 +331,10 @@ namespace Gellybeans.Expressions
                             if(var is Stat s)
                                 return s.GetBonus((BonusType)(int)type);
                             else
-                                sb?.AppendLine($"$? cannot be applied to {identifier}");
+                               return new ErrorNode($"$? cannot be applied to {identifier}");
                         }
                         else
-                            sb?.AppendLine($"{identifier} not found.");
-                        return 0;
+                            return new ErrorNode($"{identifier} not found.");
                     };                
                 }
 
@@ -360,11 +354,10 @@ namespace Gellybeans.Expressions
             {
                 Func<dynamic, dynamic, dynamic> op = null!;
 
-                if(Current.TokenType == TokenType.Equals)  op = (a, b) => a == b; 
-                else if(Current.TokenType == TokenType.NotEquals)  op = (a, b) => a != b; 
-                else if(Current.TokenType == TokenType.HasFlag)  op = (a, b) => (a & b) != 0; 
+                if(Current.TokenType == TokenType.Equals) op = (a, b) => a == b;
+                else if(Current.TokenType == TokenType.NotEquals) op = (a, b) => a != b;
+                else if(Current.TokenType == TokenType.HasFlag) op = (a, b) => (a & b) != 0;
                 else if(Current.TokenType == TokenType.Range) op = (lhs, rhs) => new RangeValue(lhs, rhs);
-                else if(Current.TokenType == TokenType.RangeRandom) op = (lhs, rhs) => new RangeValue(lhs, rhs, true);
                 else if(Current.TokenType == TokenType.GetBonus) op = (lhs, rhs) =>
                 {
                     var value = 0;
@@ -372,8 +365,6 @@ namespace Gellybeans.Expressions
                     {
                         value = s.GetBonus((BonusType)i);
                     }
-
-
                     return value;
                 };
 
@@ -387,7 +378,7 @@ namespace Gellybeans.Expressions
 
         ExpressionNode ParseGreaterLess()
         {
-            var lhs = ParseAddSub();
+            var lhs = ParseShift();
 
             while(true)
             {
@@ -401,8 +392,77 @@ namespace Gellybeans.Expressions
                 if(op == null) return lhs;
 
                 Next();
-                var rhs = ParseAddSub();
+                var rhs = ParseShift();
                 lhs = new BinaryNode(lhs, rhs, op);
+            }
+        }
+
+        ExpressionNode ParseShift()
+        {
+            var lhs = ParseAddSub();
+
+            while(true)
+            {
+                Func<dynamic, ExpressionNode, dynamic> op = null!;
+
+                if(Current.TokenType == TokenType.Push) op = (lhs, rhs) =>
+                {
+                    var rhValue = rhs.Eval(depth: depth, caller: this, sb: sb, ctx: ctx);
+
+                    if(lhs is ArrayValue a)
+                    {
+                        if(rhValue is FunctionValue f)
+                        {                        
+                            if(f.VarNames.Length == 2)
+                            {
+                                for(int i = 0; i < a.Values.Length; i++)
+                                    a[i] = f.Invoke(depth, new dynamic[] { a[i], i }, sb, ctx);
+                            }
+                            else
+                                return new StringValue("Expected a function with 2 parameters.");
+                        }
+                        else
+                        {
+                            for(int i = 0; i < a.Values.Length; i++)
+                                a[i] = rhs.Eval(depth: depth, caller: this, sb: sb, ctx: ctx);
+                        }
+                        return a;
+                    }
+                    return new StringValue("No suitable value found for `<<` operator.");
+                };
+                else if(Current.TokenType == TokenType.Pull) op = (lhs, rhs) =>
+                {
+                    var list = new List<dynamic>();
+                    var rhValue = rhs.Eval(depth: depth, caller: this, sb: sb, ctx: ctx);
+                    if(lhs is ArrayValue a)
+                    {
+                        if(rhValue is FunctionValue f)
+                        {
+                            if(f.VarNames.Length == 2)
+                            {
+                                for(int i = 0; i < a.Values.Length; i++)
+                                    if(f.Invoke(depth, new dynamic[] { a[i], i }, sb, ctx))
+                                        list.Add(a[i]);
+                            }
+                            else
+                                return new StringValue("Expected a function with 2 parameters.");
+                        }
+                        else
+                        {
+                            for(int i = 0; i < a.Values.Length; i++)
+                                if(a[i] == rhValue)
+                                    list.Add(a[i]);
+                        }
+                        return new ArrayValue(list.ToArray());
+                    }                  
+                    return new StringValue("No suitable value found for `>>` operator.");
+                };              
+
+                if(op == null) return lhs;
+
+                Next();
+                var rhs = ParseAddSub();
+                lhs = new ShiftNode(lhs, rhs, op);
             }
         }
 
@@ -414,8 +474,42 @@ namespace Gellybeans.Expressions
             {
                 Func<dynamic, dynamic, dynamic> op = null!;
 
-                if(Current.TokenType == TokenType.Add) op = (a, b) => a + b;
+                if(Current.TokenType == TokenType.Add) op = (a, b) => a + b;               
                 else if(Current.TokenType == TokenType.Sub) op = (a, b) => a - b;
+                else if(Current.TokenType == TokenType.Append) op = (lhs, rhs) =>
+                {
+                    if(lhs is ArrayValue al)
+                    {
+                        ArrayValue array;
+
+                        if(rhs is ArrayValue ar)
+                        {
+                            var newArray = al.Values.Concat(ar.Values);
+                            array = newArray.ToArray();
+                        }
+                        else
+                        {
+                            var newArray = new dynamic[al.Values.Length + 1];
+                            Array.Copy(al.Values, newArray, al.Values.Length);
+                            newArray[^1] = rhs;
+                            array = new ArrayValue(newArray);
+                        }
+                        return array;
+                    }
+                    else if(rhs is ArrayValue ar)
+                    {
+                        ArrayValue array;
+
+                        var newArray = new dynamic[ar.Values.Length + 1];
+                        Array.Copy(ar.Values, 0, newArray, 1, ar.Values.Length);
+                        newArray[0] = lhs;
+                        array = new ArrayValue(newArray);
+                        return array;
+                    }
+
+                    return new StringValue("No suitable value found for `>>>` operator");
+                };
+
 
                 if(op == null) return lhs;
 
@@ -449,6 +543,7 @@ namespace Gellybeans.Expressions
         {
             Func<dynamic, dynamic> op = null!;
 
+            //prefix
             if(Current.TokenType == TokenType.Add)
                     Next();
 
@@ -531,35 +626,41 @@ namespace Gellybeans.Expressions
                 var rhs = ParseLeaf();
                 op = (value) =>
                 {
-                    var d = new DiceNode(1, 20).Eval(depth, ctx, sb);
+                    var d = new DiceNode(1, 20).Eval(depth: depth, caller: caller, sb: sb, ctx : ctx);
                     return d + value;
                 };
                 return new UnaryNode(rhs, op);
-            }
-            return ParseLeaf();
+            }          
+
+            //suffix
+            var node = ParseLeaf();
+            return node;
+
+
+
         }
 
         ExpressionNode ParseLeaf()
         {
-            if(Current.TokenType == TokenType.Number)
-            {                                              
-                var number =  new NumberNode(int.Parse(Current.Value));
-
-                Next();
-                return number;             
-            }
-            
             if(Current.TokenType == TokenType.OpenPar)
             {
                 Next();
-                var node = ParseTernary();
+                var node = ParseTermination();
 
                 if(Current.TokenType != TokenType.ClosePar)
                     return new ErrorNode("%Expected`)`");
 
                 Next();
                 return node;
-            }          
+            }
+
+            if(Current.TokenType == TokenType.Number)
+            {                                              
+                var number =  new NumberNode(int.Parse(Current.Value));
+
+                Next();
+                return number;             
+            }                      
 
             if(Current.TokenType == TokenType.Dice)
             {
@@ -600,16 +701,22 @@ namespace Gellybeans.Expressions
                 return new VarNode(Current.Value);
             }
 
-            //array
+            //Array
             if(Current.TokenType == TokenType.OpenSquig)
             {
                 var list = new List<ExpressionNode>();
 
                 Next();
+                if(Current.TokenType == TokenType.CloseSquig)
+                {
+                    Next();
+                    return new ArrayNode(Array.Empty<ExpressionNode>());
+                }
+                   
+
                 while(true)
                 {
                     list.Add(ParseTernary());
-
                     if(Current.TokenType == TokenType.Comma)
                     {
                         Next();
@@ -629,23 +736,17 @@ namespace Gellybeans.Expressions
             if(Current.TokenType == TokenType.Var)
             {
                 var identifier = Current.Value;
-               
+                
                 if(Look().TokenType == TokenType.OpenPar)
                 {
-                    Move(2);
-
-                    
+                    Move(2);               
                     if(ctx.TryGetVar(identifier.ToUpper(), out var value))
                     {
                         if(value is FunctionValue function)
                         {
-                            var args = new List<ExpressionNode>();
-                            CallNode c;
-                            if(Current.TokenType == TokenType.ClosePar)
+                            var args = new List<ExpressionNode>();            
+                            if(Current.TokenType != TokenType.ClosePar)
                             {
-                                c = new CallNode(identifier.ToUpper(), args);
-                            }
-                            else
                                 while(true)
                                 {
                                     args.Add(ParseTernary());
@@ -655,8 +756,9 @@ namespace Gellybeans.Expressions
                                         continue;
                                     }
                                     break;
-                                }                 
-
+                                }                              
+                            }
+                                       
                             if(Current.TokenType != TokenType.ClosePar)
                                 return new ErrorNode("Expected `)`");
 
@@ -667,8 +769,6 @@ namespace Gellybeans.Expressions
 
                         }
                     }
-
-
 
 
                     FunctionNode f;
@@ -764,72 +864,91 @@ namespace Gellybeans.Expressions
             {
                 Next();
                 if(Current.TokenType == TokenType.OpenPar)
-                {                    
-                    Next();
-                    var parameters = new List<string>();
-                    if(Current.TokenType == TokenType.ClosePar)
-                    {
-
-                    }
-                    else
-                    {
-                        while(true)
-                        {
-                            var result = ParseTernary();
-                            if(result is VarNode v)
-                                parameters.Add(v.VarName);
-                            else
-                                return new ErrorNode("Expected valid variable name for function parameter");
-
-                            if(Current.TokenType == TokenType.Comma)
-                            {
-                                Next();
-                                continue;
-                            }
-                            break;
-                        }
-                    }
-                    Console.WriteLine($"got function params");
-
+                {
+                    var parameters = ParseParameters();
                     if(Current.TokenType != TokenType.ClosePar)
                         return new ErrorNode("Expected `)`");
                     
                     Next();
                     if(Current.TokenType == TokenType.OpenSquig)
                     {
-                        Console.WriteLine("function: open squig");
-                        var list = new List<Token>();
-
-                        Next();
-                        while(Current.TokenType != TokenType.CloseSquig)
-                        {
-                            if(Current.TokenType == TokenType.OpenSquig)
-                                list.AddRange(ParseDepth(TokenType.OpenSquig, TokenType.CloseSquig));
-                                           
-                            list.Add(Current);
-                            Next();
-                        }
-                        list.Add(new Token(TokenType.EOF, ""));
-
+                        var list = ParseStatement();
+                        if(Current.TokenType != TokenType.CloseSquig)
+                            return new ErrorNode("Expected `}`");
+                        
                         Next();
                         Console.WriteLine($"parsed function:\n{Tokenizer.Output(list)}");
                         return new DefNode(list, parameters.ToArray());
-                    }
-                    
+                    }                   
+                }
+                
+                else if(Current.TokenType == TokenType.OpenSquig)
+                {
+                    var statement = ParseStatement();
+                    if(Current.TokenType != TokenType.CloseSquig)
+                        return new ErrorNode("Expected `}`");
 
-                   
+                    Next();
+                    return new DefNode(statement, new string[] { "_", "I" });
+                }
+            
 
-                }    
             }
 
-            if(Current.TokenType == TokenType.RangeRandom)
+            //Symbol
+            if(IsSymbol(Current.TokenType))
             {
                 Next();
-                return new ValueNode(new RangeValue(0, 0, true));
+                return new SymbolNode(Look(-1).Value); 
             }
-                
 
-            return new ErrorNode("%?");
+            return new ErrorNode($"Reached token in improper state `{Current.TokenType}:{Current.Value}`.");
+        }
+
+        List<string> ParseParameters()
+        {
+            Next();
+            var parameters = new List<string>();
+            if(Current.TokenType != TokenType.ClosePar)
+            {
+                while(true)
+                {
+                    var result = ParseTernary();
+                    if(result is VarNode v)
+                        parameters.Add(v.VarName);
+                    else
+                        return null!;
+
+                    if(Current.TokenType == TokenType.Comma)
+                    {
+                        Next();
+                        continue;
+                    }
+                    break;
+                }
+            }
+            return parameters;
+        }
+        
+        List<Token> ParseStatement()
+        {
+            var statement  = new List<Token>();
+
+            Next();
+            while(Current.TokenType != TokenType.CloseSquig)
+            {
+                if(Current.TokenType == TokenType.OpenSquig)
+                    statement.AddRange(ParseDepth(TokenType.OpenSquig, TokenType.CloseSquig));
+
+                statement.Add(Current);
+                Next();
+
+                if(Current.TokenType == TokenType.EOF)
+                    break;
+
+            }
+            statement.Add(new Token(TokenType.EOF, ""));
+            return statement;
         }
 
         List<Token> ParseDepth(TokenType open, TokenType close)
@@ -847,12 +966,17 @@ namespace Gellybeans.Expressions
             return list;
         }
 
-        public static ExpressionNode Parse(string expr, IContext ctx = null!, StringBuilder sb = null!) =>
-            Parse(new Tokenizer(new StringReader(expr)).Tokens, ctx, sb);
-       
-        public static ExpressionNode Parse(List<Token> tokens, IContext ctx = null!, StringBuilder sb = null!)
+        bool IsSymbol(TokenType tokenType)
         {
-            var parser = new Parser(tokens, ctx, sb);
+            return (tokenType == TokenType.Self || tokenType == TokenType.Random);
+        }
+
+        public static ExpressionNode Parse(string expr, object caller, StringBuilder sb = null!, IContext ctx = null!, int index = 0) =>
+            Parse(new Tokenizer(new StringReader(expr)).Tokens, caller, sb, ctx, index);
+       
+        public static ExpressionNode Parse(List<Token> tokens, object caller, StringBuilder sb = null!, IContext ctx = null!, int index = 0)
+        {
+            var parser = new Parser(tokens, caller, sb, ctx, index);
             return parser.ParseExpr();
         }       
     }                 

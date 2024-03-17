@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Text;
 
 namespace Gellybeans.Expressions
 {
@@ -17,14 +13,13 @@ namespace Gellybeans.Expressions
             this.placeholders = placeholders;
         }
 
-        public override dynamic Eval(int depth, IContext ctx, StringBuilder sb)
+        public override dynamic Eval(int depth, object caller, StringBuilder sb, IContext ctx = null!)
         {
             depth++;
             if(depth > Parser.MAX_DEPTH)
                 return "operation cancelled: maximum evaluation depth reached.";
 
-            Console.WriteLine(Tokenizer.Output(tokens));
-            return new FunctionValue(placeholders, tokens);
+            return new FunctionValue(placeholders, Tokenizer.Output(tokens));
         }
 
     }

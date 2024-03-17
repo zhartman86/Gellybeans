@@ -7,22 +7,23 @@ namespace Gellybeans.Expressions
 
         readonly dynamic value;
         ExpressionNode next;
+        IContext context;
 
-        public PipeNode(dynamic value, ExpressionNode next)
+        public PipeNode(dynamic value, ExpressionNode next, IContext context)
         {
             this.value = value;
             this.next = next;
+            this.context = context;
         }
 
-        public override dynamic Eval(int depth, IContext ctx, StringBuilder sb = null!)
+        public override dynamic Eval(int depth, object caller, StringBuilder sb, IContext ctx = null!)
         {
             depth++;
             if(depth > Parser.MAX_DEPTH)
                 return "operation cancelled: maximum evaluation depth reached.";
 
-            ScopedContext scope;
-            scope = new(ctx ?? null!, new() { { "P", value } });
-            return next.Eval(depth, scope, sb);
+            
+            return next.Eval(depth: depth, caller: this, sb: sb, ctx : ctx);
         }
 
     }

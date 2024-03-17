@@ -9,15 +9,22 @@ namespace Gellybeans.Expressions
         public ArrayNode(ExpressionNode[] values) =>
             Values = values;
 
-        public override dynamic Eval(int depth, IContext ctx, StringBuilder sb)
+        public override dynamic Eval(int depth, object caller, StringBuilder sb, IContext ctx = null!)
         {
             depth++;
             if(depth > Parser.MAX_DEPTH)
                 return "operation cancelled: maximum evaluation depth reached.";
+
+            dynamic[] array;
             
-            var array = new dynamic[Values.Length];
-            for (int i = 0; i < Values.Length; i++)
-                array[i] = Values[i].Eval(depth, ctx, sb);
+            if(Values == null || Values.Length == 0)
+                array = Array.Empty<dynamic>();
+            else
+            {
+                array = new dynamic[Values.Length];
+                for(int i = 0; i < Values.Length; i++)
+                    array[i] = Values[i].Eval(depth: depth, caller: this, sb: sb, ctx : ctx);
+            }
 
             return new ArrayValue(array);
         }

@@ -17,7 +17,7 @@ namespace Gellybeans.Expressions
 
 
 
-        public override dynamic Eval(int depth, IContext ctx, StringBuilder sb)
+        public override dynamic Eval(int depth, object caller, StringBuilder sb, IContext ctx = null!)
         {
             depth++;
             if(depth > Parser.MAX_DEPTH)
@@ -26,7 +26,7 @@ namespace Gellybeans.Expressions
             var v = varName.Replace(" ", "_").ToUpper();
             dynamic value = ctx[v];
             if (value is IReduce r)
-                value = r.Reduce(depth, ctx, sb);
+                value = r.Reduce(depth: depth, caller: this, sb: sb, ctx : ctx);
             if (value is null)
             {
                 value = 0;
