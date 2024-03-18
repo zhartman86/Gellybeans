@@ -76,10 +76,8 @@ namespace Gellybeans.Expressions
 
             if(Current.TokenType == TokenType.Pipe)
             {
-                Next();
-                var result = expr.Eval(depth: depth, caller: caller, sb: sb, ctx : ctx);
-                var scope = new ScopedContext(ctx, "P", result);          
-                return new PipeNode(result, ParseTermination(), scope);
+                Next();               
+                return new PipeNode(expr, ParseTermination());
             }
             
             if(Current.TokenType == TokenType.Semicolon)
@@ -237,9 +235,9 @@ namespace Gellybeans.Expressions
                     return new AssignVarNode(varName, rhs, op);
                 }
                 
-                if(node is KeyNode keyNode)
+                if(node is KeyNode k && k.Value is VarNode v)
                 {
-                    var varName = keyNode.VarName.ToUpper();
+                    var varName = v.VarName.ToUpper();
                     switch(Current.Value)
                     {
                         case "=":
@@ -247,12 +245,16 @@ namespace Gellybeans.Expressions
                             {
                                 op = (identifier, assignment) =>
                                 {                                   
-                                    var index = keyNode.Key.Eval(depth: depth, caller: caller, sb: sb, ctx : ctx);
+                                    var index = k.Key.Eval(depth: depth, caller: caller, sb: sb, ctx : ctx);
                                     if(index < 0)
                                         index = a.Values.Length + index;
 
                                     if(index >= 0 && index < a.Values.Length)
+                                    {
                                         a[index] = assignment;
+                                        ctx[varName] = a;
+                                    }
+                                        
                                     else
                                         return "Index out of range";
 
@@ -407,12 +409,11 @@ namespace Gellybeans.Expressions
 
                 if(Current.TokenType == TokenType.Push) op = (lhs, rhs) =>
                 {
-                    var rhValue = rhs.Eval(depth: depth, caller: this, sb: sb, ctx: ctx);
-
+                    var rhValue = rhs.Eval(depth: depth, caller: this, sb: null!, ctx: ctx);
                     if(lhs is ArrayValue a)
-                    {
+                    {                        
                         if(rhValue is FunctionValue f)
-                        {                        
+                        {                                                 
                             if(f.VarNames.Length == 2)
                             {
                                 for(int i = 0; i < a.Values.Length; i++)
@@ -634,6 +635,20 @@ namespace Gellybeans.Expressions
 
             //suffix
             var node = ParseLeaf();
+            if(Current.TokenType == TokenType.OpenSquare)
+            {
+                Next();
+                var key = ParseTernary();
+
+                if(Current.TokenType != TokenType.CloseSquare)
+                    return new ErrorNode("Expected `]`");
+
+                Next();
+                return new KeyNode(node, key);
+            }
+            
+            
+            
             return node;
 
 
@@ -697,7 +712,6 @@ namespace Gellybeans.Expressions
                     }
                     return lhs;
                 }
-                Console.WriteLine("found var in dice");
                 return new VarNode(Current.Value);
             }
 
@@ -762,8 +776,6 @@ namespace Gellybeans.Expressions
                             if(Current.TokenType != TokenType.ClosePar)
                                 return new ErrorNode("Expected `)`");
 
-                            Console.WriteLine($"CALLING WITH {args.Count} PARAMS");
-
                             Next();
                             return new CallNode(identifier.ToUpper(), args);
 
@@ -803,17 +815,13 @@ namespace Gellybeans.Expressions
 
                 if(Look().TokenType == TokenType.OpenSquare)
                 {
-                    Console.WriteLine("found indexer");
                     Move(2);
                     var value = ParseTernary();
-
-                    Console.WriteLine(value);
-
                     if(Current.TokenType != TokenType.CloseSquare)
                         return new ErrorNode("Expected `]`");
 
                     Next();
-                    return new KeyNode(identifier, value);
+                    return new KeyNode(new VarNode(identifier), value);
                 }
                             
                 Next();
@@ -877,7 +885,6 @@ namespace Gellybeans.Expressions
                             return new ErrorNode("Expected `}`");
                         
                         Next();
-                        Console.WriteLine($"parsed function:\n{Tokenizer.Output(list)}");
                         return new DefNode(list, parameters.ToArray());
                     }                   
                 }
@@ -968,7 +975,7 @@ namespace Gellybeans.Expressions
 
         bool IsSymbol(TokenType tokenType)
         {
-            return (tokenType == TokenType.Self || tokenType == TokenType.Random);
+            return (tokenType == TokenType.Self || tokenType == TokenType.Random || tokenType == TokenType.DoubleCaret);
         }
 
         public static ExpressionNode Parse(string expr, object caller, StringBuilder sb = null!, IContext ctx = null!, int index = 0) =>

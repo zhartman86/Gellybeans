@@ -57,7 +57,6 @@ namespace Gellybeans.Expressions
         public void ListTokens()
         {
             for (int i = 0; i < Tokens.Count; i++) { }
-                //Console.WriteLine($"{Tokens[i].TokenType}");      
         }
 
         public override string ToString()
@@ -363,6 +362,19 @@ namespace Gellybeans.Expressions
                     Tokens.Add(new Token(TokenType.Base, "@"));
                     return;
 
+                case '^':
+                    NextChar();
+                    if(currentChar == '^')
+                    {
+                        NextChar();
+                        Tokens.Add(new Token(TokenType.DoubleCaret, "^^"));
+                    }
+                    else
+                    {
+                        Tokens.Add(new Token(TokenType.Caret, "^"));
+                    }
+                    return;
+                
                 case '#':
                     NextChar();
                     Tokens.Add(new Token(TokenType.Self, "#"));
@@ -473,7 +485,6 @@ namespace Gellybeans.Expressions
                     }
                 }
                 NextChar();
-                Console.WriteLine($"STRING VALUE: {sb}");
                 Tokens.Add(new Token(TokenType.String, $"\"{sb}\""));
                 return;
             }      
@@ -495,7 +506,6 @@ namespace Gellybeans.Expressions
             }
 
             Tokens.Add(new Token(TokenType.Error, $"Invalid data: {currentChar}"));
-            Console.WriteLine($"Invalid data: {currentChar}");
             return;
         }
 

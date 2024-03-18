@@ -26,28 +26,22 @@ namespace Gellybeans.Expressions
         {
             depth++;
             if(depth > Parser.MAX_DEPTH)
-                return "operation cancelled: maximum evaluation depth reached.";
+                return "Operation cancelled: maximum evaluation depth reached.";
 
-            Console.WriteLine($"binary: lhs:{lhs.GetType()}, rhs:{rhs.GetType()}");
-
-            var lhValue = lhs.Eval(depth: depth, caller: this, sb: sb, ctx : ctx);
+            var lhValue = lhs.Eval(depth: depth, caller: caller, sb: sb, ctx : ctx);
             if (lhValue is IReduce r)
-                lhValue = r.Reduce(depth: depth, caller: this, sb: sb, ctx : ctx);
+                lhValue = r.Reduce(depth: depth, caller: caller, sb: sb, ctx : ctx);
 
-            var rhValue = rhs.Eval(depth: depth, caller: this, sb: sb, ctx : ctx);
+            var rhValue = rhs.Eval(depth: depth, caller: caller, sb: sb, ctx : ctx);
             if (rhValue is IReduce rr)
-                rhValue = rr.Reduce(depth: depth, caller: this, sb: sb, ctx : ctx);
+                rhValue = rr.Reduce(depth: depth, caller: caller, sb: sb, ctx : ctx);
 
             Console.WriteLine($"binary: lhValue:{lhValue.GetType()}, rhValue:{rhValue.GetType()}");
 
             LResult = lhValue;
             RResult = rhValue;
 
-            var result = op(lhValue, rhValue);
-
-            Console.WriteLine("returning completed binary operation");
-
-            return result;
+            return op(lhValue, rhValue);
         }
     }
 }

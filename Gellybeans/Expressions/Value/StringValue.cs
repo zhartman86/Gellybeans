@@ -36,11 +36,9 @@ namespace Gellybeans.Expressions
 
                     if(r.Length > 0)
                     {
-                        Console.WriteLine($"FOUND STR EXPR: {r}");
                         var result = Parser.Parse(r[1..^1], this, ctx: ctx).Eval(depth: depth, caller: this, sb: sb, ctx : ctx);
                         if(result is IReduce rr)
                             result = rr.Reduce(depth: depth, caller: this, sb: sb, ctx : ctx);
-                        Console.WriteLine(result.ToString());
                         sb.Append(result.ToString());
                     }
                 }

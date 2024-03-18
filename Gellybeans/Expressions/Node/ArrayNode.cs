@@ -25,7 +25,6 @@ namespace Gellybeans.Expressions
                 for(int i = 0; i < Values.Length; i++)
                     array[i] = Values[i].Eval(depth: depth, caller: this, sb: sb, ctx : ctx);
             }
-
             return new ArrayValue(array);
         }
     }

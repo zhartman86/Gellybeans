@@ -50,6 +50,7 @@
         HasFlag,        // :?
         Range,          // ..              
         Caret,          // ^
+        DoubleCaret,    // ^^
         Random,         // .^ 
         Error,
         EOF,
