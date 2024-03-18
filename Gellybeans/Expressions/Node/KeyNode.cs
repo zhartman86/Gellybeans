@@ -44,9 +44,7 @@ namespace Gellybeans.Expressions
                         end = a.Values.Length + end;
 
                     if(start < 0 || start >= a.Values.Length || end < 0 || end >= a.Values.Length)
-                        return new StringValue($"Invalid range `[{r}]` for this array.");
-
-                        
+                        return new StringValue($"Invalid range `[{r}]` for this array.");                   
                     else
                     {
                         var list = new List<dynamic>();
