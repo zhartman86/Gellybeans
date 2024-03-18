@@ -170,7 +170,6 @@ namespace Gellybeans.Expressions
             {
                 a[i] = lhs[i] > rhs;
             }
-            Console.WriteLine($"returning > array. count:{a.Values.Length}");
             return a;
         }
 

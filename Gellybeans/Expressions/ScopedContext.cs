@@ -24,13 +24,11 @@ namespace Gellybeans.Expressions
         {
             get 
             {
-                Console.WriteLine("CHECKING VARS");
                 if(Vars.ContainsKey(varName))
                     return Vars[varName];
                 if(parent != null)
                     if(parent.TryGetVar(varName, out var v))
                     {
-                        Console.WriteLine("FOUND PARENT VAR");
                         return v;
                     }
                                  

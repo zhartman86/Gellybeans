@@ -25,10 +25,7 @@ namespace Gellybeans.Expressions
 
             var dict = new Dictionary<string, dynamic>();
             for (int i = 0; i < args.Length; i++)
-            {
-                Console.WriteLine($"Var: {VarNames[i]}, Value: {args[i]}");
-                dict.Add(VarNames[i].ToUpper(), args[i]);
-            }
+                dict.Add(VarNames[i].ToUpper(), args[i]);            
 
             var scope = new ScopedContext(ctx, dict);
             var result = Parser.Parse(Expression, this, sb, scope).Eval(depth: depth, caller: this, sb: sb, ctx : scope);
