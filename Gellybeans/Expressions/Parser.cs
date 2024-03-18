@@ -67,7 +67,7 @@ namespace Gellybeans.Expressions
             if(Current.TokenType == TokenType.EOF || expr is ErrorNode)
                 return expr;
 
-            return new ErrorNode($"Invalid expression. Error on index {index} : `{Current.Value}``");
+            return new ErrorNode($"Invalid expression. Error on token {index} : `{Current.Value}``");
         }
 
         ExpressionNode ParseTermination()
@@ -246,6 +246,35 @@ namespace Gellybeans.Expressions
                                 op = (identifier, assignment) =>
                                 {                                   
                                     var index = k.Key.Eval(depth: depth, caller: caller, sb: sb, ctx : ctx);
+                                    
+                                    
+                                    if(index is RangeValue r)
+                                    {
+
+                                        var start = r.Lower;
+                                        if(start < 0)
+                                            start = a.Values.Length + start;
+                                        var end = r.Upper;
+                                        if(end < 0)
+                                            end = a.Values.Length + end;
+
+                                        if(start < 0 || start >= a.Values.Length || end < 0 || end >= a.Values.Length)
+                                            return new StringValue($"Invalid range `[{r}]` for this array.");
+
+                                        if(start > end)
+                                        {
+                                            for(int i = start; i >= end; i--)
+                                                a[i] = assignment;
+                                        }
+                                        else
+                                        {
+                                            for(int i = start; i <= end; i++)
+                                                a[i] = assignment;
+                                        }
+                                        ctx[varName] = a;
+                                        return $"{assignment}";
+                                    }
+                                    
                                     if(index < 0)
                                         index = a.Values.Length + index;
 
@@ -660,7 +689,7 @@ namespace Gellybeans.Expressions
             if(Current.TokenType == TokenType.OpenPar)
             {
                 Next();
-                var node = ParseTermination();
+                var node = ParseAssignment();
 
                 if(Current.TokenType != TokenType.ClosePar)
                     return new ErrorNode("%Expected`)`");
