@@ -246,8 +246,21 @@ namespace Gellybeans.Expressions
                                 op = (identifier, assignment) =>
                                 {                                   
                                     var index = k.Key.Eval(depth: depth, caller: caller, sb: sb, ctx : ctx);
-                                    
-                                    
+
+                                    if(index is StringValue s)
+                                    {
+                                        Console.WriteLine($"{index} in assignment");
+                                        for(int i = 0; i < a.Values.Length; i++)
+                                        {
+                                            if(a.Values[i] is KeyValuePairValue kvp && kvp.Key.ToUpper() == s.String.ToUpper())
+                                            {
+                                                a[i] = new KeyValuePairValue(kvp.Key, assignment);
+                                                return $"{assignment}";
+                                            }
+                                        }
+                                        return new StringValue("Key not found.");
+                                    }
+
                                     if(index is RangeValue r)
                                     {
 
@@ -336,6 +349,17 @@ namespace Gellybeans.Expressions
 
                 if(Current.TokenType == TokenType.LogicalOr) op = (a, b) => (a || b);
                 else if(Current.TokenType == TokenType.LogicalAnd) op = (a, b) => (a && b);
+                else if(Current.TokenType == TokenType.Pair) op = (k, v) =>
+                {
+                    
+                    if(k is StringValue)
+                    {
+                        Console.WriteLine($"FOUND PAIR {k}, {v}");
+                        return new KeyValuePairValue(k, v);
+                    }
+                        
+                    return new StringValue("Key must be a string.");
+                };
 
                 if(op == null) return lhs;
 
@@ -559,7 +583,7 @@ namespace Gellybeans.Expressions
 
                 if(Current.TokenType == TokenType.Mul) op = (a, b) => a * b;
                 else if(Current.TokenType == TokenType.Div) op = (a, b) => a / b;
-                else if(Current.TokenType == TokenType.Modulo) op = (a, b) => a % b;
+                else if(Current.TokenType == TokenType.Percent) op = (a, b) => a % b;
 
                 if(op == null) return lhs;
 
@@ -571,117 +595,99 @@ namespace Gellybeans.Expressions
 
         ExpressionNode ParseUnary()
         {
-            Func<dynamic, dynamic> op = null!;
-
             //prefix
-            if(Current.TokenType == TokenType.Add)
+            while(true)
+            {
+                Func<dynamic, dynamic> op = null!;
+
+                if(Current.TokenType == TokenType.Add)
                     Next();
 
-            if(Current.TokenType == TokenType.Sub)
-            {
-                Next();
-                var rhs = ParseLeaf();
-
-                if(rhs is BonusNode b)
-                {
-                    op = (bonus) =>
+                if(Current.TokenType == TokenType.Sub)
+                {                 
+                    op = (a) =>
                     {
-                        var count = 0;
-                        var stats = ctx.Vars.Values.OfType<Stat>();
-                        foreach(Stat s in stats)
+                        if(a is Bonus b)
                         {
-                            if(s.RemoveBonus(b.BonusName))
-                                count++;
+                            var count = 0;
+                            var stats = ctx.Vars.Values.OfType<Stat>();
+                            foreach(Stat s in stats)
+                            {
+                                if(s.RemoveBonus(b.Name))
+                                    count++;
+                            }
+                            return new StringValue($"{b.Name} removed from {count} stats.");
                         }
-                        sb?.AppendLine($"{b.BonusName} removed from {count} stats.");
-                        return count;
+                        return -a;
                     };
                 }
-                else
-                    op = (a) => -a;
 
-                return new UnaryNode(rhs, op);
-            }
-            
-            if(Current.TokenType == TokenType.Not)
-            {
-                op = (value) => !value;
-                
-                Next();
-                var rhs = ParseLeaf();              
-                return new UnaryNode(rhs, op);
-            }
+                if(Current.TokenType == TokenType.Not)
+                    op = (value) => !value;
 
-            if(Current.TokenType == TokenType.Base)
-            {
-                Next();
-                var rhs = ParseLeaf();
-
-                if(rhs is VarNode v)
+                if(Current.TokenType == TokenType.Base)
                 {
                     op = (var) =>
                     {
                         if(var is Stat s)
                             return s.Base;
                         else
-                        {
-                            sb.AppendLine($"@ cannot be applied to {v.VarName}");
-                            return 0;
-                        }                           
-                    };
-                    return new UnaryNode(rhs, op);
-                }               
-            }
+                            return new StringValue("@ cannot be applied to this value.");                        
+                    };                 
+                }
 
-            if(Current.TokenType == TokenType.Remove)
-            {
-                Next();
-                var rhs = ParseLeaf();
-                if(rhs is VarNode v)
+                if(Current.TokenType == TokenType.Remove)
+                {                 
+                    if(Look().TokenType == TokenType.Var)
+                    {
+                        var varName = Look().Value.ToUpper();
+                        op = (value) =>
+                        {
+                            if(ctx.RemoveVar(varName))
+                                return new StringValue($"{varName} removed.");
+                            return new StringValue($"{varName} not found.");
+                        };                      
+                    }
+                }
+
+                if(Current.TokenType == TokenType.And)
                 {
                     op = (value) =>
                     {
-                        var varName = v.VarName.ToUpper();
-                        if(ctx.RemoveVar(varName))
-                            return new StringValue($"{varName} removed.");
-                        return new StringValue($"{varName} not found.");
+                        var d = new DiceNode(1, 20).Eval(depth: depth, caller: caller, sb: sb, ctx: ctx);
+                        return d + value;
                     };
-                    return new UnaryNode(new NumberNode(0), op);
-                }                             
-            }
-           
-            if(Current.TokenType == TokenType.And)
-            {
+                }
+
+                if(Current.TokenType == TokenType.Percent) 
+                    op = (value) => value.ToString();
+                
+                if(op == null) 
+                    break;
+
                 Next();
                 var rhs = ParseLeaf();
-                op = (value) =>
-                {
-                    var d = new DiceNode(1, 20).Eval(depth: depth, caller: caller, sb: sb, ctx : ctx);
-                    return d + value;
-                };
-                return new UnaryNode(rhs, op);
-            }          
 
+                return new UnaryNode(rhs, op);
+
+            }
+                     
             //suffix
             var node = ParseLeaf();
+           
             if(Current.TokenType == TokenType.OpenSquare)
-            {
-                Next();
-                var key = ParseTernary();
+                {
+                    Next();
+                    var key = ParseTernary();
 
-                if(Current.TokenType != TokenType.CloseSquare)
-                    return new ErrorNode("Expected `]`");
+                    if(Current.TokenType != TokenType.CloseSquare)
+                        return new ErrorNode("Expected `]`");
 
-                Next();
-                return new KeyNode(node, key);
-            }
-            
-            
+                    Next();
+                    return new KeyNode(node, key);
+                }     
             
             return node;
-
-
-
         }
 
         ExpressionNode ParseLeaf()
@@ -858,7 +864,7 @@ namespace Gellybeans.Expressions
             }
 
             //BonusNode
-            if(Current.TokenType == TokenType.Bonus)
+            if(Current.TokenType == TokenType.Dollar)
             {
                 Next();
                 if(Current.TokenType == TokenType.Var)

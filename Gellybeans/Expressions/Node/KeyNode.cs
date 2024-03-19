@@ -33,6 +33,17 @@ namespace Gellybeans.Expressions
                         return a.Values.Length;
                 }
 
+                if(result is StringValue s)
+                {
+                    for(int i = 0; i < a.Values.Length; i++)
+                    {
+                        if(a.Values[i] is KeyValuePairValue kvp && kvp.Key.ToUpper() == s.String.ToUpper())
+                        {                      
+                            return kvp.Value;
+                        }                           
+                    }
+                }
+
                 if(result is RangeValue r)
                 {
 

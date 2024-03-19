@@ -160,7 +160,7 @@ namespace Gellybeans.Expressions
                     }
                     else
                     {
-                        Tokens.Add(new Token(TokenType.Bonus, "$"));
+                        Tokens.Add(new Token(TokenType.Dollar, "$"));
                     }                 
                     return;
 
@@ -245,6 +245,11 @@ namespace Gellybeans.Expressions
                         NextChar();
                         Tokens.Add(new Token(TokenType.Push, "<<"));
                     }
+                    else if(currentChar == '>')
+                    {
+                        NextChar();
+                        Tokens.Add(new Token(TokenType.Pair, "<>"));
+                    }
                     else
                     {
                         Tokens.Add(new Token(TokenType.Less, "<"));
@@ -318,7 +323,7 @@ namespace Gellybeans.Expressions
                     }
                     else
                     {
-                        Tokens.Add(new Token(TokenType.Modulo, "%"));
+                        Tokens.Add(new Token(TokenType.Percent, "%"));
                     }                       
                     return;
 

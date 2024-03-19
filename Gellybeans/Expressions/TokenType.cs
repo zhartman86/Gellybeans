@@ -4,7 +4,7 @@
     {
         None,
         Ternary,        // ?::
-        Bonus,          // $
+        Dollar,         // $
         GetBonus,       // $?
         Base,           // @
         Assign,         // = += -= *= /= %= |=
@@ -29,7 +29,7 @@
         Sub,            // -
         Mul,            // *
         Div,            // /
-        Modulo,         // %
+        Percent,        // %
         Number,         // integer
         OpenPar,        // (
         ClosePar,       // )
@@ -51,7 +51,8 @@
         Range,          // ..              
         Caret,          // ^
         DoubleCaret,    // ^^
-        Random,         // .^ 
+        Random,         // .^
+        Pair,           // <>
         Error,
         EOF,
     }
