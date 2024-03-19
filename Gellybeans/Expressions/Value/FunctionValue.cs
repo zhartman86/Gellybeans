@@ -31,6 +31,8 @@ namespace Gellybeans.Expressions
             var result = Parser.Parse(Expression, this, sb, scope).Eval(depth: depth, caller: this, sb: sb, ctx : scope);
             if(result is IReduce r)
                 result = r.Reduce(depth: depth, caller: this, sb: sb, ctx : scope);
+            if(result is IDisplay d)
+                result = d.Display(depth: depth, caller: this, sb: sb, ctx: scope);
 
             return result;
         }
