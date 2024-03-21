@@ -2,7 +2,7 @@
 
 namespace Gellybeans.Expressions
 {
-    public class ArrayValue : IDisplay, IReduce
+    public class ArrayValue : IReduce
     {
         public dynamic[] Values { get; set; }
 
@@ -24,21 +24,6 @@ namespace Gellybeans.Expressions
             }
         }
 
-        public string Display(int depth, object caller, StringBuilder sb, IContext ctx)
-        {
-            var results = new StringBuilder();
-            results.Append('[');
-            for (int i = 0; i < Values.Length; i++)
-            {
-                var result = Values[i];
-                results.Append($"{result}");
-                if (i < Values.Length - 1)
-                    results.Append(", ");
-            }
-            results.Append(']');
-            return results.ToString();
-        }
-
         public dynamic Reduce(int depth, object caller, StringBuilder sb, IContext ctx = null!)
         {
             depth++;
@@ -48,10 +33,10 @@ namespace Gellybeans.Expressions
             var a = new dynamic[Values.Length];
             for (int i = 0; i < Values.Length; i++)
             {
-                if (Values[i] is IReduce r)
-                    a[i] = r.Reduce(depth: depth, caller: this, sb: sb, ctx : ctx);
-                else
-                    a[i] = Values[i];
+                var result = Values[i];
+                if (result is IReduce r)
+                    result = r.Reduce(depth: depth, caller: this, sb: sb, ctx : ctx);             
+                a[i] = result;
             }
             return new ArrayValue(a);
         }
@@ -81,8 +66,7 @@ namespace Gellybeans.Expressions
                 var array = new dynamic[rhs];
                 Array.Fill(array, 0);
                 return new ArrayValue(array);
-            }
-               
+            }              
 
             var a = new ArrayValue(new dynamic[lhs.Values.Length]);
             for (int i = 0; i < lhs.Values.Length; i++)

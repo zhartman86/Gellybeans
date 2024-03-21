@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http.Headers;
 using System.Reflection.Metadata.Ecma335;
+using System.Security.AccessControl;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -96,9 +97,11 @@ namespace Gellybeans.Expressions
             {
                 Func<string, dynamic, dynamic> op = null!;
 
+                string varName;
+                
                 if(node is VarNode varNode)
                 {                
-                    var varName = varNode.VarName.ToUpper();
+                    varName = varNode.VarName.ToUpper();
 
                     switch(Current.Value)
                     {
@@ -235,17 +238,30 @@ namespace Gellybeans.Expressions
                     return new AssignVarNode(varName, rhs, op);
                 }
                 
-                if(node is KeyNode k && k.Value is VarNode v)
-                {
-                    var varName = v.VarName.ToUpper();
+                else if(node is KeyNode k)
+                {                 
+                    while(true)
+                    {
+                        if(k.Value is VarNode v)
+                        {
+                            varName = v.VarName.ToUpper();
+                            break;
+                        }
+                        else if (k.Value is KeyNode)
+                        
+                    }
+
+                    
+                    
+                    varName = v.VarName.ToUpper();
                     switch(Current.Value)
                     {
                         case "=":
                             if(ctx.TryGetVar(varName, out var var) && var is ArrayValue a)
                             {
                                 op = (identifier, assignment) =>
-                                {                                   
-                                    var index = k.Key.Eval(depth: depth, caller: caller, sb: sb, ctx : ctx);
+                                {
+                                    var index = k.Key.Eval(depth: depth, caller: caller, sb: sb, ctx: ctx);
 
                                     if(index is StringValue s)
                                     {
@@ -287,7 +303,7 @@ namespace Gellybeans.Expressions
                                         ctx[varName] = a;
                                         return $"{assignment}";
                                     }
-                                    
+
                                     if(index < 0)
                                         index = a.Values.Length + index;
 
@@ -296,13 +312,13 @@ namespace Gellybeans.Expressions
                                         a[index] = assignment;
                                         ctx[varName] = a;
                                     }
-                                        
+
                                     else
                                         return "Index out of range";
 
                                     return $"{assignment}";
                                 };
-                            }                            
+                            }
                             break;
                     }
 
@@ -311,7 +327,7 @@ namespace Gellybeans.Expressions
                     Next();
                     var rhs = ParseTernary();
                     return new AssignVarNode(varName, rhs, op);
-                }
+                }                             
             }                  
             return node;
         }
@@ -349,18 +365,7 @@ namespace Gellybeans.Expressions
 
                 if(Current.TokenType == TokenType.LogicalOr) op = (a, b) => (a || b);
                 else if(Current.TokenType == TokenType.LogicalAnd) op = (a, b) => (a && b);
-                else if(Current.TokenType == TokenType.Pair) op = (k, v) =>
-                {
-                    
-                    if(k is StringValue)
-                    {
-                        Console.WriteLine($"FOUND PAIR {k}, {v}");
-                        return new KeyValuePairValue(k, v);
-                    }
-                        
-                    return new StringValue("Key must be a string.");
-                };
-
+                
                 if(op == null) return lhs;
 
                 Next();
@@ -457,7 +462,18 @@ namespace Gellybeans.Expressions
             var lhs = ParseAddSub();
 
             while(true)
-            {
+            {             
+                if(Current.TokenType == TokenType.Pair)
+                {
+                    if(lhs is StringNode s)
+                    {
+                        Next();
+                        var value = ParseAddSub();
+                        return new KeyValueNode(s.String, value);
+                    }
+                    return new ErrorNode("Keys in key-value pairs must be strings.");                   
+                }
+
                 Func<dynamic, ExpressionNode, dynamic> op = null!;
 
                 if(Current.TokenType == TokenType.Push) op = (lhs, rhs) =>
@@ -510,7 +526,7 @@ namespace Gellybeans.Expressions
                         return new ArrayValue(list.ToArray());
                     }                  
                     return new StringValue("No suitable value found for `>>` operator.");
-                };              
+                };                             
 
                 if(op == null) return lhs;
 
@@ -519,6 +535,7 @@ namespace Gellybeans.Expressions
                 lhs = new ShiftNode(lhs, rhs, op);
             }
         }
+
 
         ExpressionNode ParseAddSub()
         {
@@ -676,16 +693,16 @@ namespace Gellybeans.Expressions
             var node = ParseLeaf();
            
             if(Current.TokenType == TokenType.OpenSquare)
-                {
-                    Next();
-                    var key = ParseTernary();
+            {
+                Next();
+                var key = ParseTernary();
 
-                    if(Current.TokenType != TokenType.CloseSquare)
-                        return new ErrorNode("Expected `]`");
+                if(Current.TokenType != TokenType.CloseSquare)
+                    return new ErrorNode("Expected `]`");
 
-                    Next();
-                    return new KeyNode(node, key);
-                }     
+                Next();
+                return new KeyNode(node, key);
+            }
             
             return node;
         }
@@ -862,7 +879,7 @@ namespace Gellybeans.Expressions
                 Next();
                 return new VarNode(identifier);
             }
-
+            
             //BonusNode
             if(Current.TokenType == TokenType.Dollar)
             {
