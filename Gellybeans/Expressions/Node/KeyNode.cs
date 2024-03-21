@@ -20,10 +20,14 @@ namespace Gellybeans.Expressions
             if(depth > Parser.MAX_DEPTH)
                 return "operation cancelled: maximum evaluation depth reached.";
 
-            var value = Value.Eval(depth, caller, sb, ctx);
+            
             var result = Key.Eval(depth, caller, sb, ctx);
+            
+            var value = Value.Eval(depth, caller, sb, ctx);
+            if(value is KeyValuePairValue kv)
+                value = kv.Value;
 
-            if (value is ArrayValue a)
+            if(value is ArrayValue a)
             {
                 if(result is SymbolNode symbol)
                 {
@@ -35,11 +39,15 @@ namespace Gellybeans.Expressions
 
                 if(result is StringValue s)
                 {
+
+                    Console.WriteLine("STRING FOUND");
                     for(int i = 0; i < a.Values.Length; i++)
                     {
+                        Console.WriteLine(a.Values[i].GetType());
                         if(a.Values[i] is KeyValuePairValue kvp && kvp.Key.ToUpper() == s.String.ToUpper())
                         {                      
-                            return kvp.Value;
+                            Console.WriteLine("RETURNING");
+                            return kvp;
                         }                           
                     }
                 }

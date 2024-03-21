@@ -34,5 +34,9 @@ namespace Gellybeans.Expressions
             }
             return value;
         }
+
+        public override string ToString() =>
+            varName;
+        
     }
 }

@@ -30,6 +30,10 @@ namespace Gellybeans.Pathfinder
             if(depth > Parser.MAX_DEPTH)
                 return "operation cancelled: maximum evaluation depth reached.";
 
+            if(caller is ArrayValue)
+                return ToString();
+            
+            
             var str = $"## {Value}";
             if(Bonuses != null || Override != null)
             {
