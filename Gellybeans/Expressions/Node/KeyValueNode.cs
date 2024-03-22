@@ -14,6 +14,8 @@ namespace Gellybeans.Expressions
             this.value = value;
         }
 
+        
+
         public override dynamic Eval(int depth, object caller, StringBuilder sb, IContext ctx = null)
         {
             depth++;

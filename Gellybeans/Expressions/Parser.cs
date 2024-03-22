@@ -1,11 +1,14 @@
-﻿using Gellybeans.Pathfinder;
+﻿using Gellybeans.Expressions.Node;
+using Gellybeans.Pathfinder;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http.Headers;
+using System.Reflection.Metadata;
 using System.Reflection.Metadata.Ecma335;
 using System.Security.AccessControl;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Xml.Linq;
 
 namespace Gellybeans.Expressions
 {
@@ -68,7 +71,7 @@ namespace Gellybeans.Expressions
             if(Current.TokenType == TokenType.EOF || expr is ErrorNode)
                 return expr;
 
-            return new ErrorNode($"Invalid expression. Error on token {index} : `{Current.Value}``");
+            return new ErrorNode($"Invalid expression. Error on token : {(index > 1 && index < tokens.Count - 3 ? $"{Look(-2).Value}{Look(-1).Value}`{Current.Value}`{Look(1).Value}{Look(2).Value}": Current.Value)}");
         }
 
         ExpressionNode ParseTermination()
@@ -95,13 +98,10 @@ namespace Gellybeans.Expressions
             var node = ParseTernary();
             if(Current.TokenType == TokenType.Assign)
             {
-                Func<string, dynamic, dynamic> op = null!;
-
-                string varName;
-                
                 if(node is VarNode varNode)
-                {                
-                    varName = varNode.VarName.ToUpper();
+                {
+                    Func<string, dynamic, dynamic> op = null!;
+                    var varName = varNode.VarName.ToUpper();
 
                     switch(Current.Value)
                     {
@@ -237,97 +237,52 @@ namespace Gellybeans.Expressions
                     var rhs = ParseTernary();
                     return new AssignVarNode(varName, rhs, op);
                 }
-                
-                else if(node is KeyNode k)
-                {                 
-                    while(true)
-                    {
-                        if(k.Value is VarNode v)
+                               
+                if(node is KeyNode k)
+                {
+                    Func<dynamic, List<dynamic>, dynamic, dynamic> op = null!;
+                    
+                    var trail = k;
+                    while(trail.Value is KeyNode kk)
+                        trail = kk;
+                    
+                    if(trail.Value is VarNode v)
+                    {                       
+                        switch(Current.Value)
                         {
-                            varName = v.VarName.ToUpper();
-                            break;
-                        }
-                        else if (k.Value is KeyNode)
-                        
-                    }
-
-                    
-                    
-                    varName = v.VarName.ToUpper();
-                    switch(Current.Value)
-                    {
-                        case "=":
-                            if(ctx.TryGetVar(varName, out var var) && var is ArrayValue a)
-                            {
-                                op = (identifier, assignment) =>
+                            case "=":
+                                op = (variable, keys, assignment) =>
                                 {
-                                    var index = k.Key.Eval(depth: depth, caller: caller, sb: sb, ctx: ctx);
-
-                                    if(index is StringValue s)
+                                    switch(keys.Count)
                                     {
-                                        Console.WriteLine($"{index} in assignment");
-                                        for(int i = 0; i < a.Values.Length; i++)
-                                        {
-                                            if(a.Values[i] is KeyValuePairValue kvp && kvp.Key.ToUpper() == s.String.ToUpper())
-                                            {
-                                                a[i] = new KeyValuePairValue(kvp.Key, assignment);
-                                                return $"{assignment}";
-                                            }
-                                        }
-                                        return new StringValue("Key not found.");
+                                        case 1:
+                                            Console.WriteLine($"{variable[keys[0]]}");
+                                            variable[keys[0]] = assignment;
+                                            break;
+                                        case 2:
+                                            Console.WriteLine($"{variable[keys[0]].GetType()}");
+                                            variable[keys[0]][keys[1]] = assignment;
+                                            break;
+                                        case 3:
+                                            variable[keys[0]][keys[1]][keys[2]] = assignment;
+                                            break;
+                                        case 4:
+                                            variable[keys[0]][keys[1]][keys[2]][keys[3]] = assignment;
+                                            break;
+                                        case 5:
+                                            variable[keys[0]][keys[1]][keys[2]][keys[3]][keys[4]] = assignment;
+                                            break;
                                     }
-
-                                    if(index is RangeValue r)
-                                    {
-
-                                        var start = r.Lower;
-                                        if(start < 0)
-                                            start = a.Values.Length + start;
-                                        var end = r.Upper;
-                                        if(end < 0)
-                                            end = a.Values.Length + end;
-
-                                        if(start < 0 || start >= a.Values.Length || end < 0 || end >= a.Values.Length)
-                                            return new StringValue($"Invalid range `[{r}]` for this array.");
-
-                                        if(start > end)
-                                        {
-                                            for(int i = start; i >= end; i--)
-                                                a[i] = assignment;
-                                        }
-                                        else
-                                        {
-                                            for(int i = start; i <= end; i++)
-                                                a[i] = assignment;
-                                        }
-                                        ctx[varName] = a;
-                                        return $"{assignment}";
-                                    }
-
-                                    if(index < 0)
-                                        index = a.Values.Length + index;
-
-                                    if(index >= 0 && index < a.Values.Length)
-                                    {
-                                        a[index] = assignment;
-                                        ctx[varName] = a;
-                                    }
-
-                                    else
-                                        return "Index out of range";
-
-                                    return $"{assignment}";
+                                    return variable;
                                 };
-                            }
-                            break;
+                                break;
+                        }
+
+                        Next();
+                        var rhs = ParseTernary();
+                        return new AssignKeyNode(v, k, rhs, op);
                     }
-
-                    if(op == null) return node;
-
-                    Next();
-                    var rhs = ParseTernary();
-                    return new AssignVarNode(varName, rhs, op);
-                }                             
+                }                                
             }                  
             return node;
         }
@@ -677,7 +632,7 @@ namespace Gellybeans.Expressions
                 }
 
                 if(Current.TokenType == TokenType.Percent) 
-                    op = (value) => value.ToString();
+                    op = (value) => value is IString s ? s.ToStr() : value.ToString();
                 
                 if(op == null) 
                     break;
@@ -688,23 +643,92 @@ namespace Gellybeans.Expressions
                 return new UnaryNode(rhs, op);
 
             }
-                     
-            //suffix
-            var node = ParseLeaf();
-           
-            if(Current.TokenType == TokenType.OpenSquare)
+                                             
+            return ParseIndex();                                 
+        }
+
+        ExpressionNode ParseIndex()
+        {
+            var lhs = ParseLeaf();
+
+            while(true)
             {
-                Next();
-                var key = ParseTernary();
+                Func<dynamic, dynamic, dynamic> op = null!;
+                
+                if(Current.TokenType == TokenType.OpenSquare)
+                {
+                    op = (k, v) =>
+                    {                       
+                        if(v is KeyValuePairValue kv)
+                            v = kv.Value;
 
-                if(Current.TokenType != TokenType.CloseSquare)
-                    return new ErrorNode("Expected `]`");
+                        if(v is ArrayValue a)
+                        {
+                            if(k is SymbolNode symbol)
+                            {
+                                if(symbol.Symbol == ".^")
+                                    return a[Random.Shared.Next(0, a.Values.Length)];
+                                if(symbol.Symbol == "^^")
+                                    return a.Values.Length;
+                            }
+
+                            if(k is StringValue s)
+                            {
+                                for(int i = 0; i < a.Values.Length; i++)
+                                {
+                                    if(a.Values[i] is KeyValuePairValue kvp && kvp.Key.ToUpper() == s.String.ToUpper())
+                                        return kvp;
+                                }
+                            }
+
+                            if(k is RangeValue r)
+                            {
+                                var start = r.Lower;
+                                if(start < 0)
+                                    start = a.Values.Length + start;
+                                var end = r.Upper;
+                                if(end < 0)
+                                    end = a.Values.Length + end;
+
+                                if(start < 0 || start >= a.Values.Length || end < 0 || end >= a.Values.Length)
+                                    return new StringValue($"Invalid range `[{r}]` for this array.");
+                                else
+                                {
+                                    var list = new List<dynamic>();
+                                    if(start > end)
+                                    {
+                                        for(int i = start; i >= end; i--)
+                                            list.Add(a[i]);
+                                    }
+                                    else
+                                    {
+                                        for(int i = start; i <= end; i++)
+                                            list.Add(a[i]);
+                                    }
+                                    return new ArrayValue(list.ToArray());
+                                }
+                            }
+
+                            if(k < 0)
+                                k = a.Values.Length + k;
+
+                            if(k < 0 || k >= a.Values.Length)
+                                return new StringValue($"Index `[{k}]` out of range");
+
+                            return a[k];
+                        }
+                        return new StringValue($"No key found for this v.");
+                    };                    
+                }             
+
+                if(op == null) return lhs;
 
                 Next();
-                return new KeyNode(node, key);
-            }
-            
-            return node;
+                var key = ParseKey();
+                Console.WriteLine($" KEY: {key.GetType()} VALUE: {lhs.GetType()}");
+                lhs = new KeyNode(key, lhs, op);
+                
+            }           
         }
 
         ExpressionNode ParseLeaf()
@@ -864,22 +888,14 @@ namespace Gellybeans.Expressions
                     Next();
                     return f;
                 }
-
-                if(Look().TokenType == TokenType.OpenSquare)
-                {
-                    Move(2);
-                    var value = ParseTernary();
-                    if(Current.TokenType != TokenType.CloseSquare)
-                        return new ErrorNode("Expected `]`");
-
-                    Next();
-                    return new KeyNode(new VarNode(identifier), value);
-                }
+             
                             
                 Next();
                 return new VarNode(identifier);
             }
+
             
+
             //BonusNode
             if(Current.TokenType == TokenType.Dollar)
             {
@@ -962,6 +978,16 @@ namespace Gellybeans.Expressions
             }
 
             return new ErrorNode($"Reached token in improper state `{Current.TokenType}:{Current.Value}`.");
+        }
+
+        ExpressionNode ParseKey()
+        {
+            var key = ParseTernary();
+            if(Current.TokenType != TokenType.CloseSquare)
+                return new ErrorNode("Expected `]`");
+            
+            Next();
+            return key;
         }
 
         List<string> ParseParameters()

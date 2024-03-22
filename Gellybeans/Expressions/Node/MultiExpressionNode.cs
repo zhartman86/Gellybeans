@@ -19,8 +19,6 @@ namespace Gellybeans.Expressions
             if(depth > Parser.MAX_DEPTH)
                 return "operation cancelled: maximum evaluation depth reached.";
 
-
-
             next.Eval(depth: depth, caller: this, sb: sb, ctx : ctx);
             return 0;
         }

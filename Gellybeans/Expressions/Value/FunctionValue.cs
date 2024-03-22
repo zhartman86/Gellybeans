@@ -37,8 +37,17 @@ namespace Gellybeans.Expressions
             return result;
         }
 
-        public override string ToString() =>
-            $"### **Function**\n>>> ### ({GetParamNames()})\n `{Expression}`";
+        public override string ToString()
+        {
+            var sb = new StringBuilder();
+            var exprs = Expression.Split(new char[] { ';', '|' });
+            for(int i = 0; i < exprs.Length; i++)
+            {
+                sb.AppendLine(exprs[i]);
+            }
+            return $"### **Function**\n>>> ### ({GetParamNames()})\n```{sb}```";
+        }
+            
         
         public string GetParamNames()
         {

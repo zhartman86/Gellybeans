@@ -1,8 +1,9 @@
-﻿using System.Text;
+﻿using System.Runtime.ExceptionServices;
+using System.Text;
 
 namespace Gellybeans.Expressions
 {
-    public class ArrayValue : IReduce
+    public class ArrayValue : IReduce, IString
     {
         public dynamic[] Values { get; set; }
 
@@ -15,12 +16,57 @@ namespace Gellybeans.Expressions
             {
                 if (index >= 0 && index < Values.Length)
                     return Values[index];
+                Console.WriteLine($"INDEX: {index}, COUNT: {Values.Length}");
                 return new StringValue("Index out of range");
             }
             set
             {
                 if (index >= 0 && index < Values.Length)
                     Values[index] = value;
+            }
+        }
+
+        public string ToStr()
+        {
+            var sb = new StringBuilder();
+            for(int i = 0; i < Values.Length; i++)
+            {
+                sb.Append($"[{i}]{(Values[i] is KeyValuePairValue kv ? $" {kv.Key}:" : ":")}");
+                if(Values[i] is ArrayValue a)
+                {
+                    sb.AppendLine();
+                    ParseDepth(a, sb);
+                }
+                    
+                else if(Values[i] is KeyValuePairValue kvp && kvp.Value is ArrayValue aa)
+                {
+                    sb.AppendLine();
+                    ParseDepth(aa, sb);
+                }
+                    
+                else
+                    sb.AppendLine($"{Values[i]}");
+            }
+            return $"```{sb}```";
+        }
+
+        void ParseDepth(ArrayValue a, StringBuilder sb, string indent = " | ")
+        {            
+            for(int i = 0; i < a.Values.Length ;i++) 
+            {
+                sb.Append($"{indent}[{i}]");
+                if(a.Values[i] is ArrayValue aa)
+                {
+                    sb.AppendLine();
+                    ParseDepth(aa, sb, indent + " | ");
+                }
+                else if(a.Values[i] is KeyValuePairValue kvp && kvp.Value is ArrayValue kva)
+                {
+                    sb.AppendLine($" {kvp.Key}:");
+                    ParseDepth(kva, sb, indent + " | ");
+                }
+                else
+                    sb.AppendLine($": {a.Values[i]}");
             }
         }
 
@@ -46,10 +92,10 @@ namespace Gellybeans.Expressions
             var s = new StringBuilder();
 
             s.Append("[ ");
-            for (int i = 0; i < Values.Length; i++)
+            for(int i = 0; i < Values.Length; i++)
             {
-                s.Append($"{Values[i]}");
-                if (i < Values.Length - 1)
+                s.Append(Values[i]);
+                if(i < Values.Length - 1)
                     s.Append(", ");
             }
             s.Append(" ]");
