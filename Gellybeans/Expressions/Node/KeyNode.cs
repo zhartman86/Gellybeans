@@ -1,17 +1,22 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Text;
 
 namespace Gellybeans.Expressions
 {
     public class KeyNode : ExpressionNode
     {
-        public ExpressionNode Value { get; }
+        
         public ExpressionNode Key { get; }
+        public ExpressionNode Value { get; }
 
-        public KeyNode(ExpressionNode value, ExpressionNode key)
-        {
-            Value = value;
+        Func<dynamic, dynamic, dynamic> op;
+
+        public KeyNode(ExpressionNode key, ExpressionNode value, Func<dynamic, dynamic, dynamic> op)
+        {         
             Key = key;
+            Value = value;
+            this.op = op;
         }
 
         public override dynamic Eval(int depth, object caller, StringBuilder sb, IContext ctx = null!)
@@ -20,76 +25,10 @@ namespace Gellybeans.Expressions
             if(depth > Parser.MAX_DEPTH)
                 return "operation cancelled: maximum evaluation depth reached.";
 
-            
-            var result = Key.Eval(depth, caller, sb, ctx);
-            
-            var value = Value.Eval(depth, caller, sb, ctx);
-            if(value is KeyValuePairValue kv)
-                value = kv.Value;
-
-            if(value is ArrayValue a)
-            {
-                if(result is SymbolNode symbol)
-                {
-                    if(symbol.Symbol == ".^")
-                        return a[Random.Shared.Next(0, a.Values.Length)];
-                    if(symbol.Symbol == "^^")
-                        return a.Values.Length;
-                }
-
-                if(result is StringValue s)
-                {
-
-                    Console.WriteLine("STRING FOUND");
-                    for(int i = 0; i < a.Values.Length; i++)
-                    {
-                        Console.WriteLine(a.Values[i].GetType());
-                        if(a.Values[i] is KeyValuePairValue kvp && kvp.Key.ToUpper() == s.String.ToUpper())
-                        {                      
-                            Console.WriteLine("RETURNING");
-                            return kvp;
-                        }                           
-                    }
-                }
-
-                if(result is RangeValue r)
-                {
-
-                    var start = r.Lower;
-                    if(start < 0)
-                        start = a.Values.Length + start;
-                    var end = r.Upper;
-                    if (end < 0)
-                        end = a.Values.Length + end;
-
-                    if(start < 0 || start >= a.Values.Length || end < 0 || end >= a.Values.Length)
-                        return new StringValue($"Invalid range `[{r}]` for this array.");                   
-                    else
-                    {
-                        var list = new List<dynamic>();
-                        if(start > end)
-                        {
-                            for(int i = start; i >= end; i--)
-                                list.Add(a[i]);
-                        }
-                        else
-                        {
-                            for(int i = start; i <= end; i++)
-                                list.Add(a[i]);
-                        }
-                        return new ArrayValue(list.ToArray());
-                    }                                        
-                }
-
-                if(result < 0)
-                    result = a.Values.Length + result;                   
-                    
-                if(result < 0 || result >= a.Values.Length)
-                    return new StringValue($"Index `[{result}]` out of range");
-
-                return a[result];                                 
-            }           
-            return new StringValue($"No key found for this value.");
+            var k = Key.Eval(depth, caller, sb, ctx);     
+            var v = Value.Eval(depth, caller, sb, ctx);
+            return op(k, v);
         }
-    }
+              
+    }    
 }
