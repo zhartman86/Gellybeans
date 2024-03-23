@@ -1,7 +1,6 @@
-﻿using System.Diagnostics;
-using System.Text;
+﻿using System.Text;
 
-namespace Gellybeans.Expressions.Node
+namespace Gellybeans.Expressions
 {
     public class AssignKeyNode : ExpressionNode
     {

@@ -30,22 +30,24 @@ namespace Gellybeans.Expressions
         {
             var sb = new StringBuilder();
             for(int i = 0; i < Values.Length; i++)
-            {
-                sb.Append($"[{i}]{(Values[i] is KeyValuePairValue kv ? $" {kv.Key}:" : ":")}");
-                if(Values[i] is ArrayValue a)
+            {                
+                if(Values[i] is KeyValuePairValue kvp)
                 {
-                    sb.AppendLine();
+                    if(kvp.Value is ArrayValue aa)
+                    {
+                        sb.AppendLine($"[{i}] {kvp.Key}:");
+                        ParseDepth(aa, sb);
+                    }
+                    else
+                        sb.AppendLine($"[{i}] {kvp.Key}: {kvp.Value}");
+                }               
+                else if(Values[i] is ArrayValue a)
+                {                                      
+                    sb.AppendLine($"[{i}]:");
                     ParseDepth(a, sb);
-                }
-                    
-                else if(Values[i] is KeyValuePairValue kvp && kvp.Value is ArrayValue aa)
-                {
-                    sb.AppendLine();
-                    ParseDepth(aa, sb);
-                }
-                    
+                }                   
                 else
-                    sb.AppendLine($"{Values[i]}");
+                    sb.AppendLine($"[{i}] {Values[i]}");
             }
             return $"```{sb}```";
         }
@@ -54,19 +56,24 @@ namespace Gellybeans.Expressions
         {            
             for(int i = 0; i < a.Values.Length ;i++) 
             {
-                sb.Append($"{indent}[{i}]");
-                if(a.Values[i] is ArrayValue aa)
+                if(a.Values[i] is KeyValuePairValue kvp)
                 {
-                    sb.AppendLine();
+                    if(kvp.Value is ArrayValue kva)
+                    {
+                        sb.AppendLine($"{indent}[{i}] {kvp.Key}:");
+                        ParseDepth(kva, sb, indent + " | ");
+                    }
+                    else
+                        sb.AppendLine($"{indent}[{i}] {kvp.Key}: {kvp.Value}");
+
+                }                                   
+                else if(a.Values[i] is ArrayValue aa)
+                {
+                    sb.AppendLine($"{indent}[{i}]:");
                     ParseDepth(aa, sb, indent + " | ");
                 }
-                else if(a.Values[i] is KeyValuePairValue kvp && kvp.Value is ArrayValue kva)
-                {
-                    sb.AppendLine($" {kvp.Key}:");
-                    ParseDepth(kva, sb, indent + " | ");
-                }
                 else
-                    sb.AppendLine($": {a.Values[i]}");
+                    sb.AppendLine($"{indent}[{i}] {a.Values[i]}");
             }
         }
 
