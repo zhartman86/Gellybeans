@@ -44,7 +44,8 @@
         Expression,     // `
         Self,           // #
         Var,            //
-        String,         // "abc" or 'abc'
+        String,         // "abc"
+        Event,          // 'abc'
         Dice,           // 1d20
         Separator,      // :
         HasFlag,        // :?

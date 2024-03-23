@@ -1,14 +1,6 @@
-﻿using Gellybeans.Expressions.Node;
-using Gellybeans.Pathfinder;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http.Headers;
-using System.Reflection.Metadata;
-using System.Reflection.Metadata.Ecma335;
-using System.Security.AccessControl;
+﻿using Gellybeans.Pathfinder;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Xml.Linq;
 
 namespace Gellybeans.Expressions
 {
@@ -82,14 +74,14 @@ namespace Gellybeans.Expressions
             {
                 Next();               
                 return new PipeNode(expr, ParseTermination());
-            }
-            
-            if(Current.TokenType == TokenType.Semicolon)
+            }           
+            else if(Current.TokenType == TokenType.Semicolon)
             {
                 Next();
                 expr.Eval(depth: depth, caller: caller, sb: sb, ctx : ctx);
                 return ParseTermination();
             }
+            
             return expr;
         }
 
@@ -256,11 +248,9 @@ namespace Gellybeans.Expressions
                                     switch(keys.Count)
                                     {
                                         case 1:
-                                            Console.WriteLine($"{variable[keys[0]]}");
                                             variable[keys[0]] = assignment;
                                             break;
                                         case 2:
-                                            Console.WriteLine($"{variable[keys[0]].GetType()}");
                                             variable[keys[0]][keys[1]] = assignment;
                                             break;
                                         case 3:
@@ -276,7 +266,103 @@ namespace Gellybeans.Expressions
                                     return variable;
                                 };
                                 break;
-                        }
+                            case "+=":
+                                op = (variable, keys, assignment) =>
+                                {
+                                    switch(keys.Count)
+                                    {
+                                        case 1:
+                                            variable[keys[0]] += assignment;
+                                            break;
+                                        case 2:
+                                            variable[keys[0]][keys[1]] += assignment;
+                                            break;
+                                        case 3:
+                                            variable[keys[0]][keys[1]][keys[2]] += assignment;
+                                            break;
+                                        case 4:
+                                            variable[keys[0]][keys[1]][keys[2]][keys[3]] += assignment;
+                                            break;
+                                        case 5:
+                                            variable[keys[0]][keys[1]][keys[2]][keys[3]][keys[4]] += assignment;
+                                            break;
+                                    }
+                                    return variable;
+                                };
+                                break;
+                            case "-=":
+                                op = (variable, keys, assignment) =>
+                                {
+                                    switch(keys.Count)
+                                    {
+                                        case 1:
+                                            variable[keys[0]] -= assignment;
+                                            break;
+                                        case 2:
+                                            variable[keys[0]][keys[1]] -= assignment;
+                                            break;
+                                        case 3:
+                                            variable[keys[0]][keys[1]][keys[2]] -= assignment;
+                                            break;
+                                        case 4:
+                                            variable[keys[0]][keys[1]][keys[2]][keys[3]] -= assignment;
+                                            break;
+                                        case 5:
+                                            variable[keys[0]][keys[1]][keys[2]][keys[3]][keys[4]] -= assignment;
+                                            break;
+                                    }
+                                    return variable;
+                                };
+                                break;
+                            case "*=":
+                                op = (variable, keys, assignment) =>
+                                {
+                                    switch(keys.Count)
+                                    {
+                                        case 1:
+                                            variable[keys[0]] *= assignment;
+                                            break;
+                                        case 2:
+                                            variable[keys[0]][keys[1]] *= assignment;
+                                            break;
+                                        case 3:
+                                            variable[keys[0]][keys[1]][keys[2]] *= assignment;
+                                            break;
+                                        case 4:
+                                            variable[keys[0]][keys[1]][keys[2]][keys[3]] *= assignment;
+                                            break;
+                                        case 5:
+                                            variable[keys[0]][keys[1]][keys[2]][keys[3]][keys[4]] *= assignment;
+                                            break;
+                                    }
+                                    return variable;
+                                };
+                                break;
+                            case "/=":
+                                op = (variable, keys, assignment) =>
+                                {
+                                    switch(keys.Count)
+                                    {
+                                        case 1:
+                                            variable[keys[0]] /= assignment;
+                                            break;
+                                        case 2:
+                                            variable[keys[0]][keys[1]] /= assignment;
+                                            break;
+                                        case 3:
+                                            variable[keys[0]][keys[1]][keys[2]] /= assignment;
+                                            break;
+                                        case 4:
+                                            variable[keys[0]][keys[1]][keys[2]][keys[3]] /= assignment;
+                                            break;
+                                        case 5:
+                                            variable[keys[0]][keys[1]][keys[2]][keys[3]][keys[4]] /= assignment;
+                                            break;
+                                    }
+                                    return variable;
+                                };
+                                break;
+                        }   
 
                         Next();
                         var rhs = ParseTernary();
@@ -536,7 +622,6 @@ namespace Gellybeans.Expressions
                     return new StringValue("No suitable value found for `>>>` operator");
                 };
 
-
                 if(op == null) return lhs;
 
                 Next();
@@ -572,10 +657,8 @@ namespace Gellybeans.Expressions
             {
                 Func<dynamic, dynamic> op = null!;
 
-                if(Current.TokenType == TokenType.Add)
-                    Next();
-
-                if(Current.TokenType == TokenType.Sub)
+                if(Current.TokenType == TokenType.Add) Next();
+                else if(Current.TokenType == TokenType.Sub)
                 {                 
                     op = (a) =>
                     {
@@ -593,11 +676,8 @@ namespace Gellybeans.Expressions
                         return -a;
                     };
                 }
-
-                if(Current.TokenType == TokenType.Not)
-                    op = (value) => !value;
-
-                if(Current.TokenType == TokenType.Base)
+                else if(Current.TokenType == TokenType.Not) op = (value) => !value;
+                else if(Current.TokenType == TokenType.Base)
                 {
                     op = (var) =>
                     {
@@ -607,8 +687,7 @@ namespace Gellybeans.Expressions
                             return new StringValue("@ cannot be applied to this value.");                        
                     };                 
                 }
-
-                if(Current.TokenType == TokenType.Remove)
+                else if(Current.TokenType == TokenType.Remove)
                 {                 
                     if(Look().TokenType == TokenType.Var)
                     {
@@ -621,8 +700,7 @@ namespace Gellybeans.Expressions
                         };                      
                     }
                 }
-
-                if(Current.TokenType == TokenType.And)
+                else if(Current.TokenType == TokenType.And)
                 {
                     op = (value) =>
                     {
@@ -630,9 +708,7 @@ namespace Gellybeans.Expressions
                         return d + value;
                     };
                 }
-
-                if(Current.TokenType == TokenType.Percent) 
-                    op = (value) => value is IString s ? s.ToStr() : value.ToString();
+                else if(Current.TokenType == TokenType.Percent) op = (value) => value is IString s ? s.ToStr() : value.ToString();
                 
                 if(op == null) 
                     break;
@@ -641,9 +717,7 @@ namespace Gellybeans.Expressions
                 var rhs = ParseLeaf();
 
                 return new UnaryNode(rhs, op);
-
-            }
-                                             
+            }                                           
             return ParseIndex();                                 
         }
 
@@ -733,244 +807,217 @@ namespace Gellybeans.Expressions
 
         ExpressionNode ParseLeaf()
         {
-            if(Current.TokenType == TokenType.OpenPar)
+            switch(Current.TokenType)
             {
-                Next();
-                var node = ParseAssignment();
-
-                if(Current.TokenType != TokenType.ClosePar)
-                    return new ErrorNode("%Expected`)`");
-
-                Next();
-                return node;
-            }
-
-            if(Current.TokenType == TokenType.Number)
-            {                                              
-                var number =  new NumberNode(int.Parse(Current.Value));
-
-                Next();
-                return number;             
-            }                      
-
-            if(Current.TokenType == TokenType.Dice)
-            {
-                //^([0-9]{0,3})d([0-9]{1,3})((?:r|h|l)(?:[0-9]{1,3})){0,3}$
-                var match = dRegex.Match(Current.Value);
-
-                if(match.Success)
-                {
-                    var count = match.Groups[1].Captures.Count > 0 ? int.TryParse(match.Groups[1].Captures[0].Value, out int outVal) ? outVal : 1 : 1;
-                    var sides = int.Parse(match.Groups[2].Captures[0].Value);
-                    var lhs = new DiceNode(count, sides, sb);
-
-                    for(int i = 0; i < match.Groups[3].Captures.Count; i++)
-                    {
-                        //store the letter in index 0, remove it and parse the number that comes after
-                        var letter = match.Groups[3].Captures[i].Value[0];
-                        var number = int.Parse(match.Groups[3].Captures[i].Value.Remove(0, 1));
-
-                        if(letter == 'r')
-                            lhs.Reroll = number;
-                        if(letter == 'h')
-                            lhs.Highest = number;
-                        if(letter == 'l')
-                            lhs.Lowest = number;
-                    }
-
+                case TokenType.OpenPar:
                     Next();
-                    if(Current.TokenType == TokenType.Mul || Current.TokenType == TokenType.Div)
-                    {
-                        var op = Current.TokenType;
-                        Next();
-                        var rhs = ParseTernary();
-                        return new DiceMultiplierNode(lhs, rhs, op);
-                    }
-                    return lhs;
-                }
-                return new VarNode(Current.Value);
-            }
-
-            //Array
-            if(Current.TokenType == TokenType.OpenSquig)
-            {
-                var list = new List<ExpressionNode>();
-
-                Next();
-                if(Current.TokenType == TokenType.CloseSquig)
-                {
-                    Next();
-                    return new ArrayNode(Array.Empty<ExpressionNode>());
-                }
-                   
-
-                while(true)
-                {
-                    list.Add(ParseTernary());
-                    if(Current.TokenType == TokenType.Comma)
-                    {
-                        Next();
-                        continue;
-                    }
-                    break;
-                }
-
-                if(Current.TokenType != TokenType.CloseSquig)
-                    return new ErrorNode("Expected `}`");
-
-                Next();
-                return new ArrayNode(list.ToArray());
-            }     
-
-            //VarNode
-            if(Current.TokenType == TokenType.Var)
-            {
-                var identifier = Current.Value;
-                
-                if(Look().TokenType == TokenType.OpenPar)
-                {
-                    Move(2);               
-                    if(ctx.TryGetVar(identifier.ToUpper(), out var value))
-                    {
-                        if(value is FunctionValue function)
-                        {
-                            var args = new List<ExpressionNode>();            
-                            if(Current.TokenType != TokenType.ClosePar)
-                            {
-                                while(true)
-                                {
-                                    args.Add(ParseTernary());
-                                    if(Current.TokenType == TokenType.Comma)
-                                    {
-                                        Next();
-                                        continue;
-                                    }
-                                    break;
-                                }                              
-                            }
-                                       
-                            if(Current.TokenType != TokenType.ClosePar)
-                                return new ErrorNode("Expected `)`");
-
-                            Next();
-                            return new CallNode(identifier.ToUpper(), args);
-
-                        }
-                    }
-
-
-                    FunctionNode f;
-
-                    //if no args
-                    if(Current.TokenType == TokenType.ClosePar)
-                        f = new FunctionNode(identifier.ToLower());
-                    
-                    else
-                    {
-                        var args = new List<ExpressionNode>();
-                        while(true)
-                        {
-                            args.Add(ParseTernary());
-
-                            if(Current.TokenType == TokenType.Comma)
-                            {
-                                Next();
-                                continue;
-                            }
-                            break;
-                        }
-                        f = new FunctionNode(identifier.ToLower(), args.ToArray());
-                    }
+                    var node = ParseAssignment();
 
                     if(Current.TokenType != TokenType.ClosePar)
-                        return new ErrorNode("Expected `)`");
+                        return new ErrorNode("%Expected`)`");
 
                     Next();
-                    return f;
-                }
-             
-                            
-                Next();
-                return new VarNode(identifier);
-            }
+                    return node;
+                case TokenType.Number:
+                    var number = new NumberNode(int.Parse(Current.Value));
 
-            
-
-            //BonusNode
-            if(Current.TokenType == TokenType.Dollar)
-            {
-                Next();
-                if(Current.TokenType == TokenType.Var)
-                {
-                    var bName = Current.Value.ToUpper();
                     Next();
-                    if(Current.TokenType == TokenType.Separator)
+                    return number;
+                case TokenType.Dice:
+                    //^([0-9]{0,3})d([0-9]{1,3})((?:r|h|l)(?:[0-9]{1,3})){0,3}$
+                    var match = dRegex.Match(Current.Value);
+
+                    if(match.Success)
+                    {
+                        var count = match.Groups[1].Captures.Count > 0 ? int.TryParse(match.Groups[1].Captures[0].Value, out int outVal) ? outVal : 1 : 1;
+                        var sides = int.Parse(match.Groups[2].Captures[0].Value);
+                        var lhs = new DiceNode(count, sides, sb);
+
+                        for(int i = 0; i < match.Groups[3].Captures.Count; i++)
+                        {
+                            //store the letter in index 0, remove it and parse the number that comes after
+                            var letter = match.Groups[3].Captures[i].Value[0];
+                            var numb = int.Parse(match.Groups[3].Captures[i].Value.Remove(0, 1));
+
+                            if(letter == 'r')
+                                lhs.Reroll = numb;
+                            if(letter == 'h')
+                                lhs.Highest = numb;
+                            if(letter == 'l')
+                                lhs.Lowest = numb;
+                        }
+
+                        Next();
+                        if(Current.TokenType == TokenType.Mul || Current.TokenType == TokenType.Div)
+                        {
+                            var op = Current.TokenType;
+                            Next();
+                            var rhs = ParseTernary();
+                            return new DiceMultiplierNode(lhs, rhs, op);
+                        }
+                        return lhs;
+                    }
+                    return new VarNode(Current.Value);
+                case TokenType.OpenSquig:
+                    var list = new List<ExpressionNode>();
+
+                    Next();
+                    if(Current.TokenType == TokenType.CloseSquig)
                     {
                         Next();
-                        var bType = ParseTernary();
-                        if(Current.TokenType == TokenType.Separator)
+                        return new ArrayNode(Array.Empty<ExpressionNode>());
+                    }
+
+
+                    while(true)
+                    {
+                        list.Add(ParseTernary());
+                        if(Current.TokenType == TokenType.Comma)
                         {
                             Next();
-                            var bValue = ParseTernary();
-                            return new BonusNode(bName, bType, bValue);
+                            continue;
                         }
+                        break;
                     }
-                    else
-                        return new BonusNode(bName);
-                }
-                return new ErrorNode("%?");
-            }
-            
-            //StringNode
-            if(Current.TokenType == TokenType.String)
-            {
-                Next();              
-                return new StringNode(Look(-1).Value.Trim('"'));
-            }
-            
-            //StoredExpressionNode
-            if(Current.TokenType == TokenType.Expression)
-            {
-                Next();
-                return new StoredExpressionNode(Look(-1).Value.Trim('`').Trim(new char[] {'{', '}' }));
-            }
 
-            //Defined Function
-            if(Current.TokenType == TokenType.Lambda)
-            {
-                Next();
-                if(Current.TokenType == TokenType.OpenPar)
-                {
-                    var parameters = ParseParameters();
-                    if(Current.TokenType != TokenType.ClosePar)
-                        return new ErrorNode("Expected `)`");
-                    
-                    Next();
-                    if(Current.TokenType == TokenType.OpenSquig)
-                    {
-                        var list = ParseStatement();
-                        if(Current.TokenType != TokenType.CloseSquig)
-                            return new ErrorNode("Expected `}`");
-                        
-                        Next();
-                        return new DefNode(list, parameters.ToArray());
-                    }                   
-                }
-                
-                else if(Current.TokenType == TokenType.OpenSquig)
-                {
-                    var statement = ParseStatement();
                     if(Current.TokenType != TokenType.CloseSquig)
                         return new ErrorNode("Expected `}`");
 
                     Next();
-                    return new DefNode(statement, new string[] { "_", "I" });
-                }
-            
+                    return new ArrayNode(list.ToArray());
+                case TokenType.Var:
+                    var identifier = Current.Value;
 
+                    if(Look().TokenType == TokenType.OpenPar)
+                    {
+                        Move(2);
+                        if(ctx.TryGetVar(identifier.ToUpper(), out var value))
+                        {
+                            if(value is FunctionValue function)
+                            {
+                                var fargs = new List<ExpressionNode>();
+                                if(Current.TokenType != TokenType.ClosePar)
+                                {
+                                    while(true)
+                                    {
+                                        fargs.Add(ParseTernary());
+                                        if(Current.TokenType == TokenType.Comma)
+                                        {
+                                            Next();
+                                            continue;
+                                        }
+                                        break;
+                                    }
+                                }
+
+                                if(Current.TokenType != TokenType.ClosePar)
+                                    return new ErrorNode("Expected `)`");
+
+                                Next();
+                                return new CallNode(identifier.ToUpper(), fargs);
+
+                            }
+                        }
+
+                        FunctionNode f;
+                        if(Current.TokenType == TokenType.ClosePar)
+                            f = new FunctionNode(identifier.ToLower());
+
+                        else
+                        {
+                            var fargs = new List<ExpressionNode>();
+                            while(true)
+                            {
+                                fargs.Add(ParseTernary());
+
+                                if(Current.TokenType == TokenType.Comma)
+                                {
+                                    Next();
+                                    continue;
+                                }
+                                break;
+                            }
+                            f = new FunctionNode(identifier.ToLower(), fargs.ToArray());
+                        }
+                        if(Current.TokenType != TokenType.ClosePar)
+                            return new ErrorNode("Expected `)`");
+
+                        Next();
+                        return f;
+                    }
+
+                    Next();
+                    return new VarNode(identifier);
+                case TokenType.Dollar:
+                    Next();
+                    if(Current.TokenType == TokenType.Var)
+                    {
+                        var bName = Current.Value.ToUpper();
+                        Next();
+                        if(Current.TokenType == TokenType.Separator)
+                        {
+                            Next();
+                            var bType = ParseTernary();
+                            if(Current.TokenType == TokenType.Separator)
+                            {
+                                Next();
+                                var bValue = ParseTernary();
+                                return new BonusNode(bName, bType, bValue);
+                            }
+                        }
+                        else
+                            return new BonusNode(bName);
+                    }
+                    return new ErrorNode("%?");
+                case TokenType.String:
+                    Next();
+                    return new StringNode(Look(-1).Value.Trim('"'));
+                case TokenType.Event:
+                    Next();
+                    var args = ParseLeaf();
+                    if(Current.TokenType != TokenType.Event)
+                        return new ErrorNode("Expected `'`");
+
+                    Next();
+                    return new EventNode(args);
+                case TokenType.Expression:
+                    Next();
+                    return new StoredExpressionNode(Look(-1).Value.Trim('`').Trim(new char[] { '{', '}' }));
+                case TokenType.Lambda:
+                    Next();
+                    if(Current.TokenType == TokenType.OpenPar)
+                    {
+                        var parameters = ParseParameters();
+                        if(Current.TokenType != TokenType.ClosePar)
+                            return new ErrorNode("Expected `)`");
+
+                        Next();
+                        if(Current.TokenType == TokenType.OpenSquig)
+                        {
+                            var slist = ParseStatement();
+                            if(Current.TokenType != TokenType.CloseSquig)
+                                return new ErrorNode("Expected `}`");
+
+                            Next();
+                            return new DefNode(slist, parameters.ToArray());
+                        }
+                    }
+
+                    else if(Current.TokenType == TokenType.OpenSquig)
+                    {
+                        var statement = ParseStatement();
+                        if(Current.TokenType != TokenType.CloseSquig)
+                            return new ErrorNode("Expected `}`");
+
+                        Next();
+                        return new DefNode(statement, new string[] { "_", "I" });
+                    }
+                    else
+                        return new ErrorNode("Invalid function declaration.");
+                    break;
             }
-
-            //Symbol
+            
+            //SymbolNode
             if(IsSymbol(Current.TokenType))
             {
                 Next();

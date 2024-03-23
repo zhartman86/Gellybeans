@@ -113,6 +113,11 @@ namespace Gellybeans.Expressions
                         NextChar();
                         Tokens.Add(new Token(TokenType.HasFlag, ":?"));
                     }
+                    else if(currentChar == ':')
+                    {
+                        NextChar();
+                        Tokens.Add(new Token(TokenType.Pair, "::"));
+                    }
                     else
                     {
                         Tokens.Add(new Token(TokenType.Separator, ":"));
@@ -244,11 +249,6 @@ namespace Gellybeans.Expressions
                     {
                         NextChar();
                         Tokens.Add(new Token(TokenType.Push, "<<"));
-                    }
-                    else if(currentChar == '>')
-                    {
-                        NextChar();
-                        Tokens.Add(new Token(TokenType.Pair, "<>"));
                     }
                     else
                     {
@@ -389,6 +389,11 @@ namespace Gellybeans.Expressions
                     NextChar();
                     Tokens.Add(new Token(TokenType.Remove, @"\"));
                     return;
+
+                case '\'':
+                    NextChar();
+                    Tokens.Add(new Token(TokenType.Event, "'"));
+                    return;
             }
 
             var sb = new StringBuilder();
@@ -492,8 +497,8 @@ namespace Gellybeans.Expressions
                 NextChar();
                 Tokens.Add(new Token(TokenType.String, $"\"{sb}\""));
                 return;
-            }      
-
+            }
+            
             //var
             if(char.IsLetter(currentChar) || !char.IsAscii(currentChar) || currentChar == '_' || currentChar == '^' || char.IsDigit(currentChar))
             {
