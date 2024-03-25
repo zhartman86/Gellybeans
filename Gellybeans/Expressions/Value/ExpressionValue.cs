@@ -27,8 +27,6 @@ namespace Gellybeans.Expressions
             return result;
         }
 
-
-
         public static implicit operator ExpressionValue(string s) =>
             new(s);
 

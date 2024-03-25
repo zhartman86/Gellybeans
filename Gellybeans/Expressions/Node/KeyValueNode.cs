@@ -22,7 +22,9 @@ namespace Gellybeans.Expressions
             if(depth > Parser.MAX_DEPTH)
                 return "operation cancelled: maximum evaluation depth reached.";
 
-            return new KeyValuePairValue(key, value.Eval(depth, caller, sb, ctx));
+            var result = value is VarNode v ? v : value.Eval(depth, caller, sb, ctx);
+
+            return new KeyValuePairValue(key, result);
         }
 
     }

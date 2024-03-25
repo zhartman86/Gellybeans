@@ -11,7 +11,7 @@ namespace Gellybeans.Expressions
             String = value;
 
         public string Display(int depth, object caller, StringBuilder sb, IContext ctx)
-        {
+        {          
             var str = Parse(depth, ctx, String);
             str = str.Replace(@"\n", "\n");
             return str;
@@ -36,9 +36,9 @@ namespace Gellybeans.Expressions
 
                     if(r.Length > 0)
                     {
-                        var result = Parser.Parse(r[1..^1], this, ctx: ctx).Eval(depth: depth, caller: this, sb: sb, ctx : ctx);
+                        var result = Parser.Parse(r[1..^1], this, ctx: ctx).Eval(depth: depth, caller: this, sb: null!, ctx : ctx);
                         if(result is IReduce rr)
-                            result = rr.Reduce(depth: depth, caller: this, sb: sb, ctx : ctx);
+                            result = rr.Reduce(depth: depth, caller: this, sb: null!, ctx : ctx);
                         sb.Append(result.ToString());
                     }
                 }
@@ -100,7 +100,7 @@ namespace Gellybeans.Expressions
         public static bool operator ==(StringValue lhs, StringValue rhs) =>
             lhs.String == rhs.String;
         public static bool operator !=(StringValue lhs, StringValue rhs) =>
-            lhs.String == rhs.String;
+            lhs.String != rhs.String;
 
 
         public static bool operator ==(StringValue lhs, int rhs) =>

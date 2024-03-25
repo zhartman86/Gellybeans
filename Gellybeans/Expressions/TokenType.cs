@@ -30,6 +30,7 @@
         Mul,            // *
         Div,            // /
         Percent,        // %
+        ToExpr,         // %%
         Number,         // integer
         OpenPar,        // (
         ClosePar,       // )
@@ -53,7 +54,7 @@
         Caret,          // ^
         DoubleCaret,    // ^^
         Random,         // .^
-        Pair,           // <>
+        Pair,           // ::
         Error,
         EOF,
     }
