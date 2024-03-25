@@ -40,9 +40,9 @@ namespace Gellybeans.Expressions
 
         public dynamic Reduce(int depth, object caller, StringBuilder sb, IContext ctx = null!) =>
             new KeyValuePairValue(Key, Value is IReduce r ? r.Reduce(depth, caller, sb, ctx) : Value);
-        
+
         public override string ToString() =>
-            $"{Key}: {Value}";
+            Value.ToString();
         
 
         public static dynamic operator +(KeyValuePairValue lhs, dynamic rhs) =>

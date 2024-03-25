@@ -14,12 +14,13 @@ namespace Gellybeans.Expressions
         {
             depth++;
             if(depth > Parser.MAX_DEPTH)
-                return "operation cancelled: maximum evaluation depth reached.";
-
+                return "operation cancelled: maximum evaluation depth reached.";                           
+                       
             var result = args.Eval(depth, caller, sb, ctx);
             if(result is ArrayValue a)
-                return new EventValue(a);
-            return "Expected array value.";
+                return new EventValue(a.Values);
+                   
+            return $"Expected array value. got {result.GetType()}";
         }
 
 

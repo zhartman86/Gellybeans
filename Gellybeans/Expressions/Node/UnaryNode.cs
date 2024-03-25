@@ -23,6 +23,7 @@ namespace Gellybeans.Expressions
             var rhValue = node.Eval(depth: depth, caller: caller, sb: sb, ctx : ctx);
             if (rhValue is IReduce r)
                 rhValue = r.Reduce(depth: depth, caller: caller, sb: sb, ctx : ctx);
+            
             var result = op(rhValue);
             return result;
         }

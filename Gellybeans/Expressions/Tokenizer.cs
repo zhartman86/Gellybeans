@@ -321,6 +321,11 @@ namespace Gellybeans.Expressions
                         NextChar();
                         Tokens.Add(new Token(TokenType.Assign, "%="));
                     }
+                    else if(currentChar == '%')
+                    {
+                        NextChar();
+                        Tokens.Add(new Token(TokenType.ToExpr));
+                    }
                     else
                     {
                         Tokens.Add(new Token(TokenType.Percent, "%"));

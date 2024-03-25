@@ -4,7 +4,7 @@ using System.Threading.Tasks.Sources;
 
 namespace Gellybeans.Expressions
 {
-    public class VarNode : ExpressionNode
+    public class VarNode : ExpressionNode, IReduce
     {
         readonly string varName;
 
@@ -16,8 +16,11 @@ namespace Gellybeans.Expressions
         }
 
 
+        public dynamic Reduce(int depth, object caller, StringBuilder sb, IContext ctx)  =>     
+            Eval(depth, caller, sb, ctx);
 
-        public override dynamic Eval(int depth, object caller, StringBuilder sb, IContext ctx = null!)
+
+        public override dynamic Eval(int depth, object caller, StringBuilder sb, IContext ctx)
         {
             depth++;
             if(depth > Parser.MAX_DEPTH)

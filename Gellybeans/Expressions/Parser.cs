@@ -19,7 +19,6 @@ namespace Gellybeans.Expressions
         IContext ctx;       
         readonly StringBuilder sb;
 
-
         int index;
         int depth = 0;
 
@@ -577,7 +576,6 @@ namespace Gellybeans.Expressions
             }
         }
 
-
         ExpressionNode ParseAddSub()
         {
             var lhs = ParseMulDivMod();
@@ -659,7 +657,7 @@ namespace Gellybeans.Expressions
 
                 if(Current.TokenType == TokenType.Add) Next();
                 else if(Current.TokenType == TokenType.Sub)
-                {                 
+                {
                     op = (a) =>
                     {
                         if(a is Bonus b)
@@ -684,11 +682,11 @@ namespace Gellybeans.Expressions
                         if(var is Stat s)
                             return s.Base;
                         else
-                            return new StringValue("@ cannot be applied to this value.");                        
-                    };                 
+                            return new StringValue("@ cannot be applied to this value.");
+                    };
                 }
                 else if(Current.TokenType == TokenType.Remove)
-                {                 
+                {
                     if(Look().TokenType == TokenType.Var)
                     {
                         var varName = Look().Value.ToUpper();
@@ -697,7 +695,7 @@ namespace Gellybeans.Expressions
                             if(ctx.RemoveVar(varName))
                                 return new StringValue($"{varName} removed.");
                             return new StringValue($"{varName} not found.");
-                        };                      
+                        };
                     }
                 }
                 else if(Current.TokenType == TokenType.And)
@@ -709,6 +707,17 @@ namespace Gellybeans.Expressions
                     };
                 }
                 else if(Current.TokenType == TokenType.Percent) op = (value) => value is IString s ? s.ToStr() : value.ToString();
+                else if(Current.TokenType == TokenType.ToExpr) op = (value) =>
+                {
+
+                    if(value is StringValue s)
+                        value = s.Display(depth, this, null!, ctx);
+                    else
+                        value = value.ToString();
+
+                    return new ExpressionValue(value);
+                };
+
                 
                 if(op == null) 
                     break;
