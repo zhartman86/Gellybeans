@@ -5,13 +5,16 @@ namespace Gellybeans.Expressions
 { 
     public class KeyValueNode : ExpressionNode
     {
-        readonly string key;
+        readonly ExpressionNode key;
         readonly ExpressionNode value;
+        
+        Func<dynamic, dynamic, dynamic> op;
 
-        public KeyValueNode(string key, ExpressionNode value)
+        public KeyValueNode(ExpressionNode key, ExpressionNode value, Func<dynamic, dynamic, dynamic> op)
         {
             this.key = key;
             this.value = value;
+            this.op = op;
         }
 
         
@@ -22,9 +25,10 @@ namespace Gellybeans.Expressions
             if(depth > Parser.MAX_DEPTH)
                 return "operation cancelled: maximum evaluation depth reached.";
 
-            var result = value is VarNode v ? v : value.Eval(depth, caller, sb, ctx);
+            var k = key.Eval(depth, caller, sb, ctx);
+            var v = value.Eval(depth, caller, sb, ctx);
 
-            return new KeyValuePairValue(key, result);
+            return op(k, v);
         }
 
     }

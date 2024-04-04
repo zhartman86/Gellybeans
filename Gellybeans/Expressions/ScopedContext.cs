@@ -24,8 +24,8 @@ namespace Gellybeans.Expressions
         {
             get 
             {
-                if(Vars.ContainsKey(varName))
-                    return Vars[varName];
+                if(TryGetVar(varName, out var value))
+                    return value;
                 if(parent != null)
                     if(parent.TryGetVar(varName, out var v))
                     {
@@ -36,11 +36,16 @@ namespace Gellybeans.Expressions
                 return null!;
             }
             set 
-            {
+            {               
                 if(parent != null && parent.TryGetVar(varName, out var v))
+                {
                     parent[varName] = value;
+                }                  
                 else
-                    Vars[varName] = value;          
+                {
+                    Vars[varName] = value;
+                }
+                          
                     
             }
         }

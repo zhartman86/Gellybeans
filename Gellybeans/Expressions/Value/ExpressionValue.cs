@@ -21,12 +21,11 @@ namespace Gellybeans.Expressions
             if(depth > Parser.MAX_DEPTH)
                 return "operation cancelled: maximum evaluation depth reached.";
 
-            var result = Parser.Parse(Expression, this, sb, ctx).Eval(depth: depth, caller: this, sb: sb, ctx : ctx);
-            while (result is IReduce r)
-                result = r.Reduce(depth: depth, caller: this, sb: sb, ctx : ctx);
+            var result = Parser.Parse(Expression, caller, sb, ctx).Eval(depth: depth, caller: this, sb: sb, ctx : ctx);
             return result;
         }
 
+        
         public static implicit operator ExpressionValue(string s) =>
             new(s);
 

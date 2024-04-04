@@ -2,12 +2,12 @@
 
 namespace Gellybeans.Expressions
 {
-    class CallNode : ExpressionNode
+    class CallFunctionNode : ExpressionNode
     {
         string varName;
         List<ExpressionNode> args;
 
-        public CallNode(string varName, List<ExpressionNode> args)
+        public CallFunctionNode(string varName, List<ExpressionNode> args)
         {
             this.varName = varName;
             this.args = args;
@@ -21,11 +21,16 @@ namespace Gellybeans.Expressions
 
             dynamic[] argResults;
             if(args != null)
-            {
+            {                
                 argResults = new dynamic[args.Count];
-
                 for(int i = 0; i < args.Count; i++)
-                    argResults[i] = args[i].Eval(depth: depth, caller: this, sb: sb, ctx : ctx);
+                {
+                    if(args[i] is VarNode v)
+                        argResults[i] = v;
+                    else
+                        argResults[i] = args[i].Eval(depth: depth, caller: caller, sb: sb, ctx: ctx);
+                }
+                   
             }
             else
                 argResults = Array.Empty<dynamic>();
@@ -34,12 +39,12 @@ namespace Gellybeans.Expressions
             {
                 if (value is FunctionValue f)
                 {
-                    var result = f.Invoke(depth, argResults, sb, ctx);
+                    var result = f.Invoke(depth, caller, argResults, sb, ctx);
                     return result;
                 }
 
             }
-            return "???";
+            return "%";
         }
     }
 }

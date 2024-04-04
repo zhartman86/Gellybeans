@@ -1,11 +1,15 @@
 ﻿using Gellybeans.Expressions;
+using Newtonsoft.Json;
 using System.Text;
 
 namespace Gellybeans.Pathfinder
 {
     public class Item
     {
-        public string?  Name            { get; set; }
+        static readonly List<Item> items = new List<Item>();        
+        public static List<Item> Items { get { return items; } }
+
+        public string?  Name            { get; set; } = "";
         public decimal? Weight          { get; set; }
         public string?  Price           { get; set; }
         public string?  Type            { get; set; }
@@ -21,43 +25,47 @@ namespace Gellybeans.Pathfinder
         public string?  Inscription     { get; set; }
         public string?  Source          { get; set; }
 
-
-        public ArrayValue ToArray()
+        static Item()
         {
+            Console.Write("Getting items...");
+            var itemJson = File.ReadAllText(@"E:\Pathfinder\PFData\Items.json");
+            items = JsonConvert.DeserializeObject<List<Item>>(itemJson)!;
+            Console.WriteLine($"Items => {items.Count}");
+        }
 
-            string magic = "";
-            if(Magic != "")
-            {
-                var split = Magic!.Split('/');
-                magic = $"**Aura** {split[0]}; **CL** {Ordinal(int.Parse(split[1]!))}";
-            }
+        public static Item GetItem(int index) =>
+            items[index];
 
+        public static Item GetItem(string itemName) =>
+            items.FirstOrDefault(x => x.Name.ToUpper() == itemName.ToUpper())!;
+
+
+        public ArrayValue ToArrayValue()
+        {
 
             var list = new List<dynamic> {
 
                 new KeyValuePairValue("NAME",           new StringValue(Name ?? "")),
-                new KeyValuePairValue("WEIGHT",         new StringValue(Weight != null ? Weight.ToString() : "")),
-                new KeyValuePairValue("PRICE",          new StringValue(Price ?? "")),
-                new KeyValuePairValue("TYPE",           new StringValue(Type ?? "")),
-                new KeyValuePairValue("SLOT",           new StringValue(Slot ?? "")),
-                new KeyValuePairValue("MAGIC",          new StringValue(magic)),
-                new KeyValuePairValue("REQUIREMENTS",   new StringValue(Requirements ?? "")),
-                new KeyValuePairValue("DESCRIPTION",    new StringValue(Description ?? "")),
-                new KeyValuePairValue("SOURCE",         new StringValue(Source ?? "")),
+                new KeyValuePairValue("VALUE",          new StringValue(Price ?? "")),
+                new KeyValuePairValue("WEIGHT",         new StringValue(Weight.ToString())),                             
+                new KeyValuePairValue("DESC",           new StringValue(Description ?? "")),               
+                new KeyValuePairValue("SLOT",           new StringValue(Slot ?? "")),               
             };
+
+            if(Magic != "")
+            {
+                var split = Magic!.Split('/');
+                list.Add(new KeyValuePairValue("MAGIC", $"**Aura** {split[0]}; **CL** {Ordinal(int.Parse(split[1]!))}"));
+            }
 
             if(Offense != "")
             {
                 var split = Offense!.Split('/');
-                list.Add(new KeyValuePairValue("W_TINY",        new StringValue(split[2])));
-                list.Add(new KeyValuePairValue("W_SMALL",       new StringValue(split[3])));
-                list.Add(new KeyValuePairValue("W_MEDIUM",      new StringValue(split[4])));
-                list.Add(new KeyValuePairValue("W_LARGE",       new StringValue(split[5])));
-                list.Add(new KeyValuePairValue("W_HUGE",        new StringValue(split[6])));
-                list.Add(new KeyValuePairValue("W_RANGE",       new StringValue(split[11])));
-                list.Add(new KeyValuePairValue("W_TYPE",        new StringValue(split[12])));
-                list.Add(new KeyValuePairValue("W_CRIT_R",      new StringValue(split[9])));
-                list.Add(new KeyValuePairValue("W_CRIT_M",      new StringValue(split[10])));
+                list.Add(new KeyValuePairValue("DAMAGE",        new StringValue(split[4])));              
+                list.Add(new KeyValuePairValue("RANGE",         new StringValue(split[11])));
+                list.Add(new KeyValuePairValue("DAMAGE_TYPE",   new StringValue(split[12])));
+                list.Add(new KeyValuePairValue("CRIT_RANGE",      new StringValue(split[9])));
+                list.Add(new KeyValuePairValue("CRIT_MULT",      new StringValue(split[10])));
             }
             if(Defense != "")
             {
@@ -69,8 +77,34 @@ namespace Gellybeans.Pathfinder
                 list.Add(new KeyValuePairValue("SPELL_FAILURE", new StringValue(split[4])));
                 list.Add(new KeyValuePairValue("THIRTY",        new StringValue(split[5])));
                 list.Add(new KeyValuePairValue("TWENTY",        new StringValue(split[6])));
+
+                string defEq = "";
+                string defUnEq = "";
+                if(split[0] != "")
+                {
+                    defEq += $"AC_BONUS += $ARMOR:ARMOR:{split[0]};";
+                    defEq += $"AC_MAXDEX += $ARMOR:OVERRIDE:{split[2]};";
+                    defEq += $"AC_PENALTY += $ARMOR:PENALTY:{split[3]};";
+                    list.Add(new KeyValuePairValue("ON_EQUIP", new StringValue(defEq)));                
+
+                    defUnEq += "-$ARMOR;";
+                    list.Add(new KeyValuePairValue("ON_UNEQUIP", new StringValue(defUnEq)));
+
+
+                }                 
+                else if(split[1] != "")
+                {
+                    defEq += $"AC_BONUS += $SHIELD:SHIELD:{split[1]};";
+                    defEq += $"AC_PENALTY += $SHIELD:PENALTY:{split[3]}";
+                    list.Add(new KeyValuePairValue("ON_EQUIP", new StringValue(defEq)));
+
+                    defUnEq += "-$SHIELD;";
+                    list.Add(new KeyValuePairValue("ON_UNEQUIP", new StringValue(defUnEq)));
+
+                }    
             }
 
+            list.Add(new KeyValuePairValue("NOTE", new StringValue("")));
 
             return new ArrayValue(list.ToArray());
         }
@@ -145,5 +179,6 @@ namespace Gellybeans.Pathfinder
                     return num + "th";
             }
         }
+
     }
 }

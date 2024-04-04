@@ -20,7 +20,6 @@ namespace Gellybeans.Pathfinder
 
         public string CharacterName { get; set; } = "Name me";
         
-        public List<InvItem>                Inventory   { get; private set; } = new List<InvItem>();     
         public Dictionary<string, ExprRow>  ExprRows    { get; private set; } = new Dictionary<string, ExprRow>();
 
         public Dictionary<string, dynamic> Vars { get; private set; } = new Dictionary<string, dynamic>();
@@ -77,6 +76,13 @@ namespace Gellybeans.Pathfinder
             }
         }
 
+        public void SetVars(Dictionary<string, dynamic> vars)
+        {
+            Vars = vars;
+            OnValueChanged("var");
+        }
+            
+
         public bool TryGetVar(string varName, out dynamic value)
         {
             if(Constants.ContainsKey(varName))
@@ -122,57 +128,7 @@ namespace Gellybeans.Pathfinder
             if(ExprRows.Remove(row))
                 OnValueChanged($"row:{row}");
         }
-
-        public void InventorySet(List<InvItem> inv)
-        {
-            Inventory = inv;
-            Inventory.Sort((x, y) => x.Name.CompareTo(y.Name));
-            OnValueChanged("inv");
-        }
-
-        public void InventoryAdd(InvItem item)
-        {
-            Inventory.Add(item);
-            Inventory.Sort((x, y) => x.Name.CompareTo(y.Name));
-            OnValueChanged("inv");
-        }
-
-        public void InventoryAdd(List<InvItem> items)
-        {
-            for(int i = 0; i < items.Count; i++)
-                Inventory.Add(items[i]);
-            Inventory.Sort((x, y) => x.Name.CompareTo(y.Name));
-            OnValueChanged("inv");
-        }
-
-        public void InventoryRemoveAt(int index)
-        {
-            Inventory.RemoveAt(index);
-            OnValueChanged("inv");
-        }
-
-        public string InventoryOut()
-        {
-            var sb = new StringBuilder();
-
-            sb.AppendLine($"{CharacterName}'s Inventory");
-            sb.AppendLine();
-
-            decimal? wTotal = 0;
-            decimal? vTotal = 0;
-            sb.AppendLine($"|{"#",-3}|{"NAME",-25} |{"QTY",-3} |{"VALUE",-7} |{"WT"}");
-            sb.AppendLine("-----------------------------------------------------------");
-            for(int i = 0; i < Inventory.Count; i++)
-            {
-                sb.AppendLine($"|{i,-3}|{Inventory[i].Name,-25} |{Inventory[i].Quantity,-3} |{Inventory[i].Value,-7} |{Inventory[i].Weight} {(Inventory[i].Quantity > 1 ? $"[{Inventory[i].Weight * Inventory[i].Quantity}]" : "")}");
-                wTotal += Inventory[i].Weight * Inventory[i].Quantity;
-                vTotal += Inventory[i].Value;
-            }
-
-            sb.AppendLine("______________________");
-            sb.AppendLine($"{"ITEM COUNT",-15}|{Inventory.Count}\n{"WEIGHT TOTAL",-15}|{wTotal}\n{"VALUE TOTAL",-15}|{vTotal}");
-            return sb.ToString();
-        }   
+    
 
         public void ClearBonus(string bonusName)
         {

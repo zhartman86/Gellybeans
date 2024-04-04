@@ -40,6 +40,8 @@ namespace Gellybeans.Expressions
         public TokenType this[int index] { get { return Tokens[index].TokenType; } }
 
 
+        
+
         void NextChar()
         {
             int chr = reader.Read();
@@ -144,16 +146,29 @@ namespace Gellybeans.Expressions
                         NextChar();
                         Tokens.Add(new Token(TokenType.Range, ".."));
                     }
-                    if(currentChar == '^')
+                    else if(currentChar == '^')
                     {
                         NextChar();
                         Tokens.Add(new Token(TokenType.Random, ".^"));
+                    }
+                    else
+                    {
+                        Tokens.Add(new Token(TokenType.Dot, "."));
                     }
                     return;
 
                 case '?':
                     NextChar();
-                    Tokens.Add(new Token(TokenType.Ternary, "?"));
+                    if(currentChar == '?')
+                    {
+                        NextChar();
+                        Tokens.Add(new Token(TokenType.If, "??"));
+                    }
+                    else
+                    {
+                        Tokens.Add(new Token(TokenType.Ternary, "?"));
+                    }
+                    
                     return;
 
                 case '$':
@@ -221,16 +236,24 @@ namespace Gellybeans.Expressions
                         NextChar();
                         Tokens.Add(new Token(TokenType.GreaterEquals, ">="));
                     }
-                    else if(Peek() == '>')
-                    {
-                        NextChar();
-                        NextChar();
-                        Tokens.Add(new Token(TokenType.Append, ">>>"));
-                    }
                     else if(currentChar == '>')
                     {
                         NextChar();
-                        Tokens.Add(new Token(TokenType.Pull, ">>"));
+                        if(currentChar == '>')
+                        {
+                            NextChar();
+                            Tokens.Add(new Token(TokenType.Append, ">>>"));
+                        }
+                        else if(currentChar == '*')
+                        {
+                            NextChar();
+                            Tokens.Add(new Token(TokenType.Insert, ">>*"));
+                        }
+                        else
+                        {
+                            Tokens.Add(new Token(TokenType.Pull, ">>"));
+                        }
+                        
                     }                 
                     else
                     {
@@ -249,6 +272,11 @@ namespace Gellybeans.Expressions
                     {
                         NextChar();
                         Tokens.Add(new Token(TokenType.Push, "<<"));
+                    }
+                    else if(currentChar == '>')
+                    {
+                        NextChar();
+                        Tokens.Add(new Token(TokenType.Arrange, "<>"));
                     }
                     else
                     {
@@ -295,6 +323,11 @@ namespace Gellybeans.Expressions
                         NextChar();
                         Tokens.Add(new Token(TokenType.Assign, "*="));
                     }
+                    else if(currentChar == '*')
+                    {
+                        NextChar();
+                        Tokens.Add(new Token(TokenType.For, "**"));
+                    }
                     else
                     {
                         Tokens.Add(new Token(TokenType.Mul, "*"));
@@ -324,7 +357,7 @@ namespace Gellybeans.Expressions
                     else if(currentChar == '%')
                     {
                         NextChar();
-                        Tokens.Add(new Token(TokenType.ToExpr));
+                        Tokens.Add(new Token(TokenType.ToExpr, "%%"));
                     }
                     else
                     {
@@ -377,11 +410,11 @@ namespace Gellybeans.Expressions
                     if(currentChar == '^')
                     {
                         NextChar();
-                        Tokens.Add(new Token(TokenType.DoubleCaret, "^^"));
+                        Tokens.Add(new Token(TokenType.Return, "^^"));
                     }
                     else
                     {
-                        Tokens.Add(new Token(TokenType.Caret, "^"));
+                        Tokens.Add(new Token(TokenType.Break, "^"));
                     }
                     return;
                 
@@ -429,48 +462,17 @@ namespace Gellybeans.Expressions
                 }           
             }
 
-            //expression encapsulation for var assignment
+            //expression encapsulation
             if(currentChar == '`')
             {
                 NextChar();
                 while(currentChar != '`')
-                {
-                    if(currentChar == '{')
-                    {
-                        while(currentChar != '}')
-                        {
-                            
-                        
-                            if(currentChar == '\0')
-                            {
-                                Tokens.Add(new Token(TokenType.Error, "Expected }"));
-                                return;
-                            }
-                            sb.Append(currentChar);
-                            NextChar();
-
-                            if(currentChar == '{')
-                            {
-                                while(currentChar != '}')
-                                {
-                                    if(currentChar == '\0')
-                                    {
-                                        Tokens.Add(new Token(TokenType.Error, "Expected }"));
-                                        return;
-                                    }
-                                    sb.Append(currentChar);
-                                    NextChar();
-                                }
-                            }
-                        }
-                    }
-                    
+                {                                                               
                     if(currentChar == '\0')
                     {
                         Tokens.Add(new Token(TokenType.Error, "Expected `"));
                         return;
                     }                    
-
                     sb.Append(currentChar);
                     NextChar();
                 }
@@ -550,5 +552,11 @@ namespace Gellybeans.Expressions
 
         public static bool IsVar(char c) =>
             char.IsLetter(c) || !char.IsAscii(c) || c == '_' || char.IsDigit(c);
+
+        public static List<Token> GetTokens(string expr)
+        {
+            var t = new Tokenizer(new StringReader(expr));
+            return t.Tokens;
+        }
     }
 }

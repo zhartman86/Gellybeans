@@ -4,6 +4,8 @@
     {
         None,
         Ternary,        // ?::
+        If,             // ??
+        For,            // **
         Dollar,         // $
         GetBonus,       // $?
         Base,           // @
@@ -22,6 +24,8 @@
         Push,           // <<
         Pull,           // >>
         Append,         // >>>
+        Insert,         // >>*
+        Arrange,        // <>
         Less,           // <
         LessEquals,     // <=
         Not,            // !
@@ -38,6 +42,7 @@
         CloseSquig,     // }
         OpenSquare,     // [
         CloseSquare,    // ]
+        Dot,            // .
         Comma,          // ,
         BeginString,    // "
         SingleQuote,    // '
@@ -51,8 +56,8 @@
         Separator,      // :
         HasFlag,        // :?
         Range,          // ..              
-        Caret,          // ^
-        DoubleCaret,    // ^^
+        Break,          // ^
+        Return,         // ^^
         Random,         // .^
         Pair,           // ::
         Error,

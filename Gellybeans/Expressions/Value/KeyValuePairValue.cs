@@ -3,10 +3,26 @@ using System.Text;
 
 namespace Gellybeans.Expressions
 {
-    public class KeyValuePairValue : IReduce, IDisplay
+    public class KeyValuePairValue : IReduce, IContainer, IMember
     {
         public string Key { get; set; }
         public dynamic Value { get; set; }
+
+        public dynamic[] Values
+        {
+
+            get
+            {
+                if(Value is ArrayValue a)
+                    return a.Values;
+                return Array.Empty<dynamic>();
+            }
+            set
+            {
+                if(Value is ArrayValue a)
+                    a.Values = value;
+            }
+        }
 
         public KeyValuePairValue(StringValue key, dynamic value)
         {
@@ -20,7 +36,7 @@ namespace Gellybeans.Expressions
             {
                 if(Value is ArrayValue a)
                     return a[index];
-                return "Value cannot be indexed."; 
+                return "%"; 
             }
             set
             {
@@ -35,11 +51,31 @@ namespace Gellybeans.Expressions
             }
         }
 
-        public string Display(int depth, object caller, StringBuilder sb, IContext ctx = null!) =>
-            $"{Key}: {(Value is IReduce r ? r.Reduce(depth, caller, sb, ctx) : Value)}";
 
-        public dynamic Reduce(int depth, object caller, StringBuilder sb, IContext ctx = null!) =>
-            new KeyValuePairValue(Key, Value is IReduce r ? r.Reduce(depth, caller, sb, ctx) : Value);
+        public dynamic Reduce(int depth, object caller, StringBuilder sb, IContext ctx = null!)
+        {
+            depth++;
+            if(depth > Parser.MAX_DEPTH)
+                return "operation cancelled: maximum evaluation depth reached.";
+
+            return new KeyValuePairValue(Key, Value is IReduce r ? r.Reduce(depth, caller, sb, ctx) : Value);
+        }
+
+        public bool TryGetMember(string name, out dynamic value)
+        {
+            if(name == "KEY")
+            {
+                value = Key; 
+                return true;
+            }              
+            if(name == "VALUE")
+            {
+                value = Value; 
+                return true;
+            }
+            value = "%";
+            return false;
+        }
 
         public override string ToString() =>
             Value.ToString();

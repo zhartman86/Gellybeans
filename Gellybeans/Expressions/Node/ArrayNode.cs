@@ -23,7 +23,15 @@ namespace Gellybeans.Expressions
             {
                 array = new dynamic[Values.Length];
                 for(int i = 0; i < Values.Length; i++)
-                    array[i] = Values[i].Eval(depth: depth, caller: this, sb: sb, ctx : ctx);
+                {
+                    dynamic assign;
+                    if(Values[i] is StoredExpressionNode sen)
+                        assign = sen.Assign();
+                    else
+                        assign = Values[i].Eval(depth: depth, caller: caller, sb: sb, ctx: ctx);
+
+                    array[i] = assign;
+                }                   
             }
             return new ArrayValue(array);
         }

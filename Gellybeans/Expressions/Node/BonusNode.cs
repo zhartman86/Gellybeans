@@ -18,6 +18,7 @@ namespace Gellybeans.Expressions
 
         public Bonus GetBonus(int depth, IContext ctx)
         {
+            
             Bonus b = new Bonus() { Name = BonusName };
 
             if (BonusType != null && BonusValue != null)

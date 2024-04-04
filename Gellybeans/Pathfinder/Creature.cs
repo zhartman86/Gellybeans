@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using Gellybeans.Expressions;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace Gellybeans.Pathfinder
@@ -17,6 +18,14 @@ namespace Gellybeans.Pathfinder
         public string? Senses               { get; set; } = "";
         public string? Aura                 { get; set; } = "";
         public string? AC                   { get; set; } = "";
+        public string? ACArmor              { get; set; } = "";
+        public string? ACDeflection         { get; set; } = "";
+        public string? ACDodge              { get; set; } = "";
+        public string? ACInsight            { get; set; } = "";
+        public string? ACNatural            { get; set; } = "";
+        public string? ACProfane            { get; set; } = "";
+        public string? ACSacred             { get; set; } = "";
+        public string? ACShield             { get; set; } = "";
         public string? HP                   { get; set; } = "";
         public string? Regen                { get; set; } = "";
         public string? Fort                 { get; set; } = "";
@@ -60,6 +69,50 @@ namespace Gellybeans.Pathfinder
         public string? SQ                   { get; set; } = "";
         public string? SpecialAbilities     { get; set; } = "";
         public string? Source               { get; set; } = "";
+
+        public ArrayValue ToArray()
+        {
+            var list = new List<dynamic>();
+
+            list.Add(new KeyValuePairValue("DESCRIPTION",           new StringValue(Visual)));
+            list.Add(new KeyValuePairValue("NAME",                  new StringValue(Name)));
+            list.Add(new KeyValuePairValue("CR",                    new StringValue(CR)));
+            list.Add(new KeyValuePairValue("XP",                    new StringValue(XP.Replace(",", ""))));
+            if(Race != "") 
+                list.Add(new KeyValuePairValue("RACE",              new StringValue(Race)));
+            list.Add(new KeyValuePairValue("ALIGNMENT",             new StringValue(Alignment)));
+            list.Add(new KeyValuePairValue("SIZE",                  new StringValue(Size)));
+
+            switch(Size)
+            {
+                case "Fine":
+                    break;
+            }
+
+            list.Add(new KeyValuePairValue("TYPE",                  new StringValue(Type)));
+            list.Add(new KeyValuePairValue("SENSES",                new StringValue(Senses)));                           
+            if(Aura != "") 
+                list.Add(new KeyValuePairValue("AURA",              new StringValue(Aura)));
+
+            var split = AC.Split(',');
+            if(int.TryParse(split[0], out var outVar))    
+                list.Add(new KeyValuePairValue("AC",                new Stat(outVar)));
+            if(int.TryParse(split[1].Replace("touch", "").Replace(" ", ""), out outVar))
+                list.Add(new KeyValuePairValue("TOUCH",             new Stat(outVar)));
+            if(int.TryParse(split[2].Replace("flat-footed", "").Replace(" ", ""), out outVar))
+                list.Add(new KeyValuePairValue("FLAT",              new Stat(outVar)));
+
+            split = HP.Split(' ');
+            if(int.TryParse(split[0], out outVar))
+                list.Add(new KeyValuePairValue("HP",                new Stat(outVar)));
+
+            if(Regen != "")
+                list.Add(new KeyValuePairValue("REGEN", new StringValue(Regen)));
+
+            return new ArrayValue(list.ToArray());
+
+        }
+
 
         public override string ToString()
         {

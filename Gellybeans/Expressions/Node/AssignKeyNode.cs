@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿
+using System.Text;
 
 namespace Gellybeans.Expressions
 {
@@ -20,58 +21,70 @@ namespace Gellybeans.Expressions
 
         public override dynamic Eval(int depth, object caller, StringBuilder sb, IContext ctx = null)
         {
-            var variable = varNode.Eval(depth, caller, sb, ctx);
-            var assign = assignment.Eval(depth, caller, sb, ctx);
+            depth++;
+            if(depth > Parser.MAX_DEPTH)
+                return "operation cancelled: maximum evaluation depth reached.";
 
-            var list = new List<KeyNode>();
-            var indexes = new List<dynamic>();
-
-            list.Add(key);
-            if(key.Value is KeyNode k)
+            if(ctx.TryGetVar(varNode.VarName.ToUpper(), out var variable))
             {
-                list.Add(k);
-                while(k.Value is KeyNode kk)
+                var assign = assignment.Eval(depth, caller, sb, ctx);
+                Console.WriteLine($"ASS: {assign.GetType()}");
+
+                var list = new List<KeyNode>();
+                var indexes = new List<dynamic>();
+
+                list.Add(key);
+                if(key.Value is KeyNode k)
                 {
-                    list.Add(kk);
-                    k = kk;
+                    list.Add(k);
+                    while(k.Value is KeyNode kk)
+                    {
+                        list.Add(kk);
+                        k = kk;
+                    }
                 }
-            }
 
-            for(int i = list.Count - 1; i >= 0; i--)
-            {
-                var index = list[i].Key.Eval(depth: depth, caller: caller, sb: sb, ctx: ctx);
-                var value = list[i].Value.Eval(depth: depth, caller: caller, sb: sb, ctx: ctx);
-                if(value is KeyValuePairValue kv)
-                    value = kv.Value;
 
-                if(value is ArrayValue a)
+
+                for(int i = list.Count - 1; i >= 0; i--)
                 {
-                    if(index is StringValue s)
-                    {                        
-                        for(int j = 0; j < a.Values.Length; j++)
+                    var index = list[i].Key.Eval(depth: depth, caller: caller, sb: null!, ctx: ctx);
+                    var value = list[i].Value.Eval(depth: depth, caller: caller, sb: null!, ctx: ctx);
+                    if(value is KeyValuePairValue kv)
+                        value = kv.Value;
+
+                    if(value is ArrayValue a)
+                    {
+                        if(index is StringValue s)
                         {
-                            if(a.Values[j] is KeyValuePairValue kvp && kvp.Key.ToUpper() == s.String.ToUpper())
+                            for(int j = 0; j < a.Values.Length; j++)
                             {
-                                indexes.Add(j);
-                                break;
+                                if(a.Values[j] is KeyValuePairValue kvp && kvp.Key.ToUpper() == s.String.ToUpper())
+                                {
+                                    indexes.Add(j);
+                                    break;
+                                }
                             }
                         }
-                    }
-                    else
-                    {
-                        if(index < 0)
-                            index = a.Values.Length + index;
-                        if(index >= 0 && index < a.Values.Length)
-                            indexes.Add(index);
                         else
-                            return "Index out of range!";
-                    }                                     
+                        {
+                            if(index < 0)
+                                index = a.Values.Length + index;
+                            if(index >= 0 && index < a.Values.Length)
+                                indexes.Add(index);
+                            else
+                                return "Index out of range!";
+                        }
+                    }
                 }
+                ctx[varNode.VarName] = op(variable, indexes, assign);
+                return assign.ToString();
+
+                //var value = key.
+                //var assign = assignment.Eval(depth, caller, sb, ctx);
+
             }
-            var result = op(variable, indexes, assign);
-            var varName = varNode.VarName.ToUpper();
-            ctx[varName] = result;
-            return result;
+            return $"{varNode.VarName.ToUpper()} not found.";
         }       
     }
 }

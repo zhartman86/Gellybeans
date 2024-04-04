@@ -1,5 +1,7 @@
-﻿using System.Text;
+﻿using System;
+using System.Text;
 using Gellybeans.Expressions;
+using Gellybeans.Pathfinder;
 
 namespace Gellybeans.Expressions
 {
@@ -43,7 +45,6 @@ namespace Gellybeans.Expressions
         {
             "abs" => Math.Abs(args[0]),
             "clamp" => Math.Clamp(args[0], args[1], args[2]),
-            "if" => args[0] == 1 ? args[1] : "",
             "max" => Math.Max(args[0], args[1]),
             "min" => Math.Min(args[0], args[1]),
             "mod" => Math.Max(-5, args[0] >= 10 ? (args[0] - 10) / 2 : (args[0] - 11) / 2),
@@ -57,8 +58,36 @@ namespace Gellybeans.Expressions
             "lower" => args[0].ToString().ToLower(),
             "print" => Print(args[0], depth, caller, ctx, sb),
             "shuffle" => Shuffle(args[0]),
+            "sumdec" => SumDecimal(args),
+            "get_item" => GetItem(args[0]),
             _ => 0
         };
+
+        static ArrayValue GetItem(dynamic nameOrIndex)
+        {
+            nameOrIndex = nameOrIndex.ToString();
+            
+            int index = 0;
+            if(nameOrIndex != "")
+            {
+                if(int.TryParse(nameOrIndex, out int outVal) && outVal >= 0 && outVal < Item.Items.Count)
+                    index = outVal;
+                else
+                    index = Item.Items.FindIndex(x => x.Name!.ToUpper() == nameOrIndex.ToUpper())!;
+            }
+
+            return Item.Items[index].ToArrayValue();
+        }
+
+        static string SumDecimal(dynamic[] args)
+        {
+            decimal sum = 0;
+            for(int i  = 0; i < args.Length; i++)
+                if(decimal.TryParse(args[i].ToString(), out decimal result))
+                    sum += result;
+            
+            return sum.ToString();
+        }
 
         static string Print(dynamic s, int depth, object caller, IContext ctx, StringBuilder sb)
         {
