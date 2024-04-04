@@ -1,9 +1,10 @@
-﻿using System.Text;
+﻿using System.Diagnostics;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace Gellybeans.Expressions
 {
-    public class StringValue : IDisplay
+    public class StringValue : IDisplay, IComparable, IMember
     {
         public string String { get; set; }
 
@@ -11,10 +12,25 @@ namespace Gellybeans.Expressions
             String = value;
 
         public string Display(int depth, object caller, StringBuilder sb, IContext ctx)
-        {          
+        {
+            depth++;
+            if(depth > Parser.MAX_DEPTH)
+                return "operation cancelled: maximum evaluation depth reached.";
+
             var str = Parse(depth, ctx, String);
             str = str.Replace(@"\n", "\n");
             return str;
+        }
+
+        public bool TryGetMember(string name, out dynamic value)
+        {
+            if(name == "LEN")
+            {
+                value = String.Length;
+                return true;
+            }
+            value = "%";
+            return false;
         }
 
         public string Parse(int depth, IContext ctx, string s)
@@ -36,7 +52,7 @@ namespace Gellybeans.Expressions
 
                     if(r.Length > 0)
                     {
-                        var result = Parser.Parse(r[1..^1], this, ctx: ctx).Eval(depth: depth, caller: this, sb: null!, ctx : ctx);
+                        var result = Parser.Parse(r[1..^1], null!, ctx: ctx).Eval(depth: depth, caller: this, sb: null!, ctx : ctx);
                         if(result is IReduce rr)
                             result = rr.Reduce(depth: depth, caller: this, sb: null!, ctx : ctx);
                         sb.Append(result.ToString());
@@ -85,6 +101,19 @@ namespace Gellybeans.Expressions
         public override string ToString() =>
             String;
 
+        public int CompareTo(object? obj)
+        {
+            if(obj == null)
+                return 0;
+            
+            if(obj is StringValue s)
+                return String.CompareTo(s.String);
+            if(obj is string str)
+                return String.CompareTo(str);
+
+            return 0;
+        }
+
         public static implicit operator StringValue(string s) =>
             new(s);
 
@@ -127,6 +156,16 @@ namespace Gellybeans.Expressions
             false;
         public static bool operator <=(int lhs, StringValue rhs) =>
             false;
+
+        public static bool operator ==(StringValue lhs, bool rhs) =>
+            false;
+        public static bool operator !=(StringValue lhs, bool rhs) =>
+            true;
+
+        public static bool operator ==(bool lhs, StringValue rhs) =>
+            false;
+        public static bool operator !=(bool lhs, StringValue rhs) =>
+            true;
 
 
 

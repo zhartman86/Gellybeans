@@ -3,7 +3,7 @@ using System.Text;
 
 namespace Gellybeans.Pathfinder
 {
-    public class Stat : IDisplay
+    public class Stat : IString, IComparable
     {
 
         public int Base { get; set; } = 0;
@@ -24,16 +24,8 @@ namespace Gellybeans.Pathfinder
         public Stat(int baseValue) => 
             Base = baseValue;
 
-        public string Display(int depth, object caller, StringBuilder sb, IContext ctx)
+        public string ToStr()
         {
-            depth++;
-            if(depth > Parser.MAX_DEPTH)
-                return "operation cancelled: maximum evaluation depth reached.";
-
-            if(caller is ArrayValue)
-                return ToString();
-            
-            
             var str = $"## {Value}";
             if(Bonuses != null || Override != null)
             {
@@ -86,6 +78,7 @@ namespace Gellybeans.Pathfinder
             }
             return 0;
         }
+
 
 
         private static int GetTotal(Dictionary<BonusType, List<Bonus>> bonuses)
@@ -167,6 +160,19 @@ namespace Gellybeans.Pathfinder
             return count > 0;
         }
 
+        public int CompareTo(object? obj)
+        {
+            if(obj == null)
+                return 0;
+
+            if(obj is Stat s)
+                return Value.CompareTo(s.Value);
+            if(obj is int i)
+                return Value.CompareTo(i);
+
+            return 0;
+        }
+        
         public override string ToString()
         {
             //if(Bonuses != null)
@@ -182,7 +188,7 @@ namespace Gellybeans.Pathfinder
             //}
             return Value.ToString();
         }
-            
+         
             
 
         public static implicit operator int(Stat stat) => stat.Value;

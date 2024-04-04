@@ -17,6 +17,10 @@ namespace Gellybeans.Expressions
 
         public override dynamic Eval(int depth, object caller, StringBuilder sb, IContext ctx = null!)
         {
+            depth++;
+            if(depth > Parser.MAX_DEPTH)
+                return "operation cancelled: maximum evaluation depth reached.";
+
             var rhValue = rhs.Eval(depth: depth, caller: this, sb: sb, ctx : ctx);
             var lhValue = 0;
             if (lhs.Highest > 0 || lhs.Lowest > 0)

@@ -16,5 +16,8 @@ namespace Gellybeans.Expressions
                 return "operation cancelled: maximum evaluation depth reached.";
             return this;
         }
+
+        public override string ToString() =>
+            Symbol;
     }
 }

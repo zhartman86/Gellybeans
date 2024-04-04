@@ -3,34 +3,54 @@ using System.Text;
 
 namespace Gellybeans.Expressions
 {
-    public class ArrayValue : IReduce, IString
+    public class ArrayValue : IReduce, IString, IContainer, IMember
     {
         public dynamic[] Values { get; set; }
-
-        public ArrayValue(dynamic[] values) =>
-            Values = values;
 
         public dynamic this[int index]
         {
             get
             {
-                if (index >= 0 && index < Values.Length)
+                if(index >= 0 && index < Values.Length)
                     return Values[index];
                 Console.WriteLine($"INDEX: {index}, COUNT: {Values.Length}");
                 return new StringValue("Index out of range");
             }
             set
             {
-                if (index >= 0 && index < Values.Length)
+                if(index >= 0 && index < Values.Length)
                     Values[index] = value;
             }
+        }
+
+        public ArrayValue(dynamic[] values) =>
+            Values = values;
+   
+
+        public ref dynamic GetValueByRef(int index) => 
+            ref Values[index];
+
+        public bool TryGetMember(string name, out dynamic value)
+        {
+            if(name == "LEN")
+            {
+                value = Values.Length;
+                return true;
+            }
+            else if(name == "IDX")
+            {
+                value = Values.Length - 1;
+                return true;
+            }
+            value = "%";
+            return false;
         }
 
         public string ToStr()
         {
             var sb = new StringBuilder();
             for(int i = 0; i < Values.Length; i++)
-            {                
+            {
                 if(Values[i] is KeyValuePairValue kvp)
                 {
                     if(kvp.Value is ArrayValue aa)
@@ -40,14 +60,18 @@ namespace Gellybeans.Expressions
                     }
                     else
                         sb.AppendLine($"[{i}] {kvp.Key}: {kvp.Value}");
-                }               
+                }
                 else if(Values[i] is ArrayValue a)
-                {                                      
+                {
                     sb.AppendLine($"[{i}]:");
                     ParseDepth(a, sb);
-                }                   
+                }
                 else
+                {
+                    Console.WriteLine(Values[i].GetType());
                     sb.AppendLine($"[{i}] {Values[i]}");
+                }
+                    
             }
             return $"```{sb}```";
         }

@@ -12,12 +12,17 @@ namespace Gellybeans.Expressions
 
         public VarNode(string varName)
         {
-            this.varName = varName;
+            this.varName = varName.ToUpper();
         }
 
+        public dynamic Reduce(int depth, object caller, StringBuilder sb, IContext ctx)
+        {
+            if(ctx.TryGetVar(varName, out var value))
+                return value;
 
-        public dynamic Reduce(int depth, object caller, StringBuilder sb, IContext ctx)  =>     
-            Eval(depth, caller, sb, ctx);
+            sb?.AppendLine($"{varName} not found.");
+            return 0;
+        }
 
 
         public override dynamic Eval(int depth, object caller, StringBuilder sb, IContext ctx)
@@ -26,16 +31,17 @@ namespace Gellybeans.Expressions
             if(depth > Parser.MAX_DEPTH)
                 return "operation cancelled: maximum evaluation depth reached.";
 
-            var v = varName.Replace(" ", "_").ToUpper();
-            dynamic value = ctx[v];
-            if (value is IReduce r)
-                value = r.Reduce(depth: depth, caller: this, sb: sb, ctx : ctx);
-            if (value is null)
+            if(ctx.TryGetVar(varName, out var value))
             {
-                value = 0;
-                sb?.AppendLine($"{v} not found.");
+                if(value is IReduce r)
+                    value = r.Reduce(depth, caller, sb, ctx);
+                return value;
+            }               
+            else
+            {
+                sb?.AppendLine($"{varName} not found.");
+                return 0;
             }
-            return value;
         }
 
         public override string ToString() =>

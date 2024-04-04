@@ -22,11 +22,18 @@ namespace Gellybeans.Expressions
             if(depth > Parser.MAX_DEPTH)
                 return "operation cancelled: maximum evaluation depth reached.";
 
-            var lhValue = lhs.Eval(depth: depth, caller: caller, sb: sb, ctx : ctx);
-            if(lhValue is IReduce r)
-                lhValue = r.Reduce(depth: depth, caller: caller, sb: sb, ctx: ctx);
+            var lhValue = lhs.Eval(depth: depth, caller: caller, sb: sb, ctx: ctx);
+                if(lhValue is IReduce r)
+                    lhValue = r.Reduce(depth: depth, caller: caller, sb: sb, ctx: ctx);
+                     
+            var result = op(lhValue, rhs);
+            
+            
+            //if(lhs is VarNode v)
+            //    ctx[v.VarName] = result;
 
-            return op(lhValue, rhs);
+
+            return result;
         }
     }
 }

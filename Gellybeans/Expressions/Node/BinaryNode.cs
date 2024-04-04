@@ -22,6 +22,11 @@ namespace Gellybeans.Expressions
             this.op = op;
         }
 
+        public override string ToString()
+        {
+            return $"BINARY: {lhs.GetType()} : {rhs.GetType()}";
+        }
+
         public override dynamic Eval(int depth, object caller, StringBuilder sb, IContext ctx = null!)
         {
             depth++;
@@ -36,7 +41,7 @@ namespace Gellybeans.Expressions
             if (rhValue is IReduce rr)
                 rhValue = rr.Reduce(depth: depth, caller: caller, sb: sb, ctx : ctx);
 
-            Console.WriteLine($"binary: lhValue:{lhValue.GetType()}, rhValue:{rhValue.GetType()}");
+            Console.WriteLine($"binary: lhValue:{lhValue} -> {lhValue.GetType()}, rhValue:{rhValue} -> {rhValue.GetType()}");
 
             LResult = lhValue;
             RResult = rhValue;
