@@ -19,10 +19,8 @@ namespace Gellybeans.Expressions
             depth++;
             if(depth > Parser.MAX_DEPTH)
                 return "operation cancelled: maximum evaluation depth reached.";
-
+            
             var rhValue = node.Eval(depth: depth, caller: caller, sb: sb, ctx : ctx);
-            if (rhValue is IReduce r)
-                rhValue = r.Reduce(depth: depth, caller: caller, sb: sb, ctx : ctx);
             
             var result = op(rhValue);
             return result;

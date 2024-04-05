@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Security.Cryptography;
+using System.Text;
 
 namespace Gellybeans.Expressions
 {
@@ -16,24 +17,31 @@ namespace Gellybeans.Expressions
                 return "operation cancelled: maximum evaluation depth reached.";
 
             dynamic[] array;
-            
+            Dictionary<string, int> keys = null!;
+
             if(Values == null || Values.Length == 0)
                 array = Array.Empty<dynamic>();
             else
             {
                 array = new dynamic[Values.Length];
+                
                 for(int i = 0; i < Values.Length; i++)
                 {
-                    dynamic assign;
-                    if(Values[i] is StoredExpressionNode sen)
-                        assign = sen.Assign();
-                    else
-                        assign = Values[i].Eval(depth: depth, caller: caller, sb: sb, ctx: ctx);
+                    var result = Values[i].Eval(depth: depth, caller: this, sb: sb, ctx: ctx);
+                    if(result is KeyValuePairValue k)
+                    {
+                        keys ??= new Dictionary<string, int>();
 
-                    array[i] = assign;
-                }                   
+                        Console.WriteLine($"Writing key: {k.Key}");
+                        keys.Add(k.Key, i);
+                        array[i] = k.Value;
+                    }
+                    else
+                        array[i] = result;
+                }
+                                                  
             }
-            return new ArrayValue(array);
+            return new ArrayValue(array, keys);
         }
     }
 }

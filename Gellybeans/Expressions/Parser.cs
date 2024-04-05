@@ -273,142 +273,10 @@ namespace Gellybeans.Expressions
                                
                 if(node is KeyNode k)
                 {
-                    Func<dynamic, List<dynamic>, dynamic, dynamic> op = null!;
+                    Next();
+                    var rhs = ParseConditional();
+                    return new AssignKeyNode(k, rhs);
                     
-                    var trail = k;
-                    while(trail.Value is KeyNode kk)
-                        trail = kk;
-                    
-                    if(trail.Value is VarNode v)
-                    {                       
-                        switch(Current.Value)
-                        {
-                            case "=":
-                                op = (variable, keys, assignment) =>
-                                {
-                                    switch(keys.Count)
-                                    {
-                                        case 1:
-                                            variable[keys[0]] = assignment;
-                                            break;
-                                        case 2:
-                                            variable[keys[0]][keys[1]] = assignment;
-                                            break;
-                                        case 3:
-                                            variable[keys[0]][keys[1]][keys[2]] = assignment;
-                                            break;
-                                        case 4:
-                                            variable[keys[0]][keys[1]][keys[2]][keys[3]] = assignment;
-                                            break;
-                                        case 5:
-                                            variable[keys[0]][keys[1]][keys[2]][keys[3]][keys[4]] = assignment;
-                                            break;
-                                    }
-                                    return variable;
-                                };
-                                break;
-                            case "+=":
-                                op = (variable, keys, assignment) =>
-                                {
-                                    switch(keys.Count)
-                                    {
-                                        case 1:
-                                            variable[keys[0]] += assignment;
-                                            break;
-                                        case 2:
-                                            variable[keys[0]][keys[1]] += assignment;
-                                            break;
-                                        case 3:
-                                            variable[keys[0]][keys[1]][keys[2]] += assignment;
-                                            break;
-                                        case 4:
-                                            variable[keys[0]][keys[1]][keys[2]][keys[3]] += assignment;
-                                            break;
-                                        case 5:
-                                            variable[keys[0]][keys[1]][keys[2]][keys[3]][keys[4]] += assignment;
-                                            break;
-                                    }
-                                    return variable;
-                                };
-                                break;
-                            case "-=":
-                                op = (variable, keys, assignment) =>
-                                {
-                                    switch(keys.Count)
-                                    {
-                                        case 1:
-                                            variable[keys[0]] -= assignment;
-                                            break;
-                                        case 2:
-                                            variable[keys[0]][keys[1]] -= assignment;
-                                            break;
-                                        case 3:
-                                            variable[keys[0]][keys[1]][keys[2]] -= assignment;
-                                            break;
-                                        case 4:
-                                            variable[keys[0]][keys[1]][keys[2]][keys[3]] -= assignment;
-                                            break;
-                                        case 5:
-                                            variable[keys[0]][keys[1]][keys[2]][keys[3]][keys[4]] -= assignment;
-                                            break;
-                                    }
-                                    return variable;
-                                };
-                                break;
-                            case "*=":
-                                op = (variable, keys, assignment) =>
-                                {
-                                    switch(keys.Count)
-                                    {
-                                        case 1:
-                                            variable[keys[0]] *= assignment;
-                                            break;
-                                        case 2:
-                                            variable[keys[0]][keys[1]] *= assignment;
-                                            break;
-                                        case 3:
-                                            variable[keys[0]][keys[1]][keys[2]] *= assignment;
-                                            break;
-                                        case 4:
-                                            variable[keys[0]][keys[1]][keys[2]][keys[3]] *= assignment;
-                                            break;
-                                        case 5:
-                                            variable[keys[0]][keys[1]][keys[2]][keys[3]][keys[4]] *= assignment;
-                                            break;
-                                    }
-                                    return variable;
-                                };
-                                break;
-                            case "/=":
-                                op = (variable, keys, assignment) =>
-                                {
-                                    switch(keys.Count)
-                                    {
-                                        case 1:
-                                            variable[keys[0]] /= assignment;
-                                            break;
-                                        case 2:
-                                            variable[keys[0]][keys[1]] /= assignment;
-                                            break;
-                                        case 3:
-                                            variable[keys[0]][keys[1]][keys[2]] /= assignment;
-                                            break;
-                                        case 4:
-                                            variable[keys[0]][keys[1]][keys[2]][keys[3]] /= assignment;
-                                            break;
-                                        case 5:
-                                            variable[keys[0]][keys[1]][keys[2]][keys[3]][keys[4]] /= assignment;
-                                            break;
-                                    }
-                                    return variable;
-                                };
-                                break;
-                        }   
-
-                        Next();
-                        var rhs = ParseConditional();
-                        return new AssignKeyNode(v, k, rhs, op);
-                    }
                 }                                
             }                  
             return node;
@@ -582,17 +450,16 @@ namespace Gellybeans.Expressions
 
                     var lhValue = lhs;
 
-                    if(lhs is KeyValuePairValue kvp)
-                        lhValue = kvp.Value;
-
                     if(lhValue is ArrayValue a)
                     {
+                        dynamic[] array = new dynamic[a.Values.Length];
+                        a.Values.CopyTo(array, 0);
                         if(rhValue is FunctionValue f)
                         {
                             if(f.VarNames.Length == 2)
                             {
-                                for(int i = 0; i < a.Values.Length; i++)
-                                    a[i] = f.Invoke(depth, this, new dynamic[] { a[i], i }, sb, ctx);
+                                for(int i = 0; i < array.Length; i++)
+                                    array[i] = f.Invoke(depth, this, new dynamic[] { array[i], i }, sb, ctx);
 
                             }
                             else
@@ -600,14 +467,11 @@ namespace Gellybeans.Expressions
                         }
                         else
                         {
-                            for(int i = 0; i < a.Values.Length; i++)
-                                a[i] = rhs.Eval(depth: depth, caller: this, sb: sb, ctx: ctx);
+                            for(int i = 0; i < array.Length; i++)
+                                array[i] = rhs.Eval(depth: depth, caller: this, sb: sb, ctx: ctx);
                         }
 
-                        if(lhs is KeyValuePairValue kv)
-                            return new KeyValuePairValue(kv.Key, a);
-
-                        return a;
+                        return new ArrayValue(array, a.Keys);
                     }
                     return new StringValue("No suitable value found for `<<` operator.");
                 };
@@ -618,18 +482,20 @@ namespace Gellybeans.Expressions
 
                     Console.WriteLine($">>: {lhs.GetType()}");
 
-                    if(lhs is IContainer a)
+                    if(lhs is ArrayValue a)
                     {
+                        dynamic[] array = new dynamic[a.Values.Length];
+                        a.Values.CopyTo(array, 0);
                         if(rhValue is FunctionValue f)
                         {
                             if(f.VarNames.Length == 2)
                             {
 
-                                for(int i = 0; i < a.Values.Length; i++)
+                                for(int i = 0; i < array.Length; i++)
                                 {
-                                    Console.WriteLine($"INVOKING FUNCTION WITH VARS, {a[i]}, {i}");
-                                    if(f.Invoke(depth, caller, new dynamic[] { a[i], i }, sb, ctx))
-                                        list.Add(a[i]);
+                                    Console.WriteLine($"INVOKING FUNCTION WITH VARS, {array[i]}, {i}");
+                                    if(f.Invoke(depth, caller, new dynamic[] { array[i], i }, sb, ctx))
+                                        list.Add(array[i]);
                                 }
 
                             }
@@ -638,9 +504,9 @@ namespace Gellybeans.Expressions
                         }
                         else
                         {
-                            for(int i = 0; i < a.Values.Length; i++)
-                                if(a[i] == rhValue)
-                                    list.Add(a[i]);
+                            for(int i = 0; i < array.Length; i++)
+                                if(array[i] == rhValue)
+                                    list.Add(array[i]);
                         }
                         return new ArrayValue(list.ToArray());
                     }
@@ -683,28 +549,44 @@ namespace Gellybeans.Expressions
                 {
                     var rhs = rhe.Eval(depth, this, sb, ctx);
 
-                    if(lhs is IContainer al && al.Values.Length > 0)
+                    dynamic[] array = null!;
+                    if(lhs is ArrayValue al && al.Values.Length > 0)
                     {
+                        
                         if(rhs is ArrayValue ar)
                         {
-                            var newArray = al.Values.Concat(ar.Values);
-                            al.Values = newArray.ToArray();
+                            array = new dynamic[al.Values.Length + ar.Values.Length];
+                            al.Values.CopyTo(array, 0);                           
+                            ar.Values.CopyTo(array, al.Values.Length);
+
+                            if(al.Keys != null)
+                            {
+                                if(ar.Keys != null)
+                                {
+                                    foreach(var kvp in ar.Keys)
+                                        al.Keys.TryAdd(kvp.Key, kvp.Value);                                   
+                                }
+                                return new ArrayValue(array, al.Keys);
+                            }
+                            else if(ar.Keys != null)
+                                return new ArrayValue(array, ar.Keys);
+
                         }
                         else
                         {
-                            var newArray = new dynamic[al.Values.Length + 1];
-                            Array.Copy(al.Values, newArray, al.Values.Length);
-                            newArray[^1] = rhs;
-                            al.Values = newArray;
+                            array = new dynamic[al.Values.Length + 1];
+                            al.Values.CopyTo(array, 0);
+                            array[^1] = rhs;
+                            return new ArrayValue(array, al.Keys);
                         }
-                        return al;
+                        
                     }
-                    else if(rhs is IContainer ar && ar.Values.Length > 0)
+                    else if(rhs is ArrayValue ar && ar.Values.Length > 0)
                     {
-                        var newArray = new dynamic[ar.Values.Length + 1];
-                        Array.Copy(ar.Values, 0, newArray, 1, ar.Values.Length);
-                        newArray[0] = lhs;
-                        lhs = new ArrayValue(newArray);
+                        array = new dynamic[ar.Values.Length + 1];
+                        ar.Values.CopyTo(array, 1);
+                        array[0] = lhs;
+                        return new ArrayValue(array, ar.Keys);
                     }
                     return new StringValue($"No suitable values found for `>>>` operator.");
                 };
@@ -876,20 +758,6 @@ namespace Gellybeans.Expressions
         {
             var lhs = ParseLeaf();
 
-
-            while(true)
-            {
-                if(Current.TokenType == TokenType.Dot)
-                {
-                    Next();
-                    var member = ParseLeaf();
-                    if(member is VarNode m)
-                        return new MemberNode(lhs, m);
-                }
-                else break;
-            }
-
-
             while(true)
             {
                 Func<dynamic, dynamic, dynamic> op = null!;
@@ -913,12 +781,7 @@ namespace Gellybeans.Expressions
 
                             if(k is StringValue s)
                             {
-                                for(int i = 0; i < a.Values.Length; i++)
-                                {
-                                    if(a.Values[i] is KeyValuePairValue kvp && kvp.Key.ToUpper() == s.String.ToUpper())
-                                        return kvp;
-                                }
-                                return "%";
+                                return a[s.String];
                             }
 
                             if(k is RangeValue r)
@@ -970,6 +833,47 @@ namespace Gellybeans.Expressions
                 Console.WriteLine($" KEY: {key.GetType()} VALUE: {lhs.GetType()}");
                 lhs = new KeyNode(key, lhs, op);
 
+            }
+
+            while(true)
+            {
+                if(Current.TokenType == TokenType.Dot)
+                {
+                    Next();
+                    var member = ParseLeaf();
+                    if(member is VarNode m)
+                        return new MemberNode(lhs, m);
+                }
+                else break;
+            }
+
+            while(true)
+            {
+                if(Current.TokenType == TokenType.OpenPar)
+                {
+                    Next();
+                    var fargs = new List<ExpressionNode>();
+                    if(Current.TokenType != TokenType.ClosePar)
+                    {
+                        while(true)
+                        {
+                            fargs.Add(ParseConditional());
+                            if(Current.TokenType == TokenType.Comma)
+                            {
+                                Next();
+                                continue;
+                            }
+                            break;
+                        }
+                    }
+
+                    if(Current.TokenType != TokenType.ClosePar)
+                        return new ErrorNode("Expected `)`");
+
+                    Next();
+                    return new CallFunctionNode(lhs, fargs);
+                }
+                else break;
             }
 
             return lhs;
@@ -1055,26 +959,23 @@ namespace Gellybeans.Expressions
                     Next();
                     return new ArrayNode(list.ToArray());
                 case TokenType.Var:
-                    var identifier = Current.Value;
+                    var identifier = Current.Value.ToUpper();
 
                     Next();
-                    if(Current.TokenType != TokenType.Assign && ctx.TryGetVar(identifier.ToUpper(), out var value) && value is ExpressionValue e)
-                    {
-                        Next();
-                        return new CallExpressionNode(e);
-                    }
-
                     if(Current.TokenType == TokenType.OpenPar)
                     {
                         Next();
-                        if(ctx.TryGetVar(identifier.ToUpper(), out var func) && func is FunctionValue)
+                        if(ctx.TryGetVar(identifier, out var func) && func is FunctionValue)
                         {
                             var fargs = new List<ExpressionNode>();
                             if(Current.TokenType != TokenType.ClosePar)
                             {
                                 while(true)
                                 {
-                                    fargs.Add(ParseConditional());
+                                    Console.WriteLine("GETTING ARGS");
+                                    var a = ParseConditional();
+                                    Console.WriteLine(a.GetType());
+                                    fargs.Add(a);
                                     if(Current.TokenType == TokenType.Comma)
                                     {
                                         Next();
@@ -1088,7 +989,7 @@ namespace Gellybeans.Expressions
                                 return new ErrorNode("Expected `)`");
 
                             Next();
-                            return new CallFunctionNode(identifier.ToUpper(), fargs);
+                            return new CallFunctionNode(new VarNode(identifier), fargs);
                         }
                         
 
@@ -1155,7 +1056,6 @@ namespace Gellybeans.Expressions
                 case TokenType.Expression:
                     Next();
                     return new StoredExpressionNode(Look(-1).Value.Trim('`'));
-
                 case TokenType.Lambda:
                     Next();
                     if(Current.TokenType == TokenType.OpenPar)

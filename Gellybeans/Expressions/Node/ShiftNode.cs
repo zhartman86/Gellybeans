@@ -23,8 +23,6 @@ namespace Gellybeans.Expressions
                 return "operation cancelled: maximum evaluation depth reached.";
 
             var lhValue = lhs.Eval(depth: depth, caller: caller, sb: sb, ctx: ctx);
-                if(lhValue is IReduce r)
-                    lhValue = r.Reduce(depth: depth, caller: caller, sb: sb, ctx: ctx);
                      
             var result = op(lhValue, rhs);
             

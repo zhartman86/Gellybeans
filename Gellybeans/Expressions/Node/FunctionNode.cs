@@ -32,8 +32,6 @@ namespace Gellybeans.Expressions
                 for (int i = 0; i < args.Length; i++)
                 {
                     argValues[i] = args[i].Eval(depth: depth, caller: this, sb: sb, ctx : ctx);
-                    if (argValues[i] is IReduce r)
-                        argValues[i] = r.Reduce(depth: depth, caller: this, sb: sb, ctx : ctx);
                 }
 
             }

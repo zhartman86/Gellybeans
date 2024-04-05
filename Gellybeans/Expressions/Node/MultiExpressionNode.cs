@@ -24,13 +24,8 @@ namespace Gellybeans.Expressions
             else if(next is ReturnNode nret)
                 return nret.Eval(depth, caller, sb, ctx);
 
-            var nodeResult = node.Eval(depth, caller, sb, ctx);
-            if(nodeResult is IReduce r)
-                nodeResult = r.Reduce(depth, caller, sb, ctx);
-
+            node.Eval(depth, caller, sb, ctx);
             var nextResult = next.Eval(depth, caller, sb, ctx);
-            if(nextResult is IReduce rr)
-                nextResult = rr.Reduce(depth, caller, sb, ctx);
 
             return nextResult;
         }

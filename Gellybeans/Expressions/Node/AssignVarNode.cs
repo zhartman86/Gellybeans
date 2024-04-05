@@ -25,14 +25,7 @@ namespace Gellybeans.Expressions
             //if(caller is not FunctionValue && caller is not TernaryNode)
             //    sb?.AppendLine($"{identifier} set");
 
-
-            dynamic assign;
-            if(assignment is StoredExpressionNode sen)
-                assign = sen.Assign();
-            else
-                assign = assignment.Eval(depth: depth, caller: this, sb: sb, ctx: ctx);
-
-            return op(identifier, assign);
+            return op(identifier, assignment.Eval(depth: depth, caller: this, sb: sb, ctx : ctx));
         }
             
 
