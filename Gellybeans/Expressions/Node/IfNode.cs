@@ -23,19 +23,17 @@ namespace Gellybeans.Expressions
                 return "operation cancelled: maximum evaluation depth reached.";           
 
             var conValue = condition.Eval(depth: depth, caller: caller, sb: sb, ctx: ctx);
-            if(conValue is IReduce r)
-                conValue = r.Reduce(depth: depth, caller: caller, sb: sb, ctx: ctx);
 
             if(conValue)
             {
                 var scope = new ScopedContext(ctx, new Dictionary<string, dynamic>());
-                var result = Parser.Parse(statement, caller, sb, scope)
+                Parser.Parse(statement, caller, sb, scope)
                     .Eval(depth, caller, sb, scope);
             }
             else if(elseStatement != null)
             {
                 var scope = new ScopedContext(ctx, new Dictionary<string, dynamic>());
-                var result = Parser.Parse(elseStatement, caller, sb, scope)
+                Parser.Parse(elseStatement, caller, sb, scope)
                     .Eval(depth, caller, sb, scope);
             }
 

@@ -33,9 +33,12 @@ namespace Gellybeans.Expressions
             else
                 v = Value.Eval(depth, caller, sb, ctx);
 
+
+            Console.WriteLine($"{k} ({k.GetType()}) : {v} ({v.GetType()})");
+
             return op(k, v);
-        } 
-        
+        }
+
         //public ref dynamic Eval(int depth, object caller, StringBuilder sb, IContext ctx = null!)
         //{
         //    var k = Key.Eval(depth, caller, sb, ctx);

@@ -6,6 +6,7 @@ namespace Gellybeans.Expressions
     public class ArrayValue : IReduce, IString, IContainer, IMember
     {
         public dynamic[] Values { get; set; }
+        public Dictionary<string, int> Keys { get; set; } 
 
         public dynamic this[int index]
         {
@@ -14,18 +15,49 @@ namespace Gellybeans.Expressions
                 if(index >= 0 && index < Values.Length)
                     return Values[index];
                 Console.WriteLine($"INDEX: {index}, COUNT: {Values.Length}");
-                return new StringValue("Index out of range");
+                return "%";
             }
             set
             {
                 if(index >= 0 && index < Values.Length)
-                    Values[index] = value;
+                {
+                    if(value is KeyValuePairValue kvp)
+                    {
+                        AddKey(kvp.Key, index);
+                        Values[index] = kvp.Value;
+                    }
+                    else
+                        Values[index] = value;                       
+                }                   
             }
         }
 
-        public ArrayValue(dynamic[] values) =>
+        public dynamic this[string key] 
+        { 
+            get 
+            {
+                if(Keys.TryGetValue(key.ToUpper(), out var value))
+                    return Values[value];                             
+                return "%"; 
+            }
+            
+        }
+
+        public ArrayValue(dynamic[] values, Dictionary<string, int> keys = null!)
+        {
             Values = values;
+            Keys = keys;
+        }
    
+        public bool AddKey(string key, int index) 
+        { 
+            if(index >= 0 && index < Values.Length)
+            {
+                Keys[key] = index;
+                return true;
+            }
+            return false;
+        }
 
         public ref dynamic GetValueByRef(int index) => 
             ref Values[index];
@@ -51,27 +83,45 @@ namespace Gellybeans.Expressions
             var sb = new StringBuilder();
             for(int i = 0; i < Values.Length; i++)
             {
-                if(Values[i] is KeyValuePairValue kvp)
+                bool gotKey = false;
+
+                Console.WriteLine("KEYS NULL?");
+                if(Keys != null)
                 {
-                    if(kvp.Value is ArrayValue aa)
+                    Console.WriteLine("KEYS NOT NULL");
+                    foreach(var index in Keys)
                     {
-                        sb.AppendLine($"[{i}] {kvp.Key}:");
-                        ParseDepth(aa, sb);
+                        Console.WriteLine($"checking {index.Value}");
+                        if(i == index.Value)
+                        {
+                            Console.WriteLine("Got key");
+                            gotKey = true;
+                            if(Values[i] is ArrayValue ka)
+                            {
+                                sb.AppendLine($"[{i}] {index.Key}:");
+                                ParseDepth(ka, sb);
+                            }
+                            else
+                                sb.AppendLine($"[{i}] {index.Key}: {Values[i]}");
+                            break;
+                        }
+
+                    }
+                }
+                
+                if(!gotKey)
+                {
+                    if(Values[i] is ArrayValue a)
+                    {
+                        sb.AppendLine($"[{i}]:");
+                        ParseDepth(a, sb);
                     }
                     else
-                        sb.AppendLine($"[{i}] {kvp.Key}: {kvp.Value}");
-                }
-                else if(Values[i] is ArrayValue a)
-                {
-                    sb.AppendLine($"[{i}]:");
-                    ParseDepth(a, sb);
-                }
-                else
-                {
-                    Console.WriteLine(Values[i].GetType());
-                    sb.AppendLine($"[{i}] {Values[i]}");
-                }
-                    
+                    {
+                        Console.WriteLine(Values[i].GetType());
+                        sb.AppendLine($"[{i}] {Values[i]}");
+                    }
+                }                                  
             }
             return $"```{sb}```";
         }
@@ -80,24 +130,34 @@ namespace Gellybeans.Expressions
         {            
             for(int i = 0; i < a.Values.Length ;i++) 
             {
-                if(a.Values[i] is KeyValuePairValue kvp)
+                bool gotKey = false;
+                if(Keys != null)
                 {
-                    if(kvp.Value is ArrayValue kva)
+                    foreach(var index in Keys)
                     {
-                        sb.AppendLine($"{indent}[{i}] {kvp.Key}:");
-                        ParseDepth(kva, sb, indent + " | ");
+                        if(i == index.Value)
+                        {
+                            gotKey = true;
+                            if(Values[i] is ArrayValue ka)
+                            {
+                                sb.AppendLine($"{indent}[{i}] {index.Key}:");
+                                ParseDepth(ka, sb, indent + " | ");
+                            }
+                            else
+                                sb.AppendLine($"{indent}[{i}] {index.Key}: {index.Value}");
+                        }
+                    }
+                }
+                if(!gotKey)
+                {
+                    if(a.Values[i] is ArrayValue aa)
+                    {
+                        sb.AppendLine($"{indent}[{i}]:");
+                        ParseDepth(aa, sb, indent + " | ");
                     }
                     else
-                        sb.AppendLine($"{indent}[{i}] {kvp.Key}: {kvp.Value}");
-
-                }                                   
-                else if(a.Values[i] is ArrayValue aa)
-                {
-                    sb.AppendLine($"{indent}[{i}]:");
-                    ParseDepth(aa, sb, indent + " | ");
-                }
-                else
-                    sb.AppendLine($"{indent}[{i}] {a.Values[i]}");
+                        sb.AppendLine($"{indent}[{i}] {a.Values[i]}");
+                }                             
             }
         }
 

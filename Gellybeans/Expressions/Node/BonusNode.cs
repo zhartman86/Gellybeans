@@ -24,13 +24,8 @@ namespace Gellybeans.Expressions
             if (BonusType != null && BonusValue != null)
             {
                 var typeValue = BonusType.Eval(depth: depth, caller: this, sb: null!, ctx: ctx);
-                if (typeValue is IReduce r)
-                    typeValue = r.Reduce(depth: depth, caller: this, sb: null!, ctx: ctx);
-
                 var valueValue = BonusValue.Eval(depth: depth, caller: this, sb: null!, ctx: ctx);
-                if (valueValue is IReduce rr)
-                    valueValue = rr.Reduce(depth: depth, caller: this, sb: null!, ctx: ctx);
-
+                
                 var hasType = int.TryParse(typeValue.ToString(), out int type);
                 var hasValue = int.TryParse(valueValue.ToString(), out int value);
 

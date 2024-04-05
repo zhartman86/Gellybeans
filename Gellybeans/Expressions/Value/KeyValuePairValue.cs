@@ -3,7 +3,7 @@ using System.Text;
 
 namespace Gellybeans.Expressions
 {
-    public class KeyValuePairValue : IReduce, IContainer, IMember
+    public class KeyValuePairValue : IReduce, IContainer, IMember, IString
     {
         public string Key { get; set; }
         public dynamic Value { get; set; }
@@ -73,13 +73,21 @@ namespace Gellybeans.Expressions
                 value = Value; 
                 return true;
             }
+            if(Value is IMember m)
+            {
+                m.TryGetMember(name, out value);
+                return true;
+            }
+
             value = "%";
             return false;
         }
 
         public override string ToString() =>
             Value.ToString();
-        
+
+        public string ToStr() =>
+            $"{Key}: {Value}";
 
         public static dynamic operator +(KeyValuePairValue lhs, dynamic rhs) =>
             new KeyValuePairValue(lhs.Key, lhs.Value + rhs);

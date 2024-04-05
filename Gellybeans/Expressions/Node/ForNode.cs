@@ -51,7 +51,7 @@ namespace Gellybeans.Expressions
                     for(int i = r.Lower; i >= r.Upper; i--)
                     {
                         var scope = new ScopedContext(ctx, iterable, i);
-                        var result = Parser.Parse(statement, caller, sb, scope)
+                        Parser.Parse(statement, caller, sb, scope)
                             .Eval(depth, caller, sb, scope);
                     }                      
                 }

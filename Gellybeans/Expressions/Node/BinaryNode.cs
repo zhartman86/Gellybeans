@@ -33,13 +33,8 @@ namespace Gellybeans.Expressions
             if(depth > Parser.MAX_DEPTH)
                 return "Operation cancelled: maximum evaluation depth reached.";
 
-            var lhValue = lhs.Eval(depth: depth, caller: caller, sb: sb, ctx : ctx);
-            if (lhValue is IReduce r)
-                lhValue = r.Reduce(depth: depth, caller: caller, sb: sb, ctx : ctx);
-
+            var lhValue = lhs.Eval(depth: depth, caller: caller, sb: sb, ctx: ctx);
             var rhValue = rhs.Eval(depth: depth, caller: caller, sb: sb, ctx : ctx);
-            if (rhValue is IReduce rr)
-                rhValue = rr.Reduce(depth: depth, caller: caller, sb: sb, ctx : ctx);
 
             Console.WriteLine($"binary: lhValue:{lhValue} -> {lhValue.GetType()}, rhValue:{rhValue} -> {rhValue.GetType()}");
 

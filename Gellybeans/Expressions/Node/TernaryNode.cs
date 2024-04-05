@@ -29,9 +29,6 @@ namespace Gellybeans.Expressions
             dynamic rhValue = 0;
 
             var conValue = condition.Eval(depth: depth, caller: caller, sb: sb, ctx : ctx);
-            if(conValue is IReduce r)
-                conValue = r.Reduce(depth: depth, caller: caller, sb: sb, ctx: ctx);
-
 
             if(conValue is ArrayValue a)
             {                   
@@ -56,8 +53,6 @@ namespace Gellybeans.Expressions
             else
             {
                 var value = conValue ? lhs.Eval(depth: depth, caller: caller, sb: sb, ctx: ctx) : rhs.Eval(depth: depth, caller: caller, sb: sb, ctx: ctx);
-                if(value is IReduce rr)
-                    value = rr.Reduce(depth: depth, caller: caller, sb: sb, ctx: ctx);
                 var result = op(conValue, conValue ? value : lhValue, !conValue ? value : rhValue);
                 return result;
             }                         

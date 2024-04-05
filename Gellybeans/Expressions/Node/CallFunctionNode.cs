@@ -4,12 +4,12 @@ namespace Gellybeans.Expressions
 {
     class CallFunctionNode : ExpressionNode
     {
-        string varName;
+        ExpressionNode function;
         List<ExpressionNode> args;
 
-        public CallFunctionNode(string varName, List<ExpressionNode> args)
+        public CallFunctionNode(ExpressionNode function, List<ExpressionNode> args)
         {
-            this.varName = varName;
+            this.function = function;
             this.args = args;
         }
 
@@ -19,6 +19,13 @@ namespace Gellybeans.Expressions
             if(depth > Parser.MAX_DEPTH)
                 return "operation cancelled: maximum evaluation depth reached.";
 
+            var func = function.Eval(depth, caller, sb, ctx);
+            if(func is KeyValuePairValue kvp)
+                func = kvp.Value;
+            
+            if(func is not FunctionValue f)
+                return "%";
+
             dynamic[] argResults;
             if(args != null)
             {                
@@ -26,25 +33,17 @@ namespace Gellybeans.Expressions
                 for(int i = 0; i < args.Count; i++)
                 {
                     if(args[i] is VarNode v)
-                        argResults[i] = v;
+                        argResults[i] = v.Reduce(depth, caller, sb, ctx);
                     else
-                        argResults[i] = args[i].Eval(depth: depth, caller: caller, sb: sb, ctx: ctx);
-                }
-                   
+                        argResults[i] = args[i].Eval(depth, caller, sb, ctx);
+                }                   
             }
             else
                 argResults = Array.Empty<dynamic>();
 
-            if (ctx.TryGetVar(varName, out var value))
-            {
-                if (value is FunctionValue f)
-                {
-                    var result = f.Invoke(depth, caller, argResults, sb, ctx);
-                    return result;
-                }
 
-            }
-            return "%";
+            var result = f.Invoke(depth, caller, argResults, sb, ctx);
+            return result;
         }
     }
 }

@@ -40,9 +40,9 @@ namespace Gellybeans.Expressions
             for(int i = 0; i < args.Length; i++)
                 if(args[i] is VarNode v)
                 {
-                    Console.WriteLine($"SETTING {v.VarName} to {VarNames[i]} from scope");
+                    Console.WriteLine($"SETTING {v.VarName} to {VarNames[i].ToUpper()} from scope");
                     
-                    ctx[v.VarName] = scope[VarNames[i]];
+                    ctx[v.VarName] = scope[VarNames[i].ToUpper()];
                 }
 
             return result;

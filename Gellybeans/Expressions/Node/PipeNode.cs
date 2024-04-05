@@ -20,8 +20,6 @@ namespace Gellybeans.Expressions
                 return "operation cancelled: maximum evaluation depth reached.";
 
             var result = value.Eval(depth, caller, sb, ctx);
-            if(result is IReduce r)
-                result = r.Reduce(depth, caller, sb, ctx);
 
             var scope = new ScopedContext(ctx, new Dictionary<string, dynamic> { { "_", result } });      
             return next.Eval(depth: depth, caller: this, sb: sb, ctx : scope);
