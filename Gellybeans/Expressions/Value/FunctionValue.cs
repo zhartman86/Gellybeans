@@ -27,21 +27,18 @@ namespace Gellybeans.Expressions
             var dict = new Dictionary<string, dynamic>();
             for(int i = 0; i < args.Length; i++)
             {
-                Console.WriteLine(args[i].GetType());
                 dict.Add(VarNames[i].ToUpper(), args[i] is VarNode v ? v.Reduce(depth, caller, sb, ctx) : args[i]);
             }
-                
+          
 
-
-            var scope = new ScopedContext(ctx, dict);
+            var scope = new ScopedContext(ctx, dict, true);
             var result = Parser.Parse(Expression, caller, sb, scope).Eval(depth: depth, caller: this, sb: sb, ctx: scope);
 
             //synchronize any vars back to outer scope
             for(int i = 0; i < args.Length; i++)
                 if(args[i] is VarNode v)
                 {
-                    Console.WriteLine($"SETTING {v.VarName} to {VarNames[i].ToUpper()} from scope");
-                    
+                    Console.WriteLine($"SETTING BACK{v.VarName}");
                     ctx[v.VarName] = scope[VarNames[i].ToUpper()];
                 }
 

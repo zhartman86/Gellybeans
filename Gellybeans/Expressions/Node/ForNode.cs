@@ -5,9 +5,9 @@ namespace Gellybeans.Expressions
 {
     public class ForNode : ExpressionNode
     {
-        VarNode itr;
-        ExpressionNode enumerable;
-        List<Token> statement;
+        readonly VarNode itr;
+        readonly ExpressionNode enumerable;
+        readonly List<Token> statement;
 
         public ForNode(VarNode itr, ExpressionNode enumerable, List<Token> statement)
         {
@@ -57,7 +57,6 @@ namespace Gellybeans.Expressions
                 }
                 else
                 {
-                    Console.WriteLine($"PARSING FOR LOOP: {r.Lower}, {r.Upper}");
                     for(int i = r.Lower; i <= r.Upper; i++)
                     {
                         var scope = new ScopedContext(ctx, iterable, i);

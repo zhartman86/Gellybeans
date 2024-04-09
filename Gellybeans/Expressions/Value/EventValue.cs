@@ -2,9 +2,9 @@
 {
     public class EventValue
     {
-        public dynamic[] Data { get; set; }
+        public ArrayValue Data { get; set; }
 
-        public EventValue(dynamic data) =>
+        public EventValue(ArrayValue data) =>
             Data = data;       
     
         public override string ToString() => 

@@ -18,7 +18,7 @@ namespace Gellybeans.Expressions
                        
             var result = args.Eval(depth, caller, sb, ctx);
             if(result is ArrayValue a)
-                return new EventValue(a.Values);
+                return new EventValue(a);
                    
             return $"Expected array value. got {result.GetType()}";
         }

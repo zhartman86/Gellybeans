@@ -1,14 +1,14 @@
 ﻿using Gellybeans.Expressions;
-using System.Linq.Expressions;
 using System.Text;
-using System.Text.RegularExpressions;
 
 namespace Gellybeans.Pathfinder
 {
     public class StatBlock : IContext
     {
         IContext parent = null!;
-        public IContext Global { get {  return parent; } }
+        public IContext Parent {  get { return parent; } }
+        
+        public IContext Global { get {  return parent; } set { parent = value; } }
 
         public Guid Id          { get; set; }
         public Guid CampaignId  { get; set; }     
@@ -116,6 +116,15 @@ namespace Gellybeans.Pathfinder
             return false;
         }
     
+        public bool TryElevateVar(string identifier, dynamic value)
+        {
+            if(parent  != null) 
+            {
+                parent[identifier] = value;
+                return true;
+            }
+            return false;
+        }
 
         public void AddExprRow(ExprRow row)
         {
@@ -160,9 +169,6 @@ namespace Gellybeans.Pathfinder
 
             return null;
         }
-
-        public void SetGlobal(IContext ctx) =>
-            parent = ctx;
 
         public static StatBlock DefaultPathfinder(string name)
         {

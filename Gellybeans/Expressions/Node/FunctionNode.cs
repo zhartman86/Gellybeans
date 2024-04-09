@@ -58,8 +58,28 @@ namespace Gellybeans.Expressions
             "shuffle" => Shuffle(args[0]),
             "sumdec" => SumDecimal(args),
             "get_item" => GetItem(args[0]),
+            "get_init" => GetInit(args[0]),
+            "get_feat" => GetFeat(args[0]),
+            "get_trait" => GetTrait(args[0]),
             _ => 0
         };
+
+
+        static ArrayValue GetFeat(dynamic nameOrIndex)
+        {
+            nameOrIndex = nameOrIndex.ToString();
+
+            int index = 0;
+            if(nameOrIndex != "")
+            {
+                if(int.TryParse(nameOrIndex, out int outVal) && outVal >= 0 && outVal < Feat.Feats.Count)
+                    index = outVal;
+                else
+                    index = Feat.Feats.FindIndex(x => x.Name!.ToUpper() == nameOrIndex.ToUpper())!;
+            }
+
+            return Feat.Feats[index].ToArrayValue();
+        }
 
         static ArrayValue GetItem(dynamic nameOrIndex)
         {
@@ -75,6 +95,37 @@ namespace Gellybeans.Expressions
             }
 
             return Item.Items[index].ToArrayValue();
+        }
+
+        static ArrayValue GetInit(dynamic nameOrIndex)
+        {
+            nameOrIndex = nameOrIndex.ToString();
+            int index = 0;
+            if(nameOrIndex != "")
+            {
+                if(int.TryParse(nameOrIndex, out int outVal) && outVal >= 0 && outVal < Creature.Creatures.Count)
+                    index = outVal;
+                else
+                    index = Creature.Creatures.FindIndex(x => x.Name!.ToUpper() == nameOrIndex.ToUpper())!;
+            }
+
+            return Creature.Creatures[index].ToInit();
+
+        }
+
+        static ArrayValue GetTrait(dynamic nameOrIndex)
+        {
+            nameOrIndex = nameOrIndex.ToString();
+            int index = 0;
+            if(nameOrIndex != "")
+            {
+                if(int.TryParse(nameOrIndex, out int outVal) && outVal >= 0 && outVal < Trait.Traits.Count)
+                    index = outVal;
+                else
+                    index = Trait.Traits.FindIndex(x => x.Name!.ToUpper() == nameOrIndex.ToUpper())!;
+            }
+
+            return Trait.Traits[index].ToArrayValue();
         }
 
         static string SumDecimal(dynamic[] args)

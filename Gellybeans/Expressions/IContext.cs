@@ -8,8 +8,10 @@ namespace Gellybeans.Expressions
     
     public interface IContext
     {
+        IContext Parent { get; }
         bool TryGetVar(string varName, out dynamic value);
         bool RemoveVar(string varName);
+        bool TryElevateVar(string varName, dynamic assignment);
         Dictionary<string, dynamic> Vars { get; }
         dynamic this[string varName] { get; set; }
     }
