@@ -33,9 +33,6 @@ namespace Gellybeans.Expressions
             else
                 v = Value.Eval(depth, caller, sb, ctx);
 
-
-            Console.WriteLine($"{k} ({k.GetType()}) : {v} ({v.GetType()})");
-
             return op(k, v);
         }
 

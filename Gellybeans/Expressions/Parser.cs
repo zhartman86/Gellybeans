@@ -14,7 +14,7 @@ namespace Gellybeans.Expressions
 
     public class Parser
     {
-        public const int MAX_DEPTH = 1500;
+        public const int MAX_DEPTH = 10000;
 
         readonly List<Token> tokens;
 
@@ -67,8 +67,6 @@ namespace Gellybeans.Expressions
         public ExpressionNode ParseExpr()
         {
             var expr = ParseTermination();
-
-            Console.WriteLine($"RETURNING {expr}");
 
             if(Current.TokenType == TokenType.EOF || Current.TokenType == TokenType.Break || expr is ErrorNode)
                 return expr;
@@ -150,16 +148,17 @@ namespace Gellybeans.Expressions
                                         {
                                             stat.Base = i;
                                             ctx[identifier] = stat;
-                                            return $"{assignment}";
+                                            return ctx[identifier];
                                         }
                                     }
-                                    ctx[identifier] = assignment;                                   
+                                    ctx[identifier] = assignment;
+                                    return ctx[identifier];
                                 }
                                 else
                                 {
-                                    ctx[identifier] = assignment;                                   
+                                    ctx[identifier] = assignment;
+                                    return ctx[identifier];
                                 }
-                                return $"{assignment}";
                             };
                             break;
                         case "+=":
@@ -173,11 +172,11 @@ namespace Gellybeans.Expressions
                                         {
                                             stat.Base += i;
                                             ctx[identifier] = stat;
-                                            return $"{assignment}";
+                                            return ctx[identifier]; ;
                                         }
                                     }
                                     ctx[identifier] = var + assignment;
-                                    return $"{assignment}";
+                                    return ctx[identifier];
                                 }
                                 return new StringValue($"{identifier} not found");
                             };                                                       
@@ -260,6 +259,17 @@ namespace Gellybeans.Expressions
                                     return $"{assignment}";
                                 }
                                 return new StringValue($"{identifier} not found");
+                            };
+                            break;
+                        case "^=":
+                            op = (identifier, assignment) =>
+                            {
+                                if(ctx.TryElevateVar(identifier, assignment))
+                                {
+                                    return assignment;
+                                }
+                                else
+                                    return "No global found for var assignment.";
                             };
                             break;
                     }
@@ -480,8 +490,6 @@ namespace Gellybeans.Expressions
                     var list = new List<dynamic>();
                     var rhValue = rhs.Eval(depth: depth, caller: this, sb: sb, ctx: ctx);
 
-                    Console.WriteLine($">>: {lhs.GetType()}");
-
                     if(lhs is ArrayValue a)
                     {
                         dynamic[] array = new dynamic[a.Values.Length];
@@ -493,7 +501,6 @@ namespace Gellybeans.Expressions
 
                                 for(int i = 0; i < array.Length; i++)
                                 {
-                                    Console.WriteLine($"INVOKING FUNCTION WITH VARS, {array[i]}, {i}");
                                     if(f.Invoke(depth, caller, new dynamic[] { array[i], i }, sb, ctx))
                                         list.Add(array[i]);
                                 }
@@ -594,16 +601,13 @@ namespace Gellybeans.Expressions
                 {
                     var rhs = rhe.Eval(depth, this, sb, ctx);
 
-                    Console.WriteLine($"lhs insert : {lhs.GetType()}");
 
-                    if(lhs is IContainer al)
+                    if(lhs is ArrayValue al)
                     {
-
-                        var newArray = new dynamic[al.Values.Length + 1];
-                        Array.Copy(al.Values, newArray, al.Values.Length);
-                        newArray[^1] = rhs;
-                        al.Values = newArray;
-                        return al;
+                        var array = new dynamic[al.Values.Length + 1];
+                        al.Values.CopyTo(array, 0);
+                        array[^1] = rhs;
+                        return new ArrayValue(array, al.Keys);
                     }
                     return "No suitable values found for `>>*` operator.";
                 };
@@ -730,7 +734,6 @@ namespace Gellybeans.Expressions
                 }
                 else if(Current.TokenType == TokenType.Percent) op = (value) =>
                 {
-                    Console.WriteLine($"STRINGED OBJECT: {value.GetType()}");
                     return value is IString s ? s.ToStr() : value is StringValue str ? str.Display(depth, caller, sb, ctx) : value.ToString();
                 };
                 else if(Current.TokenType == TokenType.ToExpr) op = (value) =>
@@ -830,7 +833,6 @@ namespace Gellybeans.Expressions
 
                 Next();
                 var key = ParseKey();
-                Console.WriteLine($" KEY: {key.GetType()} VALUE: {lhs.GetType()}");
                 lhs = new KeyNode(key, lhs, op);
 
             }
@@ -840,9 +842,37 @@ namespace Gellybeans.Expressions
                 if(Current.TokenType == TokenType.Dot)
                 {
                     Next();
-                    var member = ParseLeaf();
-                    if(member is VarNode m)
+                    if(Current.TokenType == TokenType.Var)
+                    {
+                        var m = Current.Value.ToUpper();
+                        
+                        Next();
+                        if(Current.TokenType == TokenType.OpenPar)
+                        {
+                            Console.WriteLine("GOT MMEBER");
+                            Next();
+                            var fargs = new List<ExpressionNode>();
+                            while(true)
+                            {
+                                fargs.Add(ParseConditional());
+                                if(Current.TokenType == TokenType.Comma)
+                                {
+                                    Next();
+                                    continue;
+                                }
+                                break;
+                            }
+                            if(Current.TokenType != TokenType.ClosePar)
+                                return new ErrorNode("Expected `)`");
+
+                            Next();
+                            return new MemberNode(lhs, m, fargs.ToArray());
+                        }
+
+
                         return new MemberNode(lhs, m);
+                    }
+                        
                 }
                 else break;
             }
@@ -972,9 +1002,7 @@ namespace Gellybeans.Expressions
                             {
                                 while(true)
                                 {
-                                    Console.WriteLine("GETTING ARGS");
                                     var a = ParseConditional();
-                                    Console.WriteLine(a.GetType());
                                     fargs.Add(a);
                                     if(Current.TokenType == TokenType.Comma)
                                     {

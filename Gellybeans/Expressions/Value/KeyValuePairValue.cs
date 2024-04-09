@@ -61,7 +61,7 @@ namespace Gellybeans.Expressions
             return new KeyValuePairValue(Key, Value is IReduce r ? r.Reduce(depth, caller, sb, ctx) : Value);
         }
 
-        public bool TryGetMember(string name, out dynamic value)
+        public bool TryGetMember(string name, out dynamic value, dynamic[] args)
         {
             if(name == "KEY")
             {
@@ -75,7 +75,7 @@ namespace Gellybeans.Expressions
             }
             if(Value is IMember m)
             {
-                m.TryGetMember(name, out value);
+                m.TryGetMember(name, out value, args);
                 return true;
             }
 

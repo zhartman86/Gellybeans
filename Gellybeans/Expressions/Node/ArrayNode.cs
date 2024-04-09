@@ -32,7 +32,6 @@ namespace Gellybeans.Expressions
                     {
                         keys ??= new Dictionary<string, int>();
 
-                        Console.WriteLine($"Writing key: {k.Key}");
                         keys.Add(k.Key, i);
                         array[i] = k.Value;
                     }

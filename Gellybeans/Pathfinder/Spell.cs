@@ -1,4 +1,5 @@
 ﻿using Gellybeans.Expressions;
+using Newtonsoft.Json;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -6,6 +7,9 @@ namespace Gellybeans.Pathfinder
 {
     public class Spell
     {
+        static readonly List<Spell> spells = new List<Spell>();
+        public static List<Spell> Spells { get { return spells; } }
+
         public string? Name             { get; set; }
         public string? Properties       { get; set; }
         public string? Levels           { get; set; }
@@ -34,12 +38,75 @@ namespace Gellybeans.Pathfinder
         
         //these regex are used for formulae placed inside squiggle-brackets in a data-set created specifically for these purposes.
         //anything inside these brackets are meant to be evaluated (and the brackets removed) before being displayed to the end-user.
-        static readonly Regex intensifiedDesc       = new Regex(@"(\{min\(.CL,)([0-9]*)(\)\}d)");
-        static readonly Regex intensifiedFormulae   = new Regex(@"([0-9]{1,2}d[0-9]{1,2}.*min\(.CL,)([0-9]*)");
-        static readonly Regex empoweredDesc         = new Regex(@"(\{.*\}?d[0-9]*.*?[ +]*[0-9]+?|[0-9]+d[0-9]+[ +]*[0-9]*)");
-        static readonly Regex empoweredFormulae     = new Regex(@"#([0-9]d.*)");
-        static readonly Regex doubled = new Regex(@"\{(.*)\}");
-        static readonly Regex brackets = new Regex(@"\{.*?\}");
+        static readonly Regex intensifiedDesc       = new Regex(@"(\{min\(.CL,)([0-9]*)(\)\}d)", RegexOptions.Compiled);
+        static readonly Regex intensifiedFormulae   = new Regex(@"([0-9]{1,2}d[0-9]{1,2}.*min\(.CL,)([0-9]*)", RegexOptions.Compiled);
+        static readonly Regex empoweredDesc         = new Regex(@"(\{.*\}?d[0-9]*.*?[ +]*[0-9]+?|[0-9]+d[0-9]+[ +]*[0-9]*)", RegexOptions.Compiled);
+        static readonly Regex empoweredFormulae     = new Regex(@"#([0-9]d.*)", RegexOptions.Compiled);
+        static readonly Regex doubled = new Regex(@"\{(.*)\}", RegexOptions.Compiled);
+        static readonly Regex brackets = new Regex(@"\{.*?\}", RegexOptions.Compiled);
+
+        static Spell()
+        {
+            Console.Write("Getting spells...");
+            var spellJson = File.ReadAllText(@"E:\Pathfinder\PFData\Spells.json");
+            spells = JsonConvert.DeserializeObject<List<Spell>>(spellJson)!;
+            Console.WriteLine($"Spells => {spells.Count}");
+        }
+
+
+
+        public ArrayValue ToArrayValue()
+        {
+            var list = new List<KeyValuePairValue>()
+            {
+                new KeyValuePairValue("NAME",       Name),
+            };
+            
+            if(Properties != "")
+            {
+                var split = Properties.Split('/');
+                list.Add(new KeyValuePairValue("TAGS", new ArrayValue(split)));
+            }
+            if(Levels != "")
+            {
+                var split = Levels.Split('/');
+                list.Add(new KeyValuePairValue("LEVELS", new ArrayValue(split)));
+            }
+
+            list.Add(new KeyValuePairValue("SCHOOL",        School));
+            list.Add(new KeyValuePairValue("SUBSCHOOL",     Subschool));
+            list.Add(new KeyValuePairValue("DESCRIPTOR",    Descriptor));
+            list.Add(new KeyValuePairValue("CASTING_TIME",  CastingTime));
+
+            if(Components != "")
+            {
+                var split = Components.Split('/');
+                list.Add(new KeyValuePairValue("COMPONENTS", new ArrayValue(split)));
+            }
+
+            list.Add(new KeyValuePairValue("RANGE",             Range));
+            list.Add(new KeyValuePairValue("AREA",              Area));
+            list.Add(new KeyValuePairValue("TARGETS",           Targets));
+            list.Add(new KeyValuePairValue("DURATION",          Duration));
+            list.Add(new KeyValuePairValue("SAVING_THROW",      SavingThrow));
+            list.Add(new KeyValuePairValue("SPELL_RESISTANCE",  SpellResistance));
+            list.Add(new KeyValuePairValue("DOMAIN",            Domain));
+            list.Add(new KeyValuePairValue("DEITY",             Deity));
+            list.Add(new KeyValuePairValue("DESC",              Description));
+            list.Add(new KeyValuePairValue("SOURCE",            Source));
+
+            Dictionary<string, int> dict = new Dictionary<string, int>();
+            dynamic[] array = new dynamic[list.Count];
+            for(int i = 0; i < list.Count; i++)
+            {
+                dict.TryAdd(list[i].Key, i);
+                array[i] = list[i].Value;
+            }
+
+            return new ArrayValue(array, dict);
+        }
+
+
 
         
         public Spell Empowered()

@@ -1,4 +1,5 @@
 ﻿using Gellybeans.Expressions;
+using Newtonsoft.Json;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -6,6 +7,9 @@ namespace Gellybeans.Pathfinder
 {
    public class Creature
     {
+        static List<Creature> creatures = new List<Creature>();
+        static public List<Creature> Creatures { get { return creatures; } }
+        
         public string? Visual               { get; set; } = "";
         public string? Name                 { get; set; } = "";
         public string? CR                   { get; set; } = "";
@@ -70,9 +74,18 @@ namespace Gellybeans.Pathfinder
         public string? SpecialAbilities     { get; set; } = "";
         public string? Source               { get; set; } = "";
 
+        static Creature()
+        {
+            Console.Write("Getting creatures...");
+            var creatureJson = File.ReadAllText(@"E:\Pathfinder\PFData\Bestiary.json");
+            creatures = JsonConvert.DeserializeObject<List<Creature>>(creatureJson)!;
+            Console.WriteLine($"Items => {creatures.Count}");
+        }
+
+
         public ArrayValue ToArray()
         {
-            var list = new List<dynamic>();
+            var list = new List<KeyValuePairValue>();
 
             list.Add(new KeyValuePairValue("DESCRIPTION",           new StringValue(Visual)));
             list.Add(new KeyValuePairValue("NAME",                  new StringValue(Name)));
@@ -111,6 +124,31 @@ namespace Gellybeans.Pathfinder
 
             return new ArrayValue(list.ToArray());
 
+        }
+
+        public ArrayValue ToInit()
+        {
+            var list = new List<KeyValuePairValue> 
+            { 
+                new KeyValuePairValue("NAME",       Name), 
+                new KeyValuePairValue("ROLLED",     0), 
+                new KeyValuePairValue("BONUS",      int.Parse(Init)), 
+                new KeyValuePairValue("DEX",        int.Parse(Dex)),
+                
+                new KeyValuePairValue("FORT",       int.Parse(Fort)),
+                new KeyValuePairValue("REF",        int.Parse(Ref)),
+                new KeyValuePairValue("WILL",       int.Parse(Will)),              
+            };
+
+            var dict = new Dictionary<string, int>();
+            var array = new dynamic[list.Count];
+            for(int i = 0; i < list.Count; i++)
+            {
+                dict.Add(list[i].Key, i);
+                array[i] = list[i].Value;
+            }
+
+            return new ArrayValue(array, dict);
         }
 
 

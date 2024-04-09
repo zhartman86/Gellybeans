@@ -14,7 +14,6 @@ namespace Gellybeans.Expressions
             {
                 if(index >= 0 && index < Values.Length)
                     return Values[index];
-                Console.WriteLine($"INDEX: {index}, COUNT: {Values.Length}");
                 return "%";
             }
             set
@@ -40,6 +39,11 @@ namespace Gellybeans.Expressions
                     return Values[value];                             
                 return "%"; 
             }
+            set
+            {
+                if(Keys.TryGetValue(key.ToUpper(), out var val))
+                    this[val] = value;
+            }
             
         }
 
@@ -62,7 +66,7 @@ namespace Gellybeans.Expressions
         public ref dynamic GetValueByRef(int index) => 
             ref Values[index];
 
-        public bool TryGetMember(string name, out dynamic value)
+        public bool TryGetMember(string name, out dynamic value, dynamic[] args)
         {
             if(name == "LEN")
             {
@@ -85,16 +89,12 @@ namespace Gellybeans.Expressions
             {
                 bool gotKey = false;
 
-                Console.WriteLine("KEYS NULL?");
                 if(Keys != null)
                 {
-                    Console.WriteLine("KEYS NOT NULL");
                     foreach(var index in Keys)
                     {
-                        Console.WriteLine($"checking {index.Value}");
                         if(i == index.Value)
                         {
-                            Console.WriteLine("Got key");
                             gotKey = true;
                             if(Values[i] is ArrayValue ka)
                             {
@@ -118,7 +118,6 @@ namespace Gellybeans.Expressions
                     }
                     else
                     {
-                        Console.WriteLine(Values[i].GetType());
                         sb.AppendLine($"[{i}] {Values[i]}");
                     }
                 }                                  
@@ -127,24 +126,24 @@ namespace Gellybeans.Expressions
         }
 
         void ParseDepth(ArrayValue a, StringBuilder sb, string indent = " | ")
-        {            
-            for(int i = 0; i < a.Values.Length ;i++) 
+        {
+            for(int i = 0; i < a.Values.Length; i++) 
             {
                 bool gotKey = false;
-                if(Keys != null)
+                if(a.Keys != null)
                 {
-                    foreach(var index in Keys)
+                    foreach(var index in a.Keys)
                     {
                         if(i == index.Value)
-                        {
+                        {                           
                             gotKey = true;
-                            if(Values[i] is ArrayValue ka)
+                            if(a.Values[i] is ArrayValue ka)
                             {
                                 sb.AppendLine($"{indent}[{i}] {index.Key}:");
                                 ParseDepth(ka, sb, indent + " | ");
                             }
                             else
-                                sb.AppendLine($"{indent}[{i}] {index.Key}: {index.Value}");
+                                sb.AppendLine($"{indent}[{i}] {index.Key}: {a.Values[i]}");
                         }
                     }
                 }
@@ -193,7 +192,7 @@ namespace Gellybeans.Expressions
             return s.ToString();
         }
 
-        public static implicit operator ArrayValue(dynamic[] values) =>
+        public static explicit operator ArrayValue(dynamic[] values) =>
             new(values);
 
         public static ArrayValue operator +(ArrayValue lhs, dynamic rhs)

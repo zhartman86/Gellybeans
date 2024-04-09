@@ -9,7 +9,7 @@
         Dollar,         // $
         GetBonus,       // $?
         Base,           // @
-        Assign,         // = += -= *= /= %= |=
+        Assign,         // = += -= *= /= %= |= ^=
         Remove,         // \
         AssignFlag,     // |=
         LogicalOr,      // ||

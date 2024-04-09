@@ -412,6 +412,11 @@ namespace Gellybeans.Expressions
                         NextChar();
                         Tokens.Add(new Token(TokenType.Return, "^^"));
                     }
+                    else if(currentChar == '=')
+                    {
+                        NextChar();
+                        Tokens.Add(new Token(TokenType.Assign, "^="));
+                    }
                     else
                     {
                         Tokens.Add(new Token(TokenType.Break, "^"));

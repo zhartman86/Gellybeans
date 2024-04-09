@@ -36,8 +36,6 @@ namespace Gellybeans.Expressions
             var lhValue = lhs.Eval(depth: depth, caller: caller, sb: sb, ctx: ctx);
             var rhValue = rhs.Eval(depth: depth, caller: caller, sb: sb, ctx : ctx);
 
-            Console.WriteLine($"binary: lhValue:{lhValue} -> {lhValue.GetType()}, rhValue:{rhValue} -> {rhValue.GetType()}");
-
             LResult = lhValue;
             RResult = rhValue;
 

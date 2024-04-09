@@ -2,6 +2,6 @@
 {
     public interface IMember
     {
-        bool TryGetMember(string name, out dynamic value);
+        bool TryGetMember(string name, out dynamic value, dynamic[] args);
     }
 }

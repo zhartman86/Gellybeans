@@ -22,14 +22,29 @@ namespace Gellybeans.Expressions
             return str;
         }
 
-        public bool TryGetMember(string name, out dynamic value)
+        public bool TryGetMember(string name, out dynamic value, dynamic[] args)
         {
             if(name == "LEN")
             {
                 value = String.Length;
                 return true;
             }
-            value = "%";
+            if(name == "HAS")
+            {
+                if(args.Length > 0)
+                {
+                    if(String.Contains(args[0].ToString()))
+                        value = true;
+                    else
+                        value = false;
+
+                    return true;
+                }
+                value = new StringValue("%");
+                return false;
+            }
+
+            value = new StringValue("%");
             return false;
         }
 
@@ -116,6 +131,9 @@ namespace Gellybeans.Expressions
 
         public static implicit operator StringValue(string s) =>
             new(s);
+
+        public static implicit operator string(StringValue s) =>
+            new(s.String);
 
         public static StringValue operator +(StringValue lhs, StringValue rhs) =>
              lhs.String + rhs.String;
