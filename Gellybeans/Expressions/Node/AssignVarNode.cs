@@ -7,9 +7,9 @@ namespace Gellybeans.Expressions
         readonly string identifier;
         readonly ExpressionNode assignment;
 
-        readonly Func<string, dynamic, dynamic> op;
+        readonly Func<string, dynamic, IContext, dynamic> op;
 
-        public AssignVarNode(string identifier, dynamic assignment, Func<string, dynamic, dynamic> op)
+        public AssignVarNode(string identifier, dynamic assignment, Func<string, dynamic, IContext, dynamic> op)
         {
             this.identifier = identifier;
             this.assignment = assignment;
@@ -25,7 +25,7 @@ namespace Gellybeans.Expressions
             //if(caller is not FunctionValue && caller is not TernaryNode)
             //    sb?.AppendLine($"{identifier} set");
 
-            return op(identifier, assignment.Eval(depth: depth, caller: this, sb: sb, ctx : ctx));
+            return op(identifier, assignment.Eval(depth: depth, caller: this, sb: sb, ctx : ctx), ctx);
         }
             
 

@@ -26,8 +26,8 @@ namespace Gellybeans.Expressions
 
         public KeyValuePairValue(StringValue key, dynamic value)
         {
-            Key = key.String;
-            Value = value;
+            Key = key.String.ToUpper();
+            Value = value is string s ? new StringValue(s) : value;
         }
 
         public dynamic this[int index]

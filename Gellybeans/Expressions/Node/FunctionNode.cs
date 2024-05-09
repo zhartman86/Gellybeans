@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Text;
 using Gellybeans.Expressions;
 using Gellybeans.Pathfinder;
@@ -52,8 +53,6 @@ namespace Gellybeans.Expressions
             "tq" => (args[0] + args[0] / 2) / 2,
             "oh" => args[0] / 2,
             "th" => args[0] + args[0] / 2,
-            "upper" => args[0].ToString().ToUpper(),
-            "lower" => args[0].ToString().ToLower(),
             "print" => Print(args[0], depth, caller, ctx, sb),
             "shuffle" => Shuffle(args[0]),
             "sumdec" => SumDecimal(args),
@@ -61,6 +60,7 @@ namespace Gellybeans.Expressions
             "get_init" => GetInit(args[0]),
             "get_feat" => GetFeat(args[0]),
             "get_trait" => GetTrait(args[0]),
+            "get_spell" => GetSpell(args[0]),
             _ => 0
         };
 
@@ -91,7 +91,7 @@ namespace Gellybeans.Expressions
                 if(int.TryParse(nameOrIndex, out int outVal) && outVal >= 0 && outVal < Item.Items.Count)
                     index = outVal;
                 else
-                    index = Item.Items.FindIndex(x => x.Name!.ToUpper() == nameOrIndex.ToUpper())!;
+                    index = Item.Items.FindIndex(x => x.Name.ToUpper().Contains(nameOrIndex.ToUpper()))!;
             }
 
             return Item.Items[index].ToArrayValue();
@@ -111,6 +111,24 @@ namespace Gellybeans.Expressions
 
             return Creature.Creatures[index].ToInit();
 
+        }
+
+        static dynamic GetSpell(dynamic nameOrIndex)
+        {
+            nameOrIndex = nameOrIndex.ToString();
+            int index = 0;
+            if(nameOrIndex != "")
+            {
+                if(int.TryParse(nameOrIndex, out int outVal) && outVal >= 0 && outVal < Spell.Spells.Count)
+                    index = outVal;
+                else
+                    index = Spell.Spells.FindIndex(x => x.Name!.ToUpper() == nameOrIndex.ToUpper())!;
+            }
+
+            if(index == -1)
+                return index;
+
+            return Spell.Spells[index].ToArrayValue();
         }
 
         static ArrayValue GetTrait(dynamic nameOrIndex)

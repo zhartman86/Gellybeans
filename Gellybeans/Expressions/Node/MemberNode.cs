@@ -18,8 +18,6 @@ namespace Gellybeans.Expressions
         
         public override dynamic Eval(int depth, object caller, StringBuilder sb, IContext ctx = null)
         {
-
-            Console.WriteLine("MEMBER");
             var value = parent.Eval(depth, caller, sb, ctx);
 
             dynamic[] values;
@@ -36,8 +34,12 @@ namespace Gellybeans.Expressions
                 }
             }
 
+            if(value is string s)
+                value = new StringValue(s);
+
             if(value is IMember m && m.TryGetMember(member, out var outVal, values))
                 return outVal;
+
 
             else return new StringValue("%");
         }

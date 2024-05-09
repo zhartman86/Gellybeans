@@ -118,7 +118,7 @@ namespace Gellybeans.Pathfinder
     
         public bool TryElevateVar(string identifier, dynamic value)
         {
-            if(parent  != null) 
+            if(parent != null) 
             {
                 parent[identifier] = value;
                 return true;

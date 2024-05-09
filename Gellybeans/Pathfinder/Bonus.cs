@@ -24,5 +24,15 @@
 
 
         public static Bonus Empty { get; } = new Bonus();
+
+
+        public static Stat operator +(int lhs, Bonus rhs) 
+        { 
+            var stat = new Stat(lhs);
+            stat.AddBonus(rhs);
+            return stat;
+        }
+        
+
     }
 }

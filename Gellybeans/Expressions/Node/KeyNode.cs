@@ -32,7 +32,7 @@ namespace Gellybeans.Expressions
                 v = varNode.Reduce(depth,caller, sb, ctx);
             else
                 v = Value.Eval(depth, caller, sb, ctx);
-
+            
             return op(k, v);
         }
 
