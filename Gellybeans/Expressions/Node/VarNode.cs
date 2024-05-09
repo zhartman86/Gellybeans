@@ -33,8 +33,9 @@ namespace Gellybeans.Expressions
 
             if(ctx.TryGetVar(varName, out var value))
             {
-                if(value is ExpressionNode e)
-                    value = e.Eval(depth, caller, sb, ctx);
+                while(value is ExpressionValue e)
+                        value = e.Reduce(depth, caller, sb, ctx);
+
                 return value;
             }               
             else

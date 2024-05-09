@@ -105,6 +105,7 @@ namespace Gellybeans.Expressions
                     {
                         parent[identifier] = value;
                         found = true;
+                        break;
                     }
                         
                     else if(ctx.Parent != null)

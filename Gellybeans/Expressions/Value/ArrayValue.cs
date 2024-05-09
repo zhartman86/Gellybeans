@@ -54,9 +54,10 @@ namespace Gellybeans.Expressions
         }
    
         public bool AddKey(string key, int index) 
-        { 
+        {
             if(index >= 0 && index < Values.Length)
             {
+                Keys ??= new Dictionary<string, int>(); 
                 Keys[key] = index;
                 return true;
             }
@@ -102,7 +103,12 @@ namespace Gellybeans.Expressions
                                 ParseDepth(ka, sb);
                             }
                             else
-                                sb.AppendLine($"[{i}] {index.Key}: {Values[i]}");
+                            {
+                                var str = Values[i].ToString();
+                                if(str.Length > 50)
+                                    str = $"{str.Substring(0, 50)}...";
+                                sb.AppendLine($"[{i}] {index.Key}: {str}");
+                            }                               
                             break;
                         }
 
@@ -118,7 +124,10 @@ namespace Gellybeans.Expressions
                     }
                     else
                     {
-                        sb.AppendLine($"[{i}] {Values[i]}");
+                        var str = Values[i].ToString();
+                        if(str.Length > 50)
+                            str = $"{str.Substring(0, 50)}...";
+                        sb.AppendLine($"[{i}] {str}");
                     }
                 }                                  
             }
@@ -143,7 +152,14 @@ namespace Gellybeans.Expressions
                                 ParseDepth(ka, sb, indent + " | ");
                             }
                             else
-                                sb.AppendLine($"{indent}[{i}] {index.Key}: {a.Values[i]}");
+                            {
+                                var str = a.Values[i].ToString();
+                                if(str.Length > 50)
+                                    str = $"{str.Substring(0, 50)}...";
+                                sb.AppendLine($"{indent}[{i}] {index.Key}: {str}");
+
+                            }
+                                
                         }
                     }
                 }
@@ -155,7 +171,13 @@ namespace Gellybeans.Expressions
                         ParseDepth(aa, sb, indent + " | ");
                     }
                     else
-                        sb.AppendLine($"{indent}[{i}] {a.Values[i]}");
+                    {
+                        var str = a.Values[i].ToString();
+                        if(str.Length > 50)
+                            str = $"{str.Substring(0, 50)}...";
+                        sb.AppendLine($"{indent}[{i}] {str}");
+                    }
+                        
                 }                             
             }
         }

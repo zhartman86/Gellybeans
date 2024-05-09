@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using Gellybeans.Pathfinder;
 
 namespace Gellybeans.Expressions
 {
@@ -18,7 +19,7 @@ namespace Gellybeans.Expressions
             if(depth > Parser.MAX_DEPTH)
                 return "operation cancelled: maximum evaluation depth reached.";
             
-            return Number;
+            return new Stat(Number);
         }
     }
 }

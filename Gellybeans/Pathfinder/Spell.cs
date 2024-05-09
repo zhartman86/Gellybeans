@@ -95,6 +95,11 @@ namespace Gellybeans.Pathfinder
             list.Add(new KeyValuePairValue("DESC",              Description));
             list.Add(new KeyValuePairValue("SOURCE",            Source));
 
+            dynamic[] ca = { new StringValue(AreaVar), new StringValue(TargetsVar), new StringValue(DurationVar), new StringValue(RangeVar), new StringValue(DescriptionVar) };
+            Dictionary<string, int> cd = new() { { "AREA", 0 }, { "TARGETS", 1 }, { "DURATION", 2 }, { "RANGE", 3 }, { "DESC", 4 } };
+
+            list.Add(new KeyValuePairValue("CALC", new ArrayValue(ca, cd)));
+
             Dictionary<string, int> dict = new Dictionary<string, int>();
             dynamic[] array = new dynamic[list.Count];
             for(int i = 0; i < list.Count; i++)
@@ -105,8 +110,6 @@ namespace Gellybeans.Pathfinder
 
             return new ArrayValue(array, dict);
         }
-
-
 
         
         public Spell Empowered()

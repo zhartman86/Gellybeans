@@ -61,6 +61,7 @@
         Random,         // .^
         Pair,           // ::
         Error,
+        Comment,        // //
         EOF,
     }
 }

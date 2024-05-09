@@ -32,7 +32,7 @@ namespace Gellybeans.Expressions
                     {
                         keys ??= new Dictionary<string, int>();
 
-                        keys.Add(k.Key, i);
+                        keys.Add(k.Key.ToUpper(), i);
                         array[i] = k.Value;
                     }
                     else

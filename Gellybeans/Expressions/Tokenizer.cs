@@ -4,9 +4,7 @@ using System.Globalization;
 namespace Gellybeans.Expressions
 {
     /// <summary>
-    /// The Tokenizer class walks through a string from beginning to end, stopping with each call of `NextToken()`. 
-    /// 
-    /// Tokenizers are meant to be consumed by a Parser in order to determine upcoming values in a given expression.
+    /// The Tokenizer processes a string into a List<Token>.
     /// </summary>
     
     public class Tokenizer
@@ -341,6 +339,14 @@ namespace Gellybeans.Expressions
                         NextChar();
                         Tokens.Add(new Token(TokenType.Assign, "/="));
                     }
+                    else if(currentChar == '/')
+                    {
+                        NextChar();
+                        Console.WriteLine("GOT COMMENT");
+                        Tokens.Add(new Token(TokenType.Comment, $"//{ParseTilNewline()}"));
+                        
+                        Console.WriteLine(Tokens[^1].Value);
+                    }
                     else
                     {
                         Tokens.Add(new Token(TokenType.Div, "/"));
@@ -351,7 +357,7 @@ namespace Gellybeans.Expressions
                     NextChar();
                     if(currentChar == '=')
                     {
-                        NextChar();
+                        NextChar();                       
                         Tokens.Add(new Token(TokenType.Assign, "%="));
                     }
                     else if(currentChar == '%')
@@ -489,26 +495,42 @@ namespace Gellybeans.Expressions
             //string
             if(currentChar == '"')
             {
+                sb.Append(currentChar);
                 NextChar();
                 while(currentChar != '"')
                 {
-                    if(currentChar == '{')
-                        sb.Append(ParseDepth('{', '}'));
-                                   
                     if(currentChar == '\0')
-                    {
-                        Tokens.Add(new Token(TokenType.Error, "Expected \""));
-                        return;
-                    }
-                    if(currentChar != '"')
+                        break;
+
+                    if(currentChar == '{')
                     {
                         sb.Append(currentChar);
-                        NextChar();
+
+                        var i = 1;
+                        while(i != 0)
+                        {
+                            NextChar();
+                            if(currentChar == '{')
+                                i++;
+                            if(currentChar == '}')
+                            {
+                                i--;
+                                if(i == 0)
+                                    break;
+                            }
+                            if(currentChar == '\0')
+                                break;
+                            sb.Append(currentChar);
+                        }
                     }
+                    sb.Append(currentChar);
+                    NextChar();
                 }
+                sb.Append(currentChar);
+                
                 NextChar();
-                Tokens.Add(new Token(TokenType.String, $"\"{sb}\""));
-                return;
+                Tokens.Add(new Token(TokenType.String, sb.ToString()));
+                return;             
             }
             
             //var
@@ -529,6 +551,20 @@ namespace Gellybeans.Expressions
 
             Tokens.Add(new Token(TokenType.Error, $"Invalid data: {currentChar}"));
             return;
+        }
+
+        string ParseTilNewline()
+        {
+            var sb = new StringBuilder();
+
+            while(currentChar != '\n' && currentChar != '\0')
+            {
+                sb.Append(currentChar);
+                NextChar();
+            }
+               
+            
+            return sb.ToString();
         }
 
         string ParseDepth(char open, char close)

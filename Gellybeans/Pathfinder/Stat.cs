@@ -113,28 +113,57 @@ namespace Gellybeans.Pathfinder
 
         public bool AddBonus(Bonus b)
         {
+            if(b.Name == "*")
+                return false;
+            
             if(b.Type == BonusType.Empty || b.Value == 0) 
                 return false;
 
             Bonuses ??= new List<Bonus>();
-            
             if(b.Type == BonusType.Override)
                 Override = b;
             else
                 Bonuses.Add(b);
-            
+
             return true;
         }
 
         public bool RemoveBonus(Bonus b)
         {
+            if(Bonuses == null)
+                return false;
+
+            if(b.Name == "*")
+            {
+                foreach(Bonus bonus in Bonuses)
+                {
+                    Console.WriteLine($"{bonus.Name} {bonus.Type}");
+                    if(bonus.Type == b.Type)
+                        Bonuses.Remove(bonus);
+                }
+
+                if(Bonuses.Count == 0)
+                    Bonuses = null!;
+                return true;
+            }
+            else
+            {
+                if(Override is not null)
+                {
+                    if(Override.Name == b.Name)
+                        Override = null!;
+                }
+
+
+            }
+
+            
             if(Bonuses.Remove(b))
             {
                 if(Bonuses.Count == 0)
                     Bonuses = null!;
                 return true;
             }
-
 
             return false;
         }
@@ -144,15 +173,18 @@ namespace Gellybeans.Pathfinder
             if(Bonuses == null) 
                 return false;
 
-            var bonusToUpper = bonusName.ToUpper();
+            bonusName = bonusName.ToUpper();
+
+
+
 
             if(Override is not null)
             {
-                if(Override.Name == bonusToUpper)
+                if(Override.Name == bonusName)
                     Override = null!;
             }
 
-            var count = Bonuses.RemoveAll(x => x.Name == bonusToUpper);
+            var count = Bonuses.RemoveAll(x => x.Name == bonusName);
 
             if(Bonuses.Count == 0)
                 Bonuses = null!;
@@ -277,7 +309,7 @@ namespace Gellybeans.Pathfinder
 
         public static Stat operator -(Stat lhs, Bonus rhs)
         {
-            lhs.RemoveBonus(rhs.Name);
+            lhs.RemoveBonus(rhs);
             return lhs;
         }
 

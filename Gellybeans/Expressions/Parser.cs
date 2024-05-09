@@ -1,16 +1,9 @@
 ﻿using Gellybeans.Pathfinder;
-using System.Collections.Immutable;
-using System.Dynamic;
-using System.Reflection.Metadata;
 using System.Text;
 using System.Text.RegularExpressions;
 
 namespace Gellybeans.Expressions
 {
-    /// <summary>
-    /// This parser builds and expands upon ideas expressed in an article written by Brad Robinson. Thanks Brad!
-    /// The article can can be found here: https://medium.com/@toptensoftware/writing-a-simple-math-expression-engine-in-c-d414de18d4ce
-    /// </summary>
 
     public class Parser
     {
@@ -61,13 +54,10 @@ namespace Gellybeans.Expressions
             return Current;
         }
 
-        public void Return()
-        { }
-
         public ExpressionNode ParseExpr()
         {
             var expr = ParseTermination();
-
+            
             if(Current.TokenType == TokenType.EOF || Current.TokenType == TokenType.Break || expr is ErrorNode)
                 return expr;
 
@@ -130,27 +120,28 @@ namespace Gellybeans.Expressions
         {
             var node = ParseConditional();
             if(Current.TokenType == TokenType.Assign)
-            {
+            {                
                 if(node is VarNode varNode)
                 {
-                    Func<string, dynamic, dynamic> op = null!;
+                    Func<string, dynamic, IContext, dynamic> op = null!;
 
                     switch(Current.Value)
                     {
                         case "=":
-                            op = (identifier, assignment) =>
+                            op = (identifier, assignment, ctx) =>
                             {
                                 if(ctx.TryGetVar(identifier, out var var))
                                 {
                                     if(var is Stat stat)
                                     {
-                                        if(assignment is int i)
+                                        if(assignment is Stat i)
                                         {
                                             stat.Base = i;
                                             ctx[identifier] = stat;
                                             return ctx[identifier];
                                         }
                                     }
+                                    
                                     ctx[identifier] = assignment;
                                     return ctx[identifier];
                                 }
@@ -162,19 +153,10 @@ namespace Gellybeans.Expressions
                             };
                             break;
                         case "+=":
-                            op = (identifier, assignment) =>
+                            op = (identifier, assignment, ctx) =>
                             {
                                 if(ctx.TryGetVar(identifier, out var var))
                                 {
-                                    if(var is Stat stat)
-                                    {
-                                        if(assignment is int i)
-                                        {
-                                            stat.Base += i;
-                                            ctx[identifier] = stat;
-                                            return ctx[identifier]; ;
-                                        }
-                                    }
                                     ctx[identifier] = var + assignment;
                                     return ctx[identifier];
                                 }
@@ -182,92 +164,55 @@ namespace Gellybeans.Expressions
                             };                                                       
                             break;
                         case "-=":
-                            op = (identifier, assignment) =>
+                            op = (identifier, assignment, ctx) =>
                             {
                                 if(ctx.TryGetVar(identifier, out var var))
                                 {
-                                    if(var is Stat stat)
-                                    {
-                                        if(assignment is int i)
-                                        {
-                                            stat.Base -= i;
-                                            ctx[identifier] = stat;
-                                            return $"{assignment}";
-                                        }
-                                    }
                                     ctx[identifier] = var - assignment;
-                                    return $"{assignment}";
+                                    return ctx[identifier];
                                 }
                                 return new StringValue($"{identifier} not found");
                             };
                             break;
                         case "*=":
-                            op = (identifier, assignment) =>
+                            op = (identifier, assignment, ctx) =>
                             {
                                 if(ctx.TryGetVar(identifier, out var var))
                                 {
-                                    if(var is Stat stat)
-                                    {
-                                        if(assignment is int i)
-                                        {
-                                            stat.Base *= i;
-                                            ctx[identifier] = stat;
-                                            return $"{assignment}";
-                                        }
-                                    }
                                     ctx[identifier] = var * assignment;
-                                    return $"{assignment}";
+                                    return ctx[identifier];
                                 }
                                 return new StringValue($"{identifier} not found");
                             };
                             break;
                         case "/=":
-                            op = (identifier, assignment) =>
+                            op = (identifier, assignment, ctx) =>
                             {
                                 if(ctx.TryGetVar(identifier, out var var))
                                 {
-                                    if(var is Stat stat)
-                                    {
-                                        if(assignment is int i)
-                                        {
-                                            stat.Base /= i;
-                                            ctx[identifier] = stat;
-                                            return $"{assignment}";
-                                        }
-                                    }
                                     ctx[identifier] = var / assignment;
-                                    return $"{assignment}";
+                                    return ctx[identifier];
                                 }
                                 return new StringValue($"{identifier} not found");
                             };
                             break;
                         case "%=":
-                            op = (identifier, assignment) =>
+                            op = (identifier, assignment, ctx) =>
                             {
                                 if(ctx.TryGetVar(identifier, out var var))
                                 {
-                                    if(var is Stat stat)
-                                    {
-                                        if(assignment is int i)
-                                        {
-                                            stat.Base %= i;
-                                            ctx[identifier] = stat;
-                                            return $"{assignment}";
-                                        }
-                                    }
                                     ctx[identifier] = var % assignment;
-                                    return $"{assignment}";
+                                    return ctx[identifier];
                                 }
                                 return new StringValue($"{identifier} not found");
                             };
                             break;
                         case "^=":
-                            op = (identifier, assignment) =>
+                            op = (identifier, assignment, ctx) =>
                             {
                                 if(ctx.TryElevateVar(identifier, assignment))
-                                {
                                     return assignment;
-                                }
+                                
                                 else
                                     return "No global found for var assignment.";
                             };
@@ -283,10 +228,11 @@ namespace Gellybeans.Expressions
                                
                 if(node is KeyNode k)
                 {
+                    var opValue = Current.Value;
+                    
                     Next();
                     var rhs = ParseConditional();
-                    return new AssignKeyNode(k, rhs);
-                    
+                    return new AssignKeyNode(k, rhs, opValue);                   
                 }                                
             }                  
             return node;
@@ -338,7 +284,7 @@ namespace Gellybeans.Expressions
                 if(Current.TokenType == TokenType.Separator)
                 {
                     Next();
-                    var rhs = ParseLogicalAndOr();
+                    var rhs = ParseConditional();
                     conditional = new TernaryNode(conditional, lhs, rhs, op);
                 }
             }
@@ -583,6 +529,15 @@ namespace Gellybeans.Expressions
                         {
                             array = new dynamic[al.Values.Length + 1];
                             al.Values.CopyTo(array, 0);
+
+                            if(rhs is KeyValuePairValue kvp)
+                            {
+                                array[^1] = kvp.Value;
+                                var av = new ArrayValue(array, al.Keys);
+                                av.AddKey(kvp.Key, array.Length - 1);
+                                return av;
+                            }
+                           
                             array[^1] = rhs;
                             return new ArrayValue(array, al.Keys);
                         }
@@ -592,8 +547,38 @@ namespace Gellybeans.Expressions
                     {
                         array = new dynamic[ar.Values.Length + 1];
                         ar.Values.CopyTo(array, 1);
+
+                        if(lhs is KeyValuePairValue kvp)
+                        {
+                            array[0] = kvp.Value;
+                            var av = new ArrayValue(array, ar.Keys);
+                            av.AddKey(kvp.Key, array.Length - 1);
+                            return av;
+                        }
+                  
                         array[0] = lhs;
                         return new ArrayValue(array, ar.Keys);
+                    }
+                    else
+                    {
+                        array = new dynamic[2];
+                        var dict = new Dictionary<string, int>();
+                        if(lhs is KeyValuePairValue kvl)
+                        {
+                            array[0] = kvl.Value;
+                            dict.Add(kvl.Key, 0);
+                        }
+                        else
+                            array[0] = lhs;
+
+                        if(rhs is KeyValuePairValue kvr)
+                        {
+                            array[1] = kvr.Value;
+                            dict.Add(kvr.Key, 1);
+                        }
+                        else
+                            array[1] = rhs;
+                        return new ArrayValue(array, dict);
                     }
                     return new StringValue($"No suitable values found for `>>>` operator.");
                 };
@@ -601,13 +586,23 @@ namespace Gellybeans.Expressions
                 {
                     var rhs = rhe.Eval(depth, this, sb, ctx);
 
-
                     if(lhs is ArrayValue al)
-                    {
+                    {                                                                      
                         var array = new dynamic[al.Values.Length + 1];
                         al.Values.CopyTo(array, 0);
-                        array[^1] = rhs;
-                        return new ArrayValue(array, al.Keys);
+                        
+                        if(rhs is KeyValuePairValue kvp)
+                        {
+                            array[^1] = kvp.Value;
+                            var av = new ArrayValue(array, al.Keys);
+                            av.AddKey(kvp.Key, array.Length - 1);
+                            return av;
+                        }
+                        else
+                        {
+                            array[^1] = rhs;
+                            return new ArrayValue(array, al.Keys);
+                        }                        
                     }
                     return "No suitable values found for `>>*` operator.";
                 };
@@ -665,7 +660,7 @@ namespace Gellybeans.Expressions
          
             if(Current.TokenType == TokenType.Pair)
             {
-                Func<dynamic, dynamic, dynamic> op = (k, v) => new KeyValuePairValue(k, v);
+                static dynamic op(dynamic k, dynamic v) => new KeyValuePairValue(k, v);
 
                 Next();
                 var value = ParseUnary();
@@ -769,8 +764,6 @@ namespace Gellybeans.Expressions
                 {
                     op = (k, v) =>
                     {
-                        if(v is KeyValuePairValue kv)
-                            v = kv.Value;
 
                         if(v is ArrayValue a)
                         {
@@ -784,8 +777,14 @@ namespace Gellybeans.Expressions
 
                             if(k is StringValue s)
                             {
-                                return a[s.String];
+                                return a[s.String.ToUpper()] is ExpressionValue ev ? ev.Reduce(depth, caller, sb, ctx) : a[s.String];
                             }
+
+                            if(k is string str)
+                            {
+                                return a[str.ToUpper()] is ExpressionValue ev ? ev.Reduce(depth, caller, sb, ctx) : a[str];
+                            }
+
 
                             if(k is RangeValue r)
                             {
@@ -804,12 +803,12 @@ namespace Gellybeans.Expressions
                                     if(start > end)
                                     {
                                         for(int i = start; i >= end; i--)
-                                            list.Add(a[i]);
+                                            list.Add(a[i] is ExpressionValue ev ? ev.Reduce(depth, caller, sb, ctx) : a[i]);
                                     }
                                     else
                                     {
                                         for(int i = start; i <= end; i++)
-                                            list.Add(a[i]);
+                                            list.Add(a[i] is ExpressionValue ev ? ev.Reduce(depth, caller, sb, ctx) : a[i]);
                                     }
                                     return new ArrayValue(list.ToArray());
                                 }
@@ -821,7 +820,7 @@ namespace Gellybeans.Expressions
                             if(k < 0 || k >= a.Values.Length)
                                 return new StringValue($"Index `[{k}]` out of range");
 
-                            return a[k];
+                            return a[k] is ExpressionValue eva ? eva.Reduce(depth, caller, sb, ctx) : a[k];
                         }
                         if(k is SymbolNode)
                             return -1;
@@ -849,30 +848,30 @@ namespace Gellybeans.Expressions
                         Next();
                         if(Current.TokenType == TokenType.OpenPar)
                         {
-                            Console.WriteLine("GOT MMEBER");
                             Next();
                             var fargs = new List<ExpressionNode>();
-                            while(true)
-                            {
-                                fargs.Add(ParseConditional());
-                                if(Current.TokenType == TokenType.Comma)
-                                {
-                                    Next();
-                                    continue;
-                                }
-                                break;
-                            }
-                            if(Current.TokenType != TokenType.ClosePar)
-                                return new ErrorNode("Expected `)`");
 
+                            if(Current.TokenType != TokenType.ClosePar)
+                            {
+                                while(true)
+                                {
+                                    fargs.Add(ParseConditional());
+                                    if(Current.TokenType == TokenType.Comma)
+                                    {
+                                        Next();
+                                        continue;
+                                    }
+                                    break;
+                                }
+                                if(Current.TokenType != TokenType.ClosePar)
+                                    return new ErrorNode("Expected `)`");
+                            }
+                            
                             Next();
                             return new MemberNode(lhs, m, fargs.ToArray());
                         }
-
-
                         return new MemberNode(lhs, m);
-                    }
-                        
+                    }                       
                 }
                 else break;
             }
@@ -1050,25 +1049,23 @@ namespace Gellybeans.Expressions
 
                     return new VarNode(identifier);
                 case TokenType.Dollar:
-                    Next();
-                    if(Current.TokenType == TokenType.Var)
+                    Next();                    
+                    
+                    var bName = ParseConditional();
+                    if(Current.TokenType == TokenType.Separator)
                     {
-                        var bName = Current.Value.ToUpper();
                         Next();
+                        var bType = ParseConditional();
                         if(Current.TokenType == TokenType.Separator)
                         {
                             Next();
-                            var bType = ParseConditional();
-                            if(Current.TokenType == TokenType.Separator)
-                            {
-                                Next();
-                                var bValue = ParseConditional();
-                                return new BonusNode(bName, bType, bValue);
-                            }
+                            var bValue = ParseConditional();
+                            return new BonusNode(bName, bType, bValue);
                         }
-                        else
-                            return new BonusNode(bName);
                     }
+                    else
+                        return new BonusNode(bName);
+                    
                     return new ErrorNode("%?");
                 case TokenType.String:
                     Next();
@@ -1115,7 +1112,12 @@ namespace Gellybeans.Expressions
                         return new DefNode(statement, new string[] { "_", "I" });
                     }
                     return new ErrorNode("Invalid function declaration.");
-            }
+                case TokenType.Comment:
+                    Next();
+                    if(Current.TokenType != TokenType.EOF)
+                        return ParseTermination();                   
+                    return new NumberNode(0);
+        }
           
             //SymbolNode
             if(IsSymbol(Current.TokenType))
