@@ -1,7 +1,34 @@
 # Gellybeans
 
-Gellybeans is a C# library containing an expression parser built primarily for Pathfinder 1e, as well as an interface to it.
+Gellybeans is a C# library containing an expression parser built primarily for [Mathfinder](https://github.com/Gellybean/MathfinderBot), a Discord bot. Check out the [MF wiki](https://github.com/Gellybean/MathfinderBot/wiki) for more information.
 
-- `Gellybeans.Expressions` is an integer-based math parser. It has typical mathematical operators, as well as syntax for for stats and bonuses. 
+Gellybeans supports:
+- Integer math, interpolated strings, bools, arrays
+- Variable assignment
+- Dice expressions
+- Conditionals
+- For loops
+- Functions
 
-- `Gellybeans.Pathfinder` contains many data classes that pertain to the game itself. `StatBlock` utilizes the `IContext` interface of the parser, providing a context for variables.
+```
+fizzbuzz = -> ()
+{
+	_str = "";
+	
+	** i : 0..100 : {
+		i % 3 == 0 && i % 5 == 0 ?? {
+			_str += "FizzBuzz\n";
+		} :	
+		i % 3 == 0 {
+			_str += "Fizz\n";
+		} :		
+		i % 5 == 0  {
+			_str += "Buzz\n";
+		} :		
+		{
+			_str += %"{i}\n";
+		}				
+	}
+	_str;
+}
+```
