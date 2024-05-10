@@ -32,3 +32,7 @@ fizzbuzz = -> ()
 	_str;
 }
 ```
+
+???
+![Screenshot 2024-05-10 193557](https://github.com/Gellybean/Gellybeans/assets/10622391/32c317fc-0afa-4e29-8577-47cd8d252153)
+
