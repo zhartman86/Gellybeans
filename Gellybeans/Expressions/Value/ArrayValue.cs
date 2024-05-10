@@ -79,6 +79,20 @@ namespace Gellybeans.Expressions
                 value = Values.Length - 1;
                 return true;
             }
+            else if(name == "KEY")
+            {
+                if(args.Length > 0)
+                {
+                    foreach(var key in Keys)
+                    {
+                        if(key.Value == args[0])
+                        {
+                            value = key.Key;
+                            return true;
+                        }
+                    }
+                }
+            }
             value = "%";
             return false;
         }

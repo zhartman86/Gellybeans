@@ -244,8 +244,50 @@ namespace Gellybeans.Expressions
             
             if(Current.TokenType == TokenType.If)
             {
-                
+                var conditions = new List<ConditionalNode>();
+
                 Next();
+                if(Current.TokenType == TokenType.OpenSquig)
+                {
+                    var statement = ParseStatement();
+                    if(Current.TokenType != TokenType.CloseSquig)
+                        return new ErrorNode("Expected `}`");
+
+                    conditions.Add(new ConditionalNode(conditional, statement));
+                }
+                    
+               
+                while(true)
+                {
+                    Next();
+                    if(Current.TokenType == TokenType.Separator)
+                    {
+                        Next();
+                        conditional = null!;
+                        if(Current.TokenType != TokenType.OpenSquig)
+                            conditional = ParseLogicalAndOr();
+
+                        Console.WriteLine($"{Current.Value}");
+
+                        if(Current.TokenType == TokenType.OpenSquig)
+                        {
+                            var statement = ParseStatement();
+                            if(Current.TokenType != TokenType.CloseSquig)
+                                return new ErrorNode("Expected `}`");
+
+                            conditions.Add(new ConditionalNode(conditional!, statement));
+                        }
+                    }
+                    else
+                        break;
+                }
+
+                Next();
+                return new IfNode(conditions);
+                   
+                
+             
+                
                 if(Current.TokenType == TokenType.OpenSquig)
                 {
                     var statement = ParseStatement();
@@ -461,7 +503,8 @@ namespace Gellybeans.Expressions
                                 if(array[i] == rhValue)
                                     list.Add(array[i]);
                         }
-                        return new ArrayValue(list.ToArray());
+                        
+                        return new ArrayValue(list.ToArray(), a.Keys);
                     }
                     return new StringValue("No suitable value found for `>>` operator.");
                 };
@@ -503,7 +546,7 @@ namespace Gellybeans.Expressions
                     var rhs = rhe.Eval(depth, this, sb, ctx);
 
                     dynamic[] array = null!;
-                    if(lhs is ArrayValue al && al.Values.Length > 0)
+                    if(lhs is ArrayValue al)
                     {
                         
                         if(rhs is ArrayValue ar)
@@ -523,7 +566,8 @@ namespace Gellybeans.Expressions
                             }
                             else if(ar.Keys != null)
                                 return new ArrayValue(array, ar.Keys);
-
+                            else
+                                return new ArrayValue(array);
                         }
                         else
                         {
@@ -543,7 +587,7 @@ namespace Gellybeans.Expressions
                         }
                         
                     }
-                    else if(rhs is ArrayValue ar && ar.Values.Length > 0)
+                    else if(rhs is ArrayValue ar)
                     {
                         array = new dynamic[ar.Values.Length + 1];
                         ar.Values.CopyTo(array, 1);
@@ -558,7 +602,7 @@ namespace Gellybeans.Expressions
                   
                         array[0] = lhs;
                         return new ArrayValue(array, ar.Keys);
-                    }
+                    }                   
                     else
                     {
                         array = new dynamic[2];

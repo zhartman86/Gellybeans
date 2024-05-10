@@ -42,7 +42,7 @@ namespace Gellybeans.Expressions
             }
             set 
             {
-                if(!localize && parent != null && parent.TryGetVar(varName, out var v))
+                if(parent != null && parent.TryGetVar(varName, out var v))
                 {
                     parent[varName] = value;
                 }                  

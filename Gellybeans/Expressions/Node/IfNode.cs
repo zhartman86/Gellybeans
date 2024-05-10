@@ -9,11 +9,18 @@ namespace Gellybeans.Expressions
         readonly List<Token> statement;
         readonly List<Token> elseStatement;
 
+        readonly List<ConditionalNode> conditionals;
+
         public IfNode(ExpressionNode condition, List<Token> statement, List<Token> elseStatement = null!)
         {
             this.condition = condition;
             this.statement = statement;
             this.elseStatement = elseStatement;
+        }
+        
+        public IfNode(List<ConditionalNode> conditionals)
+        {
+            this.conditionals = conditionals;
         }
 
         public override dynamic Eval(int depth, object caller, StringBuilder sb, IContext ctx = null)
@@ -22,19 +29,13 @@ namespace Gellybeans.Expressions
             if(depth > Parser.MAX_DEPTH)
                 return "operation cancelled: maximum evaluation depth reached.";           
 
-            var conValue = condition.Eval(depth: depth, caller: caller, sb: sb, ctx: ctx);
+            //var conValue = condition.Eval(depth: depth, caller: caller, sb: sb, ctx: ctx);
 
-            if(conValue)
+            for(int i = 0; i < conditionals.Count; i++)
             {
-                var scope = new ScopedContext(ctx, new Dictionary<string, dynamic>());
-                Parser.Parse(statement, caller, sb, scope)
-                    .Eval(depth, caller, sb, scope);
-            }
-            else if(elseStatement != null)
-            {
-                var scope = new ScopedContext(ctx, new Dictionary<string, dynamic>());
-                Parser.Parse(elseStatement, caller, sb, scope)
-                    .Eval(depth, caller, sb, scope);
+                var result = conditionals[i].Eval(depth, caller, sb, ctx);
+                if(result) 
+                    break;
             }
 
             return 0;
