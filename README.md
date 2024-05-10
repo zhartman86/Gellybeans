@@ -9,3 +9,29 @@ Gellybeans supports:
 - Conditionals
 - For loops
 - Functions
+
+```
+fizzbuzz = -> ()
+{
+	_str = "";
+	
+	** i : 0..100 :{
+		i % 3 == 0 && i % 5 == 0 ?? {
+			_str += "FizzBuzz\n";
+		}
+		
+		i % 3 == 0 && i % 5 != 0 ?? {
+			_str += "Fizz\n";
+		}
+		
+		i % 5 == 0 && i % 3 != 0 ?? {
+			_str += "Buzz\n";
+		}
+		
+		i % 3 != 0 && i % 5 != 0 ?? {
+			_str += %"{i}\n";
+		}				
+	}
+	_str;
+}
+```
