@@ -22,7 +22,7 @@ fizzbuzz = -> (count)
 		} : i % 5 == 0 {
 			print("Buzz");
 		} : {
-			print(%"{i}");
+			print(i);
 		}				
 	}
 }
