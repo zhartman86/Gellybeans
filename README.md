@@ -11,11 +11,11 @@ Gellybeans supports:
 - Functions
 
 ```
-fizzbuzz = -> ()
+fizzbuzz = -> (count)
 {
 	_str = "";
 	
-	** i : 0..100 : {
+	** i : 0..count : {
 		i % 3 == 0 && i % 5 == 0 ?? {
 			_str += "FizzBuzz\n";
 		} : i % 3 == 0 {
