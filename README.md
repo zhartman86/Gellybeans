@@ -13,20 +13,18 @@ Gellybeans supports:
 ```
 fizzbuzz = -> (count)
 {
-	_str = "";
 	
 	** i : 0..count : {
 		i % 3 == 0 && i % 5 == 0 ?? {
-			_str += "FizzBuzz\n";
+			print("FizzBuzz");
 		} : i % 3 == 0 {
-			_str += "Fizz\n";
+			print("Fizz)";
 		} : i % 5 == 0 {
-			_str += "Buzz\n";
+			print("Buzz");
 		} : {
-			_str += %"{i}\n";
+			print(%"{i}");
 		}				
 	}
-	
-	_str;
 }
+
 ```
