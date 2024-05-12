@@ -11,8 +11,10 @@ namespace Gellybeans.Expressions
         {
             get 
             { 
-                if(TryGetVar(identifier, out var value)) 
+                if(TryGetVar(identifier, out var value))
+                {
                     return value;
+                }                   
                 return 0;
             }
             set { return; }
@@ -24,15 +26,18 @@ namespace Gellybeans.Expressions
         public bool TryGetVar(string varName, out dynamic value)
         {
             if(Vars.TryGetValue(varName, out value))
+            {
                 return true;
-           
+            }           
             return false;
         }
 
         public bool RemoveVar(string varName)
         {
             if(Vars.Remove(varName))
+            {
                 return true;
+            }             
             return false;
         }
 

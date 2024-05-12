@@ -40,7 +40,10 @@ namespace Gellybeans.Expressions
         Token Look(int i = 1)
         {
             if((index + i) < tokens.Count - 1 && (index + 1) > 0)
+            {
                 return tokens[index + i];
+            }
+               
             return Current;
         }
 
@@ -50,29 +53,43 @@ namespace Gellybeans.Expressions
         Token Next()
         {
             if(index < tokens.Count - 1)
+            {
                 index++;
+            }
+               
             return Current;
         }
 
         public ExpressionNode ParseExpr()
         {
-            var expr = ParseTermination();
-            
-            if(Current.TokenType == TokenType.EOF || Current.TokenType == TokenType.Break || expr is ErrorNode)
-                return expr;
+            var expr = ParseTermination();                   
 
+            if(Current.TokenType == TokenType.EOF || expr is ErrorNode)
+            {
+                return expr;
+            }
+ 
             return new ErrorNode($"Invalid expression. Error on token : {(index > 1 && index < tokens.Count - 3 ? $"{Look(-2).Value}{Look(-1).Value}`{Current.Value}`{Look(1).Value}{Look(2).Value}": Current.Value)}");
         }
 
         ExpressionNode ParseTermination()
         {
-            var expr = ParseLoop();          
-                   
+            var expr = ParseLoop();
+
+            if(expr is ValueNode v && v.ReturnValue)
+            {
+                return expr;
+            }
+               
+
             if(Current.TokenType == TokenType.Semicolon || Current.TokenType == TokenType.CloseSquig)
             {
                 Next();
                 if(Current.TokenType == TokenType.EOF)
+                {
                     return expr;
+                }
+                    
 
                 return new MultiExpressionNode(expr, ParseTermination());
             }
@@ -92,7 +109,9 @@ namespace Gellybeans.Expressions
                 Next();
                 var itr = ParseLeaf();
                 if(itr is not VarNode)
+                {
                     return new ErrorNode($"Invalid variable name for iterable.");
+                }                  
 
                 if(Current.TokenType == TokenType.Separator)
                 {
@@ -105,8 +124,9 @@ namespace Gellybeans.Expressions
                         {
                             var statement = ParseStatement();
                             if(Current.TokenType != TokenType.CloseSquig)
+                            {
                                 return new ErrorNode("Expected `}`");
-
+                            }                               
                             return new ForNode((VarNode)itr, enumerable, statement);
                         }
                     }
@@ -251,8 +271,9 @@ namespace Gellybeans.Expressions
                 {
                     var statement = ParseStatement();
                     if(Current.TokenType != TokenType.CloseSquig)
+                    {
                         return new ErrorNode("Expected `}`");
-
+                    }                       
                     conditions.Add(new ConditionalNode(conditional, statement));
                 }
                     
@@ -265,15 +286,18 @@ namespace Gellybeans.Expressions
                         Next();
                         conditional = null!;
                         if(Current.TokenType != TokenType.OpenSquig)
+                        {
                             conditional = ParseLogicalAndOr();
-
-                        Console.WriteLine($"{Current.Value}");
+                        }                            
 
                         if(Current.TokenType == TokenType.OpenSquig)
                         {
                             var statement = ParseStatement();
                             if(Current.TokenType != TokenType.CloseSquig)
+                            {
                                 return new ErrorNode("Expected `}`");
+                            }
+                               
 
                             conditions.Add(new ConditionalNode(conditional!, statement));
                         }
@@ -283,34 +307,7 @@ namespace Gellybeans.Expressions
                 }
 
                 Next();
-                return new IfNode(conditions);
-                   
-                
-             
-                
-                if(Current.TokenType == TokenType.OpenSquig)
-                {
-                    var statement = ParseStatement();
-                    if(Current.TokenType != TokenType.CloseSquig)
-                        return new ErrorNode("Expected `}`");
-
-                    if(Look().TokenType == TokenType.Separator)
-                    {
-                        Move(2);
-                        if(Current.TokenType == TokenType.OpenSquig)
-                        {
-                            var elseStatement = ParseStatement();
-                            if(Current.TokenType != TokenType.CloseSquig)
-                                return new ErrorNode("Expected `}`");
-
-                            return new IfNode(conditional, statement, elseStatement);
-                        }
-                        return new ErrorNode("Expected `{`");
-                    }
-                    return new IfNode(conditional, statement);
-                }
-                else
-                    return new ErrorNode("Expected `{`");
+                return new IfNode(conditions);                                    
             }
 
             while(true)
@@ -366,12 +363,18 @@ namespace Gellybeans.Expressions
                         if(ctx.TryGetVar(identifier.ToString(), out dynamic var))
                         {
                             if(var is Stat s)
+                            {
                                 return s.GetBonus((BonusType)(int)type);
+                            }                            
                             else
-                               return new ErrorNode($"$? cannot be applied to {identifier}");
+                            {
+                                return new ErrorNode($"$? cannot be applied to {identifier}");
+                            }                              
                         }
                         else
+                        {
                             return new ErrorNode($"{identifier} not found.");
+                        }                           
                     };                
                 }
 
@@ -457,11 +460,16 @@ namespace Gellybeans.Expressions
                             if(f.VarNames.Length == 2)
                             {
                                 for(int i = 0; i < array.Length; i++)
+                                {
                                     array[i] = f.Invoke(depth, this, new dynamic[] { array[i], i }, sb, ctx);
+                                }
+                                    
 
                             }
                             else
+                            {
                                 return new StringValue("Expected a function with 2 parameters.");
+                            }                               
                         }
                         else
                         {
@@ -490,7 +498,9 @@ namespace Gellybeans.Expressions
                                 for(int i = 0; i < array.Length; i++)
                                 {
                                     if(f.Invoke(depth, caller, new dynamic[] { array[i], i }, sb, ctx))
+                                    {
                                         list.Add(array[i]);
+                                    }                                       
                                 }
 
                             }
@@ -500,8 +510,12 @@ namespace Gellybeans.Expressions
                         else
                         {
                             for(int i = 0; i < array.Length; i++)
+                            {
                                 if(array[i] == rhValue)
+                                {
                                     list.Add(array[i]);
+                                }
+                            }                                                               
                         }
                         
                         return new ArrayValue(list.ToArray(), a.Keys);
@@ -518,10 +532,14 @@ namespace Gellybeans.Expressions
                             Array.Sort(a.Values, (x, y) =>
                             {
                                 if(x is KeyValuePairValue kx)
+                                {
                                     x = kx.Value;
+                                }
+                                    
                                 if(y is KeyValuePairValue ky)
+                                {
                                     y = ky.Value;
-
+                                }                                   
                                 return x.CompareTo(y);
                             });
                         }
@@ -530,9 +548,14 @@ namespace Gellybeans.Expressions
                             Array.Sort(a.Values, (x, y) =>
                             {
                                 if(x is KeyValuePairValue kx)
+                                {
                                     x = kx.Value;
+                                }
+                                   
                                 if(y is KeyValuePairValue ky)
+                                {
                                     y = ky.Value;
+                                }                             
 
                                 return y.CompareTo(x);
                             });
@@ -560,14 +583,21 @@ namespace Gellybeans.Expressions
                                 if(ar.Keys != null)
                                 {
                                     foreach(var kvp in ar.Keys)
-                                        al.Keys.TryAdd(kvp.Key, kvp.Value);                                   
+                                    {
+                                        al.Keys.TryAdd(kvp.Key, kvp.Value);
+                                    }                                                                   
                                 }
                                 return new ArrayValue(array, al.Keys);
                             }
                             else if(ar.Keys != null)
+                            {
                                 return new ArrayValue(array, ar.Keys);
+                            }
+                                
                             else
+                            {
                                 return new ArrayValue(array);
+                            }                              
                         }
                         else
                         {
@@ -624,7 +654,6 @@ namespace Gellybeans.Expressions
                             array[1] = rhs;
                         return new ArrayValue(array, dict);
                     }
-                    return new StringValue($"No suitable values found for `>>>` operator.");
                 };
                 else if(Current.TokenType == TokenType.Insert) op = (lhs, rhe) =>
                 {
@@ -745,9 +774,14 @@ namespace Gellybeans.Expressions
                     op = (var) =>
                     {
                         if(var is Stat s)
+                        {
                             return s.Base;
+                        }                           
                         else
+                        {
                             return new StringValue("@ cannot be applied to this value.");
+                        }
+                            
                     };
                 }
                 else if(Current.TokenType == TokenType.Remove)
@@ -758,7 +792,10 @@ namespace Gellybeans.Expressions
                         op = (value) =>
                         {
                             if(ctx.RemoveVar(varName))
+                            {
                                 return new StringValue($"{varName} removed.");
+                            }
+                              
                             return new StringValue($"{varName} not found.");
                         };
                     }
@@ -779,10 +816,15 @@ namespace Gellybeans.Expressions
                 {
 
                     if(value is StringValue s)
+                    {
                         value = s.Display(depth, this, null!, ctx);
+                    }
+                        
                     else
+                    {
                         value = value.ToString();
-
+                    }
+                       
                     return new ExpressionValue(value);
                 };
 
@@ -814,9 +856,14 @@ namespace Gellybeans.Expressions
                             if(k is SymbolNode symbol)
                             {
                                 if(symbol.Symbol == ".^")
+                                {
                                     return a[Random.Shared.Next(0, a.Values.Length)];
+                                }
+                                    
                                 if(symbol.Symbol == "^^")
+                                {
                                     return a.Values.Length;
+                                }                                 
                             }
 
                             if(k is StringValue s)
@@ -834,13 +881,23 @@ namespace Gellybeans.Expressions
                             {
                                 var start = r.Lower;
                                 if(start < 0)
+                                {
                                     start = a.Values.Length + start;
+                                }
+                                   
                                 var end = r.Upper;
+                                
                                 if(end < 0)
+                                {
                                     end = a.Values.Length + end;
+                                }
+                                   
 
                                 if(start < 0 || start >= a.Values.Length || end < 0 || end >= a.Values.Length)
+                                {
                                     return new StringValue($"Invalid range `[{r}]` for this array.");
+                                }
+                                   
                                 else
                                 {
                                     var list = new List<dynamic>();
@@ -859,20 +916,29 @@ namespace Gellybeans.Expressions
                             }
 
                             if(k < 0)
+                            {
                                 k = a.Values.Length + k;
+                            }
+                               
 
                             if(k < 0 || k >= a.Values.Length)
+                            {
                                 return new StringValue($"Index `[{k}]` out of range");
-
+                            }                               
                             return a[k] is ExpressionValue eva ? eva.Reduce(depth, caller, sb, ctx) : a[k];
                         }
                         if(k is SymbolNode)
+                        {
                             return -1;
+                        }                          
                         return new StringValue($"No key found for this value.");
                     };
                 }
 
-                if(op == null) break;
+                if(op == null)
+                {
+                    break;
+                }                 
 
                 Next();
                 var key = ParseKey();
@@ -908,7 +974,9 @@ namespace Gellybeans.Expressions
                                     break;
                                 }
                                 if(Current.TokenType != TokenType.ClosePar)
+                                {
                                     return new ErrorNode("Expected `)`");
+                                }                                   
                             }
                             
                             Next();
@@ -941,7 +1009,9 @@ namespace Gellybeans.Expressions
                     }
 
                     if(Current.TokenType != TokenType.ClosePar)
+                    {
                         return new ErrorNode("Expected `)`");
+                    }                       
 
                     Next();
                     return new CallFunctionNode(lhs, fargs);
@@ -961,7 +1031,9 @@ namespace Gellybeans.Expressions
                     var node = ParseAssignment();
 
                     if(Current.TokenType != TokenType.ClosePar)
+                    {
                         return new ErrorNode("%Expected`)`");
+                    }                      
 
                     Next();
                     return node;
@@ -987,11 +1059,19 @@ namespace Gellybeans.Expressions
                             var numb = int.Parse(match.Groups[3].Captures[i].Value.Remove(0, 1));
 
                             if(letter == 'r')
+                            {
                                 lhs.Reroll = numb;
+                            }
+                              
                             if(letter == 'h')
+                            {
                                 lhs.Highest = numb;
+                            }
+                               
                             if(letter == 'l')
+                            {
                                 lhs.Lowest = numb;
+                            }                               
                         }
 
                         Next();
@@ -1027,7 +1107,9 @@ namespace Gellybeans.Expressions
                     }
 
                     if(Current.TokenType != TokenType.CloseSquig)
+                    {
                         return new ErrorNode("Expected `}`");
+                    }                       
 
                     Next();
                     return new ArrayNode(list.ToArray());
@@ -1057,17 +1139,20 @@ namespace Gellybeans.Expressions
                             }
 
                             if(Current.TokenType != TokenType.ClosePar)
+                            {
                                 return new ErrorNode("Expected `)`");
-
+                            }
+                                
                             Next();
                             return new CallFunctionNode(new VarNode(identifier), fargs);
                         }
                         
-
                         FunctionNode f;
                         if(Current.TokenType == TokenType.ClosePar)
+                        {
                             f = new FunctionNode(identifier.ToLower());
-
+                        }
+                           
                         else
                         {
                             var fargs = new List<ExpressionNode>();
@@ -1085,7 +1170,9 @@ namespace Gellybeans.Expressions
                             f = new FunctionNode(identifier.ToLower(), fargs.ToArray());
                         }
                         if(Current.TokenType != TokenType.ClosePar)
+                        {
                             return new ErrorNode("Expected `)`");
+                        }                           
 
                         Next();
                         return f;
@@ -1108,8 +1195,10 @@ namespace Gellybeans.Expressions
                         }
                     }
                     else
+                    {
                         return new BonusNode(bName);
-                    
+                    }
+                                           
                     return new ErrorNode("%?");
                 case TokenType.String:
                     Next();
@@ -1118,7 +1207,9 @@ namespace Gellybeans.Expressions
                     Next();
                     var args = ParseLeaf();
                     if(Current.TokenType != TokenType.Event)
+                    {
                         return new ErrorNode("Expected `'`");
+                    }                      
 
                     Next();
                     return new EventNode(args);
@@ -1131,16 +1222,20 @@ namespace Gellybeans.Expressions
                     {
                         var parameters = ParseParameters();
                         if(Current.TokenType != TokenType.ClosePar)
+                        {
                             return new ErrorNode("Expected `)`");
+                        }
+                           
 
                         Next();
                         if(Current.TokenType == TokenType.OpenSquig)
                         {
                             var slist = ParseStatement();
                             if(Current.TokenType != TokenType.CloseSquig)
+                            {
                                 return new ErrorNode("Expected `}`");
-
-
+                            }
+                               
                             Next();
                             return new DefNode(slist, parameters.ToArray());
                         }
@@ -1159,8 +1254,24 @@ namespace Gellybeans.Expressions
                 case TokenType.Comment:
                     Next();
                     if(Current.TokenType != TokenType.EOF)
-                        return ParseTermination();                   
+                    {
+                        return ParseTermination();
+                    }                                
                     return new NumberNode(0);
+                case TokenType.Return:
+                    Next();
+                    var subExpr = new List<Token>();
+                    while(Current.TokenType != TokenType.Semicolon)
+                    {
+                        if(Current.TokenType == TokenType.EOF)
+                            return new ErrorNode("Expected `;`");
+
+                        subExpr.Add(Current);
+                        Next();
+                    }
+                    subExpr.Add(new Token(TokenType.EOF));
+                    var returnValue = Parse(subExpr, caller, sb, ctx);
+                    return new ValueNode(returnValue, true);
         }
           
             //SymbolNode
@@ -1177,8 +1288,10 @@ namespace Gellybeans.Expressions
         {
             var key = ParseConditional();
             if(Current.TokenType != TokenType.CloseSquare)
+            {
                 return new ErrorNode("Expected `]`");
-            
+            }
+                          
             Next();
             return key;
         }
@@ -1193,9 +1306,13 @@ namespace Gellybeans.Expressions
                 {
                     var result = ParseConditional();
                     if(result is VarNode v)
+                    {
                         parameters.Add(v.VarName);
+                    }                   
                     else
+                    {
                         return null!;
+                    }                      
 
                     if(Current.TokenType == TokenType.Comma)
                     {

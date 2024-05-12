@@ -22,9 +22,6 @@ namespace Gellybeans.Expressions
             if(depth > Parser.MAX_DEPTH)
                 return "operation cancelled: maximum evaluation depth reached.";
 
-            //if(caller is not FunctionValue && caller is not TernaryNode)
-            //    sb?.AppendLine($"{identifier} set");
-
             return op(identifier, assignment.Eval(depth: depth, caller: this, sb: sb, ctx : ctx), ctx);
         }
             
