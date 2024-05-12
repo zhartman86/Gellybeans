@@ -11,24 +11,24 @@ Gellybeans supports:
 - Functions
 
 ```
-fizzbuzz = -> ()
+fizzbuzz = -> (count)
 {
-	_str = "";
 	
-	** i : 0..100 : {
+	** i : 0..count : {
 		i % 3 == 0 && i % 5 == 0 ?? {
-			_str += "FizzBuzz\n";
-		} :	
-		i % 3 == 0 {
-			_str += "Fizz\n";
-		} :		
-		i % 5 == 0  {
-			_str += "Buzz\n";
-		} :		
-		{
-			_str += %"{i}\n";
+			print("FizzBuzz");
+		} : i % 3 == 0 {
+			print("Fizz)";
+		} : i % 5 == 0 {
+			print("Buzz");
+		} : {
+			print(i);
 		}				
 	}
-	_str;
 }
+
 ```
+
+``` fizzbuzz(100) ```
+
+![Screenshot 2024-05-10 193557](https://github.com/Gellybean/Gellybeans/assets/10622391/f7985bdd-d83a-48f0-a578-8df5e82e2d2e)
