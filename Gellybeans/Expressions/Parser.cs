@@ -72,13 +72,7 @@ namespace Gellybeans.Expressions
 
         ExpressionNode ParseTermination()
         {
-            var expr = ParseLoop();
-
-            if(expr is ValueNode v && v.ReturnValue)
-            {
-                return expr;
-            }
-               
+            var expr = ParseLoop();             
 
             if(Current.TokenType == TokenType.Semicolon || Current.TokenType == TokenType.CloseSquig)
             {
@@ -1255,21 +1249,7 @@ namespace Gellybeans.Expressions
                     {
                         return ParseTermination();
                     }                                
-                    return new NumberNode(0);
-                case TokenType.Return:
-                    Next();
-                    var subExpr = new List<Token>();
-                    while(Current.TokenType != TokenType.Semicolon)
-                    {
-                        if(Current.TokenType == TokenType.EOF)
-                            return new ErrorNode("Expected `;`");
-
-                        subExpr.Add(Current);
-                        Next();
-                    }
-                    subExpr.Add(new Token(TokenType.EOF));
-                    var returnValue = Parse(subExpr, caller, sb, ctx);
-                    return new ValueNode(returnValue, true);
+                    return new NumberNode(0);               
         }
           
             //SymbolNode
