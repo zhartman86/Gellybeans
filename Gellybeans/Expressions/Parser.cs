@@ -19,9 +19,7 @@ namespace Gellybeans.Expressions
 
         object caller;
 
-        dynamic returnVal = null!;
-
-        //dice expression. 0-3 number(s) => d => 1-5 number(s) => 0-3 instances of ('r' or 'h' or 'l' paired with 1-3 number(s))
+        //dice expression. 0-3 number(s) => d => 1-x number(s) => 0-x instances of ('r' or 'h' or 'l' paired with 1-3 number(s))
         static readonly Regex dRegex = new(@"^([0-9]{0,3})d([0-9]{1,3})((?:r|h|l)(?:[0-9]{1,3})){0,2}$", RegexOptions.Compiled);
    
         public static readonly Regex validVarName = new(@"^[^0-9][^\[\]<>(){}^@:+*/%=!&|;$#?\-.'""]*$", RegexOptions.Compiled);
