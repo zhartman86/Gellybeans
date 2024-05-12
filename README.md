@@ -28,3 +28,7 @@ fizzbuzz = -> (count)
 }
 
 ```
+
+``` fizzbuzz(100) ```
+
+![Screenshot 2024-05-10 193557](https://github.com/Gellybean/Gellybeans/assets/10622391/f7985bdd-d83a-48f0-a578-8df5e82e2d2e)
