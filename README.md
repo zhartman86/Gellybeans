@@ -5,7 +5,7 @@ Gellybeans is a scripting language built primarily for [Mathfinder](https://gith
 Gellybeans supports:
 - Integer math, interpolated strings, bools, arrays
 - Variable assignment
-- Dice expressions
+- Dice expressions (1d20, 3d6)
 - Conditionals
 - For loops
 - Functions
