@@ -1,6 +1,6 @@
 # Gellybeans
 
-Gellybeans is an expression parser built primarily for [Mathfinder](https://github.com/Gellybean/MathfinderBot), a Discord bot. Check out the [MF wiki](https://github.com/Gellybean/MathfinderBot/wiki) for more information.
+Gellybeans is a scripting language built primarily for [Mathfinder](https://github.com/Gellybean/MathfinderBot), a Discord bot. Check out the [MF wiki](https://github.com/Gellybean/MathfinderBot/wiki) for more information.
 
 Gellybeans supports:
 - Integer math, interpolated strings, bools, arrays
