@@ -29,10 +29,12 @@ fizzbuzz = -> (count)
 
 ```
 
-``` fizzbuzz(25) ```
+Input (from Mathfinder)
+
+![Screenshot 2024-05-28 075851](https://github.com/Gellybean/Gellybeans/assets/10622391/8f23842a-27cd-4f65-b110-e0c78cef178a)
 
 
-Output (From Mathfinder)
+Output 
 
 ![Screenshot 2024-05-28 075534](https://github.com/Gellybean/Gellybeans/assets/10622391/7c4f40b9-be5e-42c5-bf58-68b6a0a96e5e)
 
