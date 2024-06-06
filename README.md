@@ -1,11 +1,11 @@
 # Gellybeans
 
-Gellybeans is a C# library containing an expression parser built primarily for [Mathfinder](https://github.com/Gellybean/MathfinderBot), a Discord bot. Check out the [MF wiki](https://github.com/Gellybean/MathfinderBot/wiki) for more information.
+Gellybeans is a scripting language built primarily for [Mathfinder](https://github.com/Gellybean/MathfinderBot), a Discord bot. Check out the [MF wiki](https://github.com/Gellybean/MathfinderBot/wiki) for more information.
 
 Gellybeans supports:
 - Integer math, interpolated strings, bools, arrays
 - Variable assignment
-- Dice expressions
+- Dice expressions (1d20, 3d6)
 - Conditionals
 - For loops
 - Functions
@@ -29,6 +29,12 @@ fizzbuzz = -> (count)
 
 ```
 
-``` fizzbuzz(100) ```
+Input (from Mathfinder)
 
-![Screenshot 2024-05-10 193557](https://github.com/Gellybean/Gellybeans/assets/10622391/f7985bdd-d83a-48f0-a578-8df5e82e2d2e)
+![Screenshot 2024-05-28 075851](https://github.com/Gellybean/Gellybeans/assets/10622391/8f23842a-27cd-4f65-b110-e0c78cef178a)
+
+
+Output 
+
+![Screenshot 2024-05-28 075534](https://github.com/Gellybean/Gellybeans/assets/10622391/7c4f40b9-be5e-42c5-bf58-68b6a0a96e5e)
+
