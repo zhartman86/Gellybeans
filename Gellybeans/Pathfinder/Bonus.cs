@@ -7,7 +7,7 @@
         public BonusType    Type    { get; set; } = (BonusType)(-1);
   
 
-        public bool Equals(Bonus b) { return this == b; }
+        public bool Equals(Bonus b) { return Name.ToUpper() == b.Name.ToUpper(); }
         public override bool Equals(object? obj)
         {
             if(obj != null && obj.GetType() == typeof(Bonus)) 

@@ -143,7 +143,7 @@ namespace Gellybeans.Pathfinder
         {
             var bonusToUpper = bonusName.ToUpper();
             foreach(var var in Vars.Where(x => x.Value is Stat))
-                ((Stat)var.Value).RemoveBonus(bonusToUpper);
+                ((Stat)var.Value).RemoveBonus(new Bonus() { Name = bonusToUpper});
             OnValueChanged("var");
         }
 

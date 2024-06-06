@@ -142,55 +142,37 @@ namespace Gellybeans.Pathfinder
                         Bonuses.Remove(bonus);
                 }
 
-                if(Bonuses.Count == 0)
-                    Bonuses = null!;
                 return true;
             }
-            else
-            {
-                if(Override is not null)
-                {
-                    if(Override.Name == b.Name)
-                        Override = null!;
-                }
-
-
-            }
-
-            
-            if(Bonuses.Remove(b))
-            {
-                if(Bonuses.Count == 0)
-                    Bonuses = null!;
-                return true;
-            }
-
-            return false;
-        }
-
-        public bool RemoveBonus(string bonusName)
-        {
-            if(Bonuses == null) 
-                return false;
-
-            bonusName = bonusName.ToUpper();
-
-
-
 
             if(Override is not null)
             {
-                if(Override.Name == bonusName)
+                if(Override.Name == b.Name)
                     Override = null!;
             }
 
-            var count = Bonuses.RemoveAll(x => x.Name == bonusName);
 
-            if(Bonuses.Count == 0)
-                Bonuses = null!;
 
-            return count > 0;
-        }
+            var count = 0;
+            while(true)
+            {
+                if(Bonuses == null)
+                    break;
+                else if(Bonuses.Remove(b))
+                {
+                    count++;
+                    if(Bonuses != null && Bonuses.Count == 0)
+                        Bonuses = null!;
+                }
+                else
+                    break;
+                                                
+            }
+
+            if(count > 0)
+                return true;
+            return false;
+        }       
 
         public int CompareTo(object? obj)
         {

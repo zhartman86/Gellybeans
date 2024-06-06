@@ -33,8 +33,8 @@ namespace Gellybeans.Expressions
             if(depth > Parser.MAX_DEPTH)
                 return "Operation cancelled: maximum evaluation depth reached.";
 
-            var lhValue = lhs.Eval(depth: depth, caller: caller, sb: sb, ctx: ctx);
-            var rhValue = rhs.Eval(depth: depth, caller: caller, sb: sb, ctx : ctx);
+            var lhValue = lhs.Eval(depth, caller, sb, ctx);
+            var rhValue = rhs.Eval(depth, caller, sb, ctx);
 
             LResult = lhValue;
             RResult = rhValue;

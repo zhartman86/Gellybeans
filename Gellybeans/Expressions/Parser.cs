@@ -10,14 +10,12 @@ namespace Gellybeans.Expressions
         public const int MAX_DEPTH = 10000;
 
         readonly List<Token> tokens;
-
-        IContext ctx;       
+        readonly IContext ctx;       
         readonly StringBuilder sb;
 
         int index;
-        int depth = 0;
 
-        object caller;
+        readonly object caller;
 
         //dice expression. 0-3 number(s) => d => 1-x number(s) => 0-x instances of ('r' or 'h' or 'l' paired with 1-3 number(s))
         static readonly Regex dRegex = new(@"^([0-9]{0,3})d([0-9]{1,3})((?:r|h|l)(?:[0-9]{1,3})){0,2}$", RegexOptions.Compiled);
@@ -298,7 +296,6 @@ namespace Gellybeans.Expressions
                         break;
                 }
 
-                Next();
                 return new IfNode(conditions);                                    
             }
 
@@ -439,7 +436,7 @@ namespace Gellybeans.Expressions
 
                 if(Current.TokenType == TokenType.Push) op = (lhs, rhs) =>
                 {
-                    var rhValue = rhs.Eval(depth: depth, caller: this, sb: null!, ctx: ctx);
+                    var rhValue = rhs.Eval(0, caller: this, sb: null!, ctx: ctx);
 
                     var lhValue = lhs;
 
@@ -453,7 +450,7 @@ namespace Gellybeans.Expressions
                             {
                                 for(int i = 0; i < array.Length; i++)
                                 {
-                                    array[i] = f.Invoke(depth, this, new dynamic[] { array[i], i }, sb, ctx);
+                                    array[i] = f.Invoke(0, this, new dynamic[] { array[i], i }, sb, ctx);
                                 }
                                     
 
@@ -466,7 +463,7 @@ namespace Gellybeans.Expressions
                         else
                         {
                             for(int i = 0; i < array.Length; i++)
-                                array[i] = rhs.Eval(depth: depth, caller: this, sb: sb, ctx: ctx);
+                                array[i] = rhs.Eval(0, caller: this, sb: sb, ctx: ctx);
                         }
 
                         return new ArrayValue(array, a.Keys);
@@ -476,7 +473,7 @@ namespace Gellybeans.Expressions
                 else if(Current.TokenType == TokenType.Pull) op = (lhs, rhs) =>
                 {
                     var list = new List<dynamic>();
-                    var rhValue = rhs.Eval(depth: depth, caller: this, sb: sb, ctx: ctx);
+                    var rhValue = rhs.Eval(0, caller: this, sb: sb, ctx: ctx);
 
                     if(lhs is ArrayValue a)
                     {
@@ -489,7 +486,7 @@ namespace Gellybeans.Expressions
 
                                 for(int i = 0; i < array.Length; i++)
                                 {
-                                    if(f.Invoke(depth, caller, new dynamic[] { array[i], i }, sb, ctx))
+                                    if(f.Invoke(0, caller, new dynamic[] { array[i], i }, sb, ctx))
                                     {
                                         list.Add(array[i]);
                                     }                                       
@@ -516,7 +513,7 @@ namespace Gellybeans.Expressions
                 };
                 else if(Current.TokenType == TokenType.Arrange) op = (lhs, rhs) =>
                 {
-                    var rhValue = rhs.Eval(depth: depth, caller: this, sb: sb, ctx: ctx);
+                    var rhValue = rhs.Eval(0, caller: this, sb: sb, ctx: ctx);
                     if(lhs is ArrayValue a)
                     {
                         if(rhValue > 0)
@@ -558,7 +555,7 @@ namespace Gellybeans.Expressions
                 };
                 else if(Current.TokenType == TokenType.Append) op = (lhs, rhe) =>
                 {
-                    var rhs = rhe.Eval(depth, this, sb, ctx);
+                    var rhs = rhe.Eval(0, this, sb, ctx);
 
                     dynamic[] array = null!;
                     if(lhs is ArrayValue al)
@@ -649,7 +646,7 @@ namespace Gellybeans.Expressions
                 };
                 else if(Current.TokenType == TokenType.Insert) op = (lhs, rhe) =>
                 {
-                    var rhs = rhe.Eval(depth, this, sb, ctx);
+                    var rhs = rhe.Eval(0, this, sb, ctx);
 
                     if(lhs is ArrayValue al)
                     {                                                                      
@@ -752,7 +749,7 @@ namespace Gellybeans.Expressions
                             var stats = ctx.Vars.Values.OfType<Stat>();
                             foreach(Stat s in stats)
                             {
-                                if(s.RemoveBonus(b.Name))
+                                if(s.RemoveBonus(b))
                                     count++;
                             }
                             return new StringValue($"{b.Name} removed from {count} stats.");
@@ -796,20 +793,20 @@ namespace Gellybeans.Expressions
                 {
                     op = (value) =>
                     {
-                        var d = new DiceNode(1, 20).Eval(depth: depth, caller: this, sb: sb, ctx: ctx);
+                        var d = new DiceNode(1, 20).Eval(0, caller: this, sb: sb, ctx: ctx);
                         return d + value;
                     };
                 }
                 else if(Current.TokenType == TokenType.Percent) op = (value) =>
                 {
-                    return value is IString s ? s.ToStr() : value is StringValue str ? str.Display(depth, caller, sb, ctx) : value.ToString();
+                    return value is IString s ? s.ToStr() : value is StringValue str ? str.Display(0, caller, sb, ctx) : value.ToString();
                 };
                 else if(Current.TokenType == TokenType.ToExpr) op = (value) =>
                 {
 
                     if(value is StringValue s)
                     {
-                        value = s.Display(depth, this, null!, ctx);
+                        value = s.Display(0, this, null!, ctx);
                     }
                         
                     else
@@ -860,12 +857,12 @@ namespace Gellybeans.Expressions
 
                             if(k is StringValue s)
                             {
-                                return a[s.String.ToUpper()] is ExpressionValue ev ? ev.Reduce(depth, caller, sb, ctx) : a[s.String];
+                                return a[s.String.ToUpper()] is ExpressionValue ev ? ev.Reduce(0, caller, sb, ctx) : a[s.String];
                             }
 
                             if(k is string str)
                             {
-                                return a[str.ToUpper()] is ExpressionValue ev ? ev.Reduce(depth, caller, sb, ctx) : a[str];
+                                return a[str.ToUpper()] is ExpressionValue ev ? ev.Reduce(0, caller, sb, ctx) : a[str];
                             }
 
 
@@ -896,12 +893,12 @@ namespace Gellybeans.Expressions
                                     if(start > end)
                                     {
                                         for(int i = start; i >= end; i--)
-                                            list.Add(a[i] is ExpressionValue ev ? ev.Reduce(depth, caller, sb, ctx) : a[i]);
+                                            list.Add(a[i] is ExpressionValue ev ? ev.Reduce(0, caller, sb, ctx) : a[i]);
                                     }
                                     else
                                     {
                                         for(int i = start; i <= end; i++)
-                                            list.Add(a[i] is ExpressionValue ev ? ev.Reduce(depth, caller, sb, ctx) : a[i]);
+                                            list.Add(a[i] is ExpressionValue ev ? ev.Reduce(0, caller, sb, ctx) : a[i]);
                                     }
                                     return new ArrayValue(list.ToArray());
                                 }
@@ -917,7 +914,7 @@ namespace Gellybeans.Expressions
                             {
                                 return new StringValue($"Index `[{k}]` out of range");
                             }                               
-                            return a[k] is ExpressionValue eva ? eva.Reduce(depth, caller, sb, ctx) : a[k];
+                            return a[k] is ExpressionValue eva ? eva.Reduce(0, caller, sb, ctx) : a[k];
                         }
                         if(k is SymbolNode)
                         {
