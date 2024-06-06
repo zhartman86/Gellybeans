@@ -1,25 +1,29 @@
 ﻿using Gellybeans.Expressions;
-using System.Text;
 
 namespace Gellybeans.Test
 {
     [TestClass]
     public class Test
     {
+        [TestMethod]
+        public void Ops_Basic()
+        {
+            var result = Parser.Parse("1+1", this).Eval(0, this, null);
+            Assert.AreEqual(result, 2);
+        }    
 
         [TestMethod]
-        public void Ops()
+        public void Ops_Order1()
         {
-            var sb = new StringBuilder();
-
-            var result = Parser.Parse("1+1", this).Eval(0, this, sb);
-            Assert.AreEqual(result, 2);
-
-            result = Parser.Parse("2 + 3 * 4", this).Eval(0, this, sb);
+            var result = Parser.Parse("2 + 3 * 4", this).Eval(0, this, null);
             Assert.AreEqual(result, 14);
+        }
 
-            result = Parser.Parse("(2 + 3) * 4", this).Eval(0, this, sb);
-            Assert.AreEqual(result, 20);
+        [TestMethod]
+        public void Ops_Order2()
+        {
+            var result = Parser.Parse("(2 + 3) * 4", this).Eval(0, this, null);
+            Assert.AreEqual(result, 20);          
         }
     }
 
